@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# $Id$
+#
+
+AUTOMAKE_VER="19"
+AUTOCONF_VER="259"
+
+aclocal${AUTOMAKE_VER} -I aclocal &&
+autoheader${AUTOCONF_VER} &&
+autoconf${AUTOCONF_VER} &&
+automake${AUTOMAKE_VER} --add-missing --copy

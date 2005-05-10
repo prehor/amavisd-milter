@@ -1,0 +1,6 @@
+This is the README for the amavisd-milter
+
+amavisd-milter is a sendmail milter for amavisd-new version 2.2.0 and above
+which use the new AM.PDP protocol.
+
+$Id$
