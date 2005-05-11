@@ -33,7 +33,6 @@
 #include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
-#include <stdbool.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sysexits.h>
