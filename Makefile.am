@@ -35,6 +35,8 @@ dist-hook:
 maintainer-clean-local:
 	-rm -f Makefile.in
 	-rm -f aclocal/compile
+	-rm -f aclocal/config.guess
+	-rm -f aclocal/config.sub
 	-rm -f aclocal/depcomp
 	-rm -f aclocal/install-sh
 	-rm -f aclocal/missing
