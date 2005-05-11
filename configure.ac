@@ -15,8 +15,9 @@ AC_CHECK_PTHREADS
 AC_TYPE_MODE_T
 AC_TYPE_SIZE_T
 AC_HEADER_STDC
+AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([arpa/inet.h ctype.h errno.h fcntl.h libmilter/mfapi.h \
-  libmilter/mfdef.h limits.h netinet/in.h stdarg.h stdbool.h stdio.h \
+  libmilter/mfdef.h limits.h netinet/in.h stdarg.h stdio.h \
   stdlib.h string.h sys/param.h sys/time.h sys/types.h sys/socket.h \
   sys/stat.h sys/un.h syslog.h sysexits.h unistd.h],[],
   AC_MSG_ERROR([unable to find required header files]))
