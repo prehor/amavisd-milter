@@ -1,3 +1,13 @@
-This is the Changelog for amavisd-milter
+This is the Changelog for amavisd-milter.
+
+20050512:
+	Initial version of README.
+
+20050512:
+	Better portability with autoconf macros from
+	http://ac-archive.sourceforge.net/
+
+20050511:
+	amavisd-milter-1.0.0-RELEASE.
 
 $Id$
