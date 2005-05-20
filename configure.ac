@@ -22,7 +22,7 @@ AC_CHECK_HEADERS([arpa/inet.h ctype.h errno.h fcntl.h limits.h netinet/in.h \
   sys/socket.h sys/stat.h sys/un.h syslog.h sysexits.h unistd.h],[],
   AC_MSG_ERROR([unable to find required header files]))
 
-AC_CHECK_FUNCS([strlcpy])
+AC_REPLACE_FUNCS([strlcpy])
 
 AX_PATH_MILTER([8.12],[LIBS="$MILTER_LIBS $LIBS"
   LDFLAGS="$MILTER_LDFLAGS $LDFLAGS" CPPFLAGS="$CPPFLAGS $MILTER_CPPFLAGS"],

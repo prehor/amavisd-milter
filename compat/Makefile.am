@@ -16,8 +16,11 @@ noinst_LIBRARIES= \
 # libcompat compiling parameters
 libcompat_a_SOURCES= \
 	read_sock.c \
-	write_sock.c \
-	strlcpy.c
+	write_sock.c
+libcompat_a_LIBADD= \
+	@LIBOBJS@
+libcompat_a_DEPENDENCIES= \
+	@LIBOBJS@
 
 maintainer-clean-local:
 	-rm -f Makefile.in
