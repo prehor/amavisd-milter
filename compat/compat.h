@@ -62,6 +62,11 @@ typedef unsigned char _Bool;
 # define __bool_true_false_are_defined 1
 #endif
 
+#ifndef HAVE_MKDTEMP
+/* Make temporary directory */
+extern char    *mkdtemp(char *);
+#endif
+
 #ifndef HAVE_STRLCPY
 /* String copy */
 extern size_t	strlcpy(char *, const char *, size_t);
