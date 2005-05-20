@@ -82,7 +82,7 @@ _gettemp(char *path, int *doopen, int domkdir, int slen)
 	while (trv >= path && *trv == 'X') {
 		char c;
 
-		pid = (arc4random() & 0xffff) % (26+26);
+		pid = (random() & 0xffff) % (26+26);
 		if (pid < 26)
 			c = pid + 'A';
 		else
