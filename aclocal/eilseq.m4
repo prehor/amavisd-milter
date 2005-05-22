@@ -55,10 +55,8 @@ yes
 #include <stdlib.h>
 ])
       else
-        dnl EILSEQ isn't defined by the system. Define EILSEQ ourselves, but
-        dnl don't define it as EINVAL, because iconv() callers want to
-        dnl distinguish EINVAL and EILSEQ.
-        ac_cv_decl_EILSEQ=ENOENT
+        dnl EILSEQ isn't defined by the system. Define EILSEQ ourselves.
+        ac_cv_decl_EILSEQ=EINVAL
       fi
     fi
   ])
