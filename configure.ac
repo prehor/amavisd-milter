@@ -29,6 +29,8 @@ AX_PATH_MILTER([8.12],[LIBS="$MILTER_LIBS $LIBS"
   LDFLAGS="$MILTER_LDFLAGS $LDFLAGS" CPPFLAGS="$CPPFLAGS $MILTER_CPPFLAGS"],
   AC_MSG_ERROR([required milter library and header not found]))
 
+AC_EILSEQ
+
 AC_CONFIG_FILES([Makefile amavisd-milter/Makefile compat/Makefile])
 AC_CONFIG_FILES([autoconf], [chmod +x autoconf])
 
