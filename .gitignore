@@ -26,3 +26,18 @@ _$*
 *.ln
 core
 # CVS default ignores end
+# $Id$
+
+Makefile
+Makefile.in
+aclocal.m4
+amavisd-milter-*.tar.gz
+autoconf
+autom4te.cache
+config.h
+config.h.in
+config.log
+config.status
+configure
+configure.lineno
+stamp-h1

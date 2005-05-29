@@ -1,0 +1,6 @@
+# $Id$
+
+.deps
+Makefile
+Makefile.in
+amavisd-milter
