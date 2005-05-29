@@ -1,6 +1,6 @@
 dnl $Id$
 
-AC_INIT(amavisd-milter, 1.0.0)
+AC_INIT(amavisd-milter, 1.0.1)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
 AC_CONFIG_AUX_DIR(aclocal)
 AC_CONFIG_MACRO_DIR(aclocal)

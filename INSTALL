@@ -1,3 +1,12 @@
+Obtaining the software
+======================
+
+Fetch the tarball from Sourceforge and unpack it:
+
+  http://sourceforge.net/project/showfiles.php?group_id=138169
+
+Start reading with README, then CHANGES and INSTALL.
+
 Basic Installation
 ==================
 
@@ -99,11 +108,6 @@ They may also pay attention to `--with-PACKAGE' options, where PACKAGE
 is something like `gnu-as' or `x' (for the X Window System).  The
 `README' should mention any `--enable-' and `--with-' options that the
 package recognizes.
-
-For packages that use the X Window System, `configure' can usually
-find the X include and library files automatically, but if it doesn't,
-you can use the `configure' options `--x-includes=DIR' and
-`--x-libraries=DIR' to specify their locations.
 
 Specifying the System Type
 ==========================

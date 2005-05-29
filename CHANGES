@@ -1,5 +1,17 @@
 This is the Changelog for amavisd-milter.
 
+20050529:
+	amavisd-milter-1.0.1-RELEASE
+
+	Portability release. Now can be compiled on Debian 3.0, Fedora FC2 and
+	FC3, OpenBSD 3.4 and Solaris 9. Tested on Sourceforge compile farm.
+	Please report success or problems on the users mailing list:
+
+	http://lists.sourceforge.net/lists/listinfo/amavisd-milter-users
+
+20050522:
+	Define EILSEQ on systems without it.
+
 20050520:
 	mkdtemp(3) compatibility function.
 
@@ -15,5 +27,8 @@ This is the Changelog for amavisd-milter.
 
 20050511:
 	amavisd-milter-1.0.0-RELEASE.
+
+	First public release. Fully tested on FreeBSD 5.3.
+
 
 $Id$
