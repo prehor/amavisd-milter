@@ -265,10 +265,13 @@ mlfi_cleanup(struct mlfiCtx *mlfi)
 
     LOGQIDMSG(LOG_INFO, "cleanup connection context");
 
-    /* Free memory */
+    /* Cleanup the connection context */
     MLFI_FREE(mlfi->mlfi_addr);
     MLFI_FREE(mlfi->mlfi_hostname);
     MLFI_FREE(mlfi->mlfi_helo);
+
+    /* Free context */
+    free(mlfi);
 }
 
 
