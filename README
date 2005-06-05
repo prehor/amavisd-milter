@@ -3,15 +3,20 @@ This is the README for the amavisd-milter.
 amavisd-milter is a sendmail milter for amavisd-new version 2.2.0 and above
 which use the new AM.PDP protocol.
 
+Instead of amavis-milter helper program, full amavisd-new functionality is
+available, including adding spam and virus information header fields,
+modifying Subject, adding address extensions and removing certain recipients
+from delivery while delivering the same message to the rest.
+
 This README was derived from [3] which was written by Rob MacGregor and
 Mark Martinec.
 
 
 General Notes:
 
-    If you run into problems first check the users list archive at:
+    If you run into problems first check the users list archive at
 
-	http://lists.sourceforge.net/lists/listinfo/amavisd-milter-users
+	http://sourceforge.net/mailarchive/forum.php?forum_id=45237
 
     before asking questions on the list. It's highly likely somebody
     has already come across the same problem and it's been solved.
@@ -24,7 +29,7 @@ Installation:
     The basic installation instructions are in INSTALL. You can use this
     optional features for configure:
 
-	--enable-debug		enable all compiler warnings
+	--enable-debug		   enable all compiler warnings
 	--with-sendmail-base=<DIR> base directory of sendmail distribution
 	--with-sendmail-obj=<DIR>  obj.* subdirectory in sendmail distribution
 
@@ -67,7 +72,7 @@ Sockets:
     socket is _NOT_ MILTER, but a private amavisd protocol AM.PDP.
 
     The both sockets timeout must be sufficient for whole check of the
-    message in amavisd. You must adjust both to the same value.
+    message in amavisd. It's a good idea to adjust both to the same value.
 
 
 Sendmail:
@@ -85,17 +90,17 @@ Sendmail:
     Start amavisd and then sendmail. Check syslog for messages (probably
     /var/log/mail or /var/log/mail/info).  You should see something like:
 
-	May 12 21:49:04 charon amavis[66997]: starting.
-	    /usr/local/sbin/amavisd at charon.rx.cz amavisd-new-2.2.1 (20041222)
-	May 12 21:53:01 charon sm-mta[67062]: starting daemon (8.13.1):
+	May 12 21:49:04 myhost amavis[66997]: starting.
+	    /usr/local/sbin/amavisd at myhost.my.domain amavisd-new-2.2.1
+	May 12 21:53:01 myhost sm-mta[67062]: starting daemon (8.13.1):
 	    SMTP+queueing@00:30:00
-	May 12 21:53:01 charon sm-msp-queue[67066]: starting daemon (8.13.1):
+	May 12 21:53:01 myhost sm-msp-queue[67066]: starting daemon (8.13.1):
 	    queueing@00:30:00
 
     Then start amavisd-milter. Check syslog for messages (probably
     /var/log/mail or /var/log/mail/info).  You should see something like:
 
-	May 12 21:55:21 charon amavisd-milter[67089]: starting amavisd-milter
+	May 12 21:55:21 myhost amavisd-milter[67089]: starting amavisd-milter
 	    1.0.0 on socket /var/amavis/amavisd-milter.sock
 
 
