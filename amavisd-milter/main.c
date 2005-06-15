@@ -153,6 +153,8 @@ main(int argc, char *argv[])
 
     int		c, rstat;
     char       *p, *progname;
+    char	pidbuf[MAXPIDLEN];
+    pid_t	pid;
     FILE       *fp;
     struct	stat st;
     mode_t	save_umask;
@@ -300,6 +302,44 @@ main(int argc, char *argv[])
     if (smfi_register(smfilter) != MI_SUCCESS) {
 	LOGERRMSG("%s: could not register milter", progname);
 	exit(EX_SOFTWARE);
+    }
+
+    /* Check pid file before we go to the background */
+    if (pid_file != NULL) {
+	fp = fopen(pid_file, "r");
+	if (fp == NULL && errno != ENOENT) {
+	    LOGERRMSG("%s: could not open pid file %s: %s", progname,
+		pid_file, strerror(errno));
+	    exit(EX_SOFTWARE);
+	} else if (fp != NULL) {
+	    if (fgets(pidbuf, sizeof(pidbuf), fp) == NULL) {
+		LOGERRMSG("%s: could not read pid file %s: %s", progname,
+		    pid_file, strerror(errno));
+		(void) fclose(fp);
+		exit(EX_SOFTWARE);
+	    }
+	    if (fclose(fp) != 0) {
+		LOGERRMSG("%s: could not close pid file %s: %s", progname,
+		    pid_file, strerror(errno));
+		exit(EX_SOFTWARE);
+	    }
+	    pid = (pid_t) strtol(pidbuf, &p, 10);
+	    if (p != NULL && *p != '\0') {
+		LOGERRMSG("%s: pid file %s contain malformed pid: %s", progname,
+		    pidbuf);
+		exit(EX_SOFTWARE);
+	    }
+	    if (kill(pid, 0) != ESRCH) {
+		LOGERRMSG("%s: another process with pid %ld is running",
+		    progname, (long) pid);
+		exit(EX_SOFTWARE);
+	    }
+	    if (unlink(pid_file) != 0) {
+		LOGERRMSG("%s: could not unlink pid file %s: %s", progname,
+		    pid_file, strerror(errno));
+		exit(EX_SOFTWARE);
+	    }
+	}
     }
 
     /* Run in the background */

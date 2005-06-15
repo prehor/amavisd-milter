@@ -1,5 +1,8 @@
 This is the Changelog for amavisd-milter.
 
+20050615:
+	On start, check if there is another running process.
+
 20050605:
 	amavisd-milter-1.0.2-RELEASE
 
