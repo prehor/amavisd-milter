@@ -236,7 +236,7 @@ main(int argc, char *argv[])
 	    break;
 	case 'T':		/* amavisd connection timeout */
 	    CHECK_OPTARG(optarg);
-	    mlfi_timeout = (int) strtol(optarg, &p, 10);
+	    amavisd_timeout = (int) strtol(optarg, &p, 10);
 	    if (p != NULL && *p != '\0') {
 		USAGEMSG("amavisd connection timeout isn't valid number: %s",
 		    optarg);
