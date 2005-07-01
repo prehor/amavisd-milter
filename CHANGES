@@ -1,19 +1,24 @@
 This is the Changelog for amavisd-milter.
 
 20050701:
-	Unlink old pid file on start.
+	amavisd-milter-1.0.3
+
+	Bugfix release. Properly set amavisd connection timeout.
 
 20050701:
 	Set amavisd_timeout instead of mlfi_timeout for -T option.
 	Submitted by: Mr.Sompis Junsui <sompis.j@cdg.co.th>
 
+20050701:
+	Unlink old pid file on start.
+
 20050605:
-	amavisd-milter-1.0.2-RELEASE
+	amavisd-milter-1.0.2
 
 	Bugix release. Fix memory leak in mlfi_cleanup.
 
 20050529:
-	amavisd-milter-1.0.1-RELEASE
+	amavisd-milter-1.0.1
 
 	Portability release. Now can be compiled on Debian 3.0, Fedora FC2 and
 	FC3, OpenBSD 3.4 and Solaris 9. Tested on Sourceforge compile farm.
@@ -38,9 +43,9 @@ This is the Changelog for amavisd-milter.
 	strlcpy(3) compatibility function.
 
 20050511:
-	amavisd-milter-1.0.0-RELEASE.
+	amavisd-milter-1.0.0
 
 	First public release. Fully tested on FreeBSD 5.3.
 
 
-$Id$
+$Id: CHANGES,v 1.9 2005/07/01 20:02:53 reho Exp $

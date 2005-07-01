@@ -1,6 +1,6 @@
-dnl $Id$
+dnl $Id: configure.ac,v 1.12 2005/06/05 20:40:29 reho Exp $
 
-AC_INIT(amavisd-milter, 1.0.2)
+AC_INIT(amavisd-milter, 1.0.3)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
 AC_CONFIG_AUX_DIR(aclocal)
 AC_CONFIG_MACRO_DIR(aclocal)
