@@ -36,7 +36,6 @@
 /* Maximum message buffers length */
 #define MAXLOGBUF	1024	/* syslog message buffer */
 #define MAXAMABUF	1024	/* amavisd communication buffer */
-#define MAXPIDLEN	6	/* pid buffer */
 
 struct mlfiCtx;
 
