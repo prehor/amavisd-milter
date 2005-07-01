@@ -1,5 +1,9 @@
 This is the Changelog for amavisd-milter.
 
+20050701:
+	Set amavisd_timeout instead of mlfi_timeout for -T option.
+	Submitted by: Mr.Sompis Junsui <sompis.j@cdg.co.th>
+
 20050615:
 	On start, check if there is another running process.
 
