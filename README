@@ -75,6 +75,17 @@ Sockets:
     message in amavisd. It's a good idea to adjust both to the same value.
 
 
+Amavisd-new:
+
+    In amavisd.conf file change protocol and socket settings to:
+
+	$protocol = "AM.PDP";			   # Use AM.PDP protocol
+	$unix_socketname = "$MYHOME/amavisd.sock"; # Listen on Unix socket
+	# $inet_socket_port = 10024;		   # Don't listen on TCP port
+
+    Now restart amavisd daemon.
+
+
 Sendmail:
 
     In the sendmail.mc file add the following entries (the last one is
@@ -116,4 +127,4 @@ References:
     http://www.ijs.si/software/amavisd/README.milter.txt
 
 
-$Id$
+$Id: README,v 1.4 2005/06/05 20:35:06 reho Exp $
