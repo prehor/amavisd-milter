@@ -52,7 +52,7 @@ Usage:
 
     Default values:
 
-	Pid file		/var/run/amavisd-milter.pid
+	Pid file		/var/amavis/amavisd-milter.pid
 	Milter socket		/var/amavis/amavisd-milter.sock
 	Milter timeout		10 minutes
 	Amavisd socket		/var/amavis/amavisd.sock
@@ -127,4 +127,4 @@ References:
     http://www.ijs.si/software/amavisd/README.milter.txt
 
 
-$Id: README,v 1.4 2005/06/05 20:35:06 reho Exp $
+$Id: README,v 1.5 2005/08/28 23:56:38 reho Exp $
