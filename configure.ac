@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.12 2005/06/05 20:40:29 reho Exp $
+dnl $Id: configure.ac,v 1.13 2005/07/01 20:37:00 reho Exp $
 
 AC_INIT(amavisd-milter, 1.0.3)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
@@ -30,6 +30,7 @@ AX_PATH_MILTER([8.12],[LIBS="$MILTER_LIBS $LIBS"
   AC_MSG_ERROR([required milter library and header not found]))
 
 AC_EILSEQ
+gl_EOVERFLOW
 
 AC_CONFIG_FILES([Makefile amavisd-milter/Makefile compat/Makefile])
 AC_CONFIG_FILES([autoconf], [chmod +x autoconf])

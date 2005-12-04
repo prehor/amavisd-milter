@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id$
+ * $Id: mlfi.c,v 1.2 2005/06/05 20:40:29 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -771,6 +771,7 @@ mlfi_eom(SMFICTX *ctx)
     }
 
     /* Amavisd response fail */
+    LOGQIDMSG(LOG_DEBUG, "amavisd response line %s", name);
     LOGQIDERR(LOG_ERR, "could not read from amavisd socket %s: %s",
 	amavisd_socket, strerror(errno));
     SMFI_SETREPLY_TEMPFAIL();

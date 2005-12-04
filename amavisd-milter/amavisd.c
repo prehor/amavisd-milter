@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id$
+ * $Id: amavisd.c,v 1.1 2005/05/10 21:37:58 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -88,7 +88,7 @@ amavisd_request(int sd, char *name, char *value)
 	p = name;
 	while (*p != '\0') {
 	    if (b >= buf + sizeof(buf) - 8) {
-		errno = ENOMEM;
+		errno = EOVERFLOW;
 		return -1;
 	    }
 	    if (isalnum(*p) || *p == '-' || *p == '_') {
@@ -104,7 +104,7 @@ amavisd_request(int sd, char *name, char *value)
 	p = value;
 	while (*p != '\0' && b < buf + sizeof(buf)) {
 	    if (b >= buf + sizeof(buf) - 4) {
-		errno = ENOMEM;
+		errno = EOVERFLOW;
 		return -1;
 	    }
 	    if (isalnum(*p) || *p == '-' || *p == '_') {
@@ -134,7 +134,8 @@ amavisd_response(int sd, char *line, size_t maxlen)
     /* Read response line */
     while (read_sock(sd, p, 1, amavisd_timeout) != -1) {
 	if (p >= line + maxlen - 2) {
-	    errno = ENOMEM;
+	    *(p + 1) = '\0';
+	    errno = EOVERFLOW;
 	    return -1;
 	}
 	if (*p == '\n') {
@@ -147,15 +148,17 @@ amavisd_response(int sd, char *line, size_t maxlen)
 		decode = 2;
 		p++;
 	    } else {
+		*(p + 1) = '\0';
 		errno = EILSEQ;
 		return -1;
 	    }
 	} else if (decode == 2) {
 	    if (isxdigit(*p)) {
-        	*(p + 1) = '\0';
+		*(p + 1) = '\0';
 		*(p - 1) = (u_char) strtol(p - 1, NULL, 16);
 		decode = 0;
 	    } else {
+		*(p + 1) = '\0';
 		errno = EILSEQ;
 		return -1;
 	    }
@@ -167,6 +170,7 @@ amavisd_response(int sd, char *line, size_t maxlen)
     }
 
     /* read_sock failed */
+    *p = '\0';
     return -1;
 }
 
