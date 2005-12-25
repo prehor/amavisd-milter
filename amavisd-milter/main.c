@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id$
+ * $Id: main.c,v 1.6 2005/07/01 20:02:54 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -82,7 +82,7 @@ char   *mlfi_socket = "/var/amavis/" PACKAGE ".sock";
 long	mlfi_timeout = 600;
 char   *amavisd_socket = "/var/amavis/amavisd.sock";
 long	amavisd_timeout = 600;
-char   *work_dir = "/var/amavis/tmp";
+char   *work_dir = "/var/amavis";
 
 
 /*
@@ -120,16 +120,16 @@ usage(const char *progname)
 {
     (void) fprintf(stdout, "\nUsage: %s [OPTIONS]\n", progname);
     (void) fprintf(stdout, "Options are:\n\
+	-d debug-level		Set debug level\n\
+	-f			Run in the foreground\n\
 	-h			Print this page\n\
-	-v			Report the version and exit\n\
-	-d level		Print debug information\n\
-	-f			Run this proces in the foreground\n\
 	-p pidfile		Use this pid file\n\
 	-s socket		Milter communication socket\n\
-	-t timeout		Milter connection timeout in seconds\n\
-	-w workdir		Set the working directory\n\
 	-S socket		Amavisd communication socket\n\
-	-T timeout		Amavisd connection timeout in seconds\n\n");
+	-t timeout		Milter connection timeout in seconds\n\
+	-T timeout		Amavisd connection timeout in seconds\n\
+	-v			Report the version and exit\n\
+	-w directory		Set the working directory\n\n");
 }
 
 

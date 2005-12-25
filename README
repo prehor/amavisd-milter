@@ -1,32 +1,34 @@
 This is the README for the amavisd-milter.
 
-amavisd-milter is a sendmail milter for amavisd-new version 2.2.0 and above
-which use the new AM.PDP protocol.
+amavisd-milter is a sendmail milter for amavisd-new 2.2.0 and above and
+sendmail 8.13.0 and above.
 
-Instead of amavis-milter helper program, full amavisd-new functionality is
-available, including adding spam and virus information header fields,
+Instead of older amavis-milter helper program, full amavisd-new functionality
+is available, including adding spam and virus information header fields,
 modifying Subject, adding address extensions and removing certain recipients
 from delivery while delivering the same message to the rest.
 
-This README was derived from [3] which was written by Rob MacGregor and
-Mark Martinec.
+You can visit amavisd-milter SourceForge project:
+
+    http://sourceforge.net/projects/amavisd-milter/
 
 
 General Notes:
 
-    If you run into problems first check the users list archive at
+    A community mailing lists are available at:
 
-	http://sourceforge.net/mailarchive/forum.php?forum_id=45237
+	 http://sourceforge.net/mail/?group_id=138169
 
-    before asking questions on the list. It's highly likely somebody
-    has already come across the same problem and it's been solved.
+    Enhancements requests and problem reports are welcome.
 
-    Oh, and don't forget to RTFM :-)
+    If you run into problems first check the users mailing list archive
+    before asking questions on the list.  It's highly likely somebody has
+    already come across the same problem and it's been solved.
 
 
 Installation:
 
-    The basic installation instructions are in INSTALL. You can use this
+    The basic installation instructions are in INSTALL.  You can use this
     optional features for configure:
 
 	--enable-debug		   enable all compiler warnings
@@ -39,40 +41,39 @@ Usage:
     The following options can be passed to amavisd-milter to change the
     default behaviour:
 
-        -h                      Print this page
-        -v                      Report the version and exit
-        -d level                Print debug information
-        -f                      Run this proces in the foreground
-        -p pidfile              Use this pid file
-        -s socket               Milter communication socket
-        -t timeout              Milter connection timeout in seconds
-        -w workdir              Set the working directory
-        -S socket               Amavisd communication socket
-        -T timeout              Amavisd connection timeout in seconds
-
-    Default values:
-
-	Pid file		/var/amavis/amavisd-milter.pid
-	Milter socket		/var/amavis/amavisd-milter.sock
-	Milter timeout		10 minutes
-	Amavisd socket		/var/amavis/amavisd.sock
-	Amavisd timeout		10 minutes
-	Work directory		/var/amavis/tmp
+	-d level		Print debug information
+	-f			Run this proces in the foreground
+	-h			Print this page
+	-p pidfile		Use this pid file
+				(default /var/amavis/amavisd-milter.pid)
+	-s socket		Milter communication socket
+				(default /var/amavis/amavisd-milter.sock)
+	-S socket		Amavisd communication socket
+				(default /var/amavis/amavisd.sock)
+	-t timeout		Milter connection timeout in seconds
+				(default 600 = 10 minutes)
+	-T timeout		Amavisd connection timeout in seconds
+				(default 600 = 10 minutes)
+	-v			Report the version and exit
+	-w directory		Set the working directory
+				(default /var/amavis)
 
 
 Sockets:
 
-    Amavisd-milter uses 2 sockets for communications.  One is for
-    communication between sendmail and amavisd-milter process
-    (/var/amavis/amavisd-milter.sock). The protocol spoken over this
-    socket is MILTER.
+    Amavisd-milter uses two sockets for communications.  One is for
+    communication between sendmail and amavisd-milter (default socket is
+    /var/amavis/amavisd-milter.sock).  The protocol spoken over this
+    socket is MILTER (Mail FILTER).  It must agree with the INPUT_MAIL_FILTER
+    entry in sendmail.mc.
 
     The other is for communication between amavisd-milter and amavisd
-    daemon (/var/amavis/amavisd.sock). The protocol spoken over this
-    socket is _NOT_ MILTER, but a private amavisd protocol AM.PDP.
+    (default socket is /var/amavis/amavisd.sock).  The protocol spoken over
+    this socket is AM.PDP (AMavis Policy Delegation Protocol).  It must
+    agree with the $unix_socketname entry in amavisd.conf.
 
     The both sockets timeout must be sufficient for whole check of the
-    message in amavisd. It's a good idea to adjust both to the same value.
+    message in amavisd.  It's a good idea to adjust both to the same value.
 
 
 Amavisd-new:
@@ -81,38 +82,38 @@ Amavisd-new:
 
 	$protocol = "AM.PDP";			   # Use AM.PDP protocol
 	$unix_socketname = "$MYHOME/amavisd.sock"; # Listen on Unix socket
-	# $inet_socket_port = 10024;		   # Don't listen on TCP port
+	### $inet_socket_port = 10024;		   # Don't listen on TCP port
 
-    Now restart amavisd daemon.
-
+    Now (re)start amavisd daemon.
 
 Sendmail:
 
     In the sendmail.mc file add the following entries (the last one is
     mandatory):
 
-	define(`confMILTER_MACROS_ENVFROM', confMILTER_MACROS_ENVFROM``, {i}'')
+	define(`confMILTER_MACROS_ENVFROM',
+	    confMILTER_MACROS_ENVFROM``, {i}'')
 	INPUT_MAIL_FILTER(`amavisd-milter',
-	    `S=local:/var/amavis/amavisd-milter.sock, F=T, T=S:10m;R:10m;E:10m')
+	    `S=local:/var/amavis/amavisd-milter.sock,
+	    `F=T, T=S:10m;R:10m;E:10m')
 
-    Now rebuild your sendmail.cf file and install it (usually to
-    /etc/mail/sendmail.cf).
+    Now rebuild your sendmail.cf file, install it (usually to
+    /etc/mail/sendmail.cf) and (re)start sendmail daemon.
 
-    Start amavisd and then sendmail. Check syslog for messages (probably
-    /var/log/mail or /var/log/mail/info).  You should see something like:
+Amavisd-milter:
 
-	May 12 21:49:04 myhost amavis[66997]: starting.
-	    /usr/local/sbin/amavisd at myhost.my.domain amavisd-new-2.2.1
-	May 12 21:53:01 myhost sm-mta[67062]: starting daemon (8.13.1):
-	    SMTP+queueing@00:30:00
-	May 12 21:53:01 myhost sm-msp-queue[67066]: starting daemon (8.13.1):
-	    queueing@00:30:00
+    This example assume that amavisd-new is running as non-priviledged
+    user amavis.  It must agree with the entry $daemon_user in amavisd.conf.
 
-    Then start amavisd-milter. Check syslog for messages (probably
-    /var/log/mail or /var/log/mail/info).  You should see something like:
+    First create working directory:
 
-	May 12 21:55:21 myhost amavisd-milter[67089]: starting amavisd-milter
-	    1.0.0 on socket /var/amavis/amavisd-milter.sock
+	mkdir /var/amavis/tmp
+	chmod 750 /var/amavis/tmp
+	chown amavis /var/amavis/tmp
+
+    Then start amavisd-milter as non-priviledged users amavis:
+
+	su - amavis -c "amavisd-milter -w /var/amavis/tmp"
 
 
 References:
@@ -127,4 +128,4 @@ References:
     http://www.ijs.si/software/amavisd/README.milter.txt
 
 
-$Id: README,v 1.5 2005/08/28 23:56:38 reho Exp $
+$Id: README,v 1.6 2005/12/02 23:10:45 reho Exp $

@@ -1,0 +1,196 @@
+.\"
+.\" $Id$
+.\"
+.Dd December 05, 2005
+.Dt amavisd-milter 8
+.Os
+.Sh NAME
+.Nm amavisd-milter
+.Nd sendmail milter for amavisd-new
+.Sh SYNOPSIS
+.Nm
+.Op Fl fhv
+.Op Fl d Ar debug-level
+.Op Fl p Ar pidfile
+.Op Fl s Ar socket
+.Op Fl t Ar timeout
+.Op Fl S Ar socket
+.Op Fl T Ar timeout
+.Op Fl w Ar directory
+.Sh DESCRIPTION
+.LP
+The
+.Nm
+is a sendmail milter (mail filter) for
+.Sy amavisd-new
+2.2.0 and above and
+.Sy sendmail
+8.13.0 and above.
+.Pp
+Instead of older
+.Sy amavis-milter
+helper program, full
+.Sy amavisd-new
+functionality is available, including adding spam and virus information
+header fields, modifying Subject, adding address extensions and removing
+certain recipients from delivery while delivering the same message to
+the rest.
+.Pp
+You can visit amavisd-milter SourceForge project:
+.Bd -literal -offset indent
+http://sourceforge.net/projects/amavisd-milter/
+.Ed
+.Pp
+The options are as follows:
+.Bl -tag -width indent
+.It Fl d Ar debug-level
+Set the debug level to 
+.Em debug-level Ns
+\&.
+Debugging traces become more verbose as the debug level increases.
+Maximum is 9.
+.It Fl f              
+Run
+.Nm
+in the foreground (i.e. do not daemonize).
+Print debug messages to the terminal.
+.It Fl h
+Print help page and exit.
+.It Fl p Ar pidfile
+Use this pid file (default /var/amavis/amavisd-milter.pid).
+.It Fl s Ar socket
+Communication socket between
+.Sy sendmail
+and
+.Nm
+(default /var/amavis/amavisd-milter.sock).
+The protocol spoken over this socket is
+.Sy MILTER
+(Mail FILTER).
+It must agree with the INPUT_MAIL_FILTER entry in sendmail.mc
+.It Fl S Ar socket
+Communication socket between
+.Nm
+and
+.Sy amavisd-new
+(default /var/amavis/amavisd.sock).
+The protocol spoken over this socket is
+.Sy AM.PDP
+(AMavis Policy Delegation Protocol).
+It must agree with the $unix_socketname entry in amavisd.conf.
+.It Fl t Ar timeout
+.Sy sendmail
+connection timeout in seconds (default 600 = 10 minutes).
+It must agree with the INPUT_MAIL_FILTER entry in sendmail.mc.
+.It Fl T Ar timeout
+.Sy amavisd-new
+connection timeout in seconds (default 600 = 10 minutes).
+.It Fl v                      
+Report the version number and exit.
+.It Fl w Ar directory
+Set working directory (default /var/amavis).
+.El
+.Pp
+The both sockets timeout must be sufficient for whole check of the message in
+.Sy amavisd-new Ns
+\&.
+It is a good idea to adjust both to the same value.
+.Pp
+.Sh FILES
+.Bl -tag -width indent
+.It Em /var/amavis/amavisd-milter.pid
+The default process-id file.
+.It Em /var/amavis/amavisd-milter.sock
+The default
+.Sy sendmail
+communication socket.
+.It Em /var/amavis/amavisd.sock
+Th default
+.Sy amavisd-new
+communication socket.
+.It Em /var/amavis
+The default working directory.
+.El
+.Sh EXAMPLES
+.Ss Configure amavisd-new
+In amavisd.conf file change protocol and socket settings to:
+.Bd -literal -offset indent
+$protocol = "AM.PDP";                      # Use AM.PDP protocol
+$unix_socketname = "$MYHOME/amavisd.sock"; # Listen on Unix socket
+### $inet_socket_port = 10024;             # Don't listen on TCP port
+.Ed
+.Pp
+Then (re)start amavisd daemon.
+.Ss Configure sendmail
+In the sendmail.mc file add the following entries:
+.Bd -literal -offset indent
+define(`confMILTER_MACROS_ENVFROM',
+	confMILTER_MACROS_ENVFROM``,
+	{i}'')
+INPUT_MAIL_FILTER(`amavisd-milter',
+	`S=local:/var/amavis/amavisd-milter.sock,
+	F=T, T=S:10m;R:10m;E:10m')
+.Ed
+.Pp
+Then rebuild your sendmail.cf file, install it (usually to
+/etc/mail/sendmail.cf) and (re)start sendmail daemon.
+.Ss Run Nm
+This example assume that
+.Sy amavisd-new
+is running as user
+.Sy amavis Ns
+\&.
+It must agree with the entry $daemon_user in amavisd.conf.
+.Pp
+First create working directory:
+.Bd -literal -offset indent
+mkdir /var/amavis/tmp
+chmod 750 /var/amavis/tmp
+chown amavis /var/amavis/tmp
+.Ed
+.Pp
+Then start
+.Nm
+as non-priviledged user amavis:
+.Pp
+.Dl su - amavis -c \&" Ns Nm Fl w Ar /var/amavis/tmp Ns \&"
+.Ss Troubleshooting
+For troubleshooting run
+.Nm
+on the foregound and set debug level to appropriate level:
+.Pp
+.Dl su - amavis -c \&" Ns Nm Fl w Ar /var/amavis/tmp Ns Fl f Fl d Ar debug-level\&"
+.Pp
+Debug levels are:
+.Bl -tag -width "XXXX"
+.It 1
+Not errors but unexpected states (connection abort etc).
+.It 2
+Main states in message processing.
+.It 3
+All
+.Nm
+debug messages.
+.It 4-9
+Milter communication debugging (smfi_setdbg 1-6).
+.El
+.Sh SEE ALSO
+.Bd -literal
+http://amavisd-milter.sourceforge.net
+http://www.ijs.si/software/amavisd/
+http://www.sendmail.org
+.Ed
+.Sh AUTHORS
+Petr Rehor <prehor@gmail.com>
+.Sh BUGS
+A community mailing lists are available at:
+.Bd -literal -offset indent
+http://sourceforge.net/mail/?group_id=138169
+.Ed
+.Pp
+Enhancements requests and problem reports are welcome.
+.Pp
+If you run into problems first check the users mailing list archive
+before asking questions on the list.
+It's highly likely somebody has already come across the same problem
+and it's been solved.

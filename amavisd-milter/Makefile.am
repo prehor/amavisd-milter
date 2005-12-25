@@ -1,4 +1,4 @@
-# $Id$
+# $Id: Makefile.am,v 1.1 2005/05/10 21:37:58 reho Exp $
 
 # Distribution files
 EXTRA_DIST= \
@@ -8,6 +8,10 @@ EXTRA_DIST= \
 # Header files
 noinst_HEADERS=	\
 	amavisd-milter.h
+
+# Manual pages
+man_MANS= \
+	amavisd-milter.8
 
 # Binaries
 sbin_PROGRAMS=	\
