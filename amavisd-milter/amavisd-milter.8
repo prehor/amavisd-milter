@@ -1,5 +1,5 @@
 .\"
-.\" $Id$
+.\" $Id: amavisd-milter.8,v 1.1 2005/12/25 22:15:40 reho Exp $
 .\"
 .Dd December 05, 2005
 .Dt amavisd-milter 8
@@ -157,11 +157,11 @@ as non-priviledged user amavis:
 .Ss Troubleshooting
 For troubleshooting run
 .Nm
-on the foregound and set debug level to appropriate level:
+on the foreground and set debug level to appropriate level:
 .Pp
 .Dl su - amavis -c \&" Ns Nm Fl w Ar /var/amavis/tmp Ns Fl f Fl d Ar debug-level\&"
 .Pp
-Debug levels are:
+where debug levels are:
 .Bl -tag -width "XXXX"
 .It 1
 Not errors but unexpected states (connection abort etc).
