@@ -41,7 +41,7 @@ Usage:
     The following options can be passed to amavisd-milter to change the
     default behaviour:
 
-	-d level		Print debug information
+	-d level		Set debug level
 	-f			Run this proces in the foreground
 	-h			Print this page
 	-p pidfile		Use this pid file
@@ -128,4 +128,4 @@ References:
     http://www.ijs.si/software/amavisd/README.milter.txt
 
 
-$Id: README,v 1.6 2005/12/02 23:10:45 reho Exp $
+$Id: README,v 1.7 2005/12/25 22:15:40 reho Exp $
