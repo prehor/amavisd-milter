@@ -5,6 +5,10 @@ This is the Changelog for amavisd-milter.
 	threads start to eat up a cpu time.
 	Submitted by: Grzegorz Piszczek <grzegorz@piszczek.name>
 
+	Fixed bug in mlfi_close(): amavisd-milter dies randomly due to
+	segmentation fault.
+	Submitted by: Grzegorz Piszczek <grzegorz@piszczek.name>
+
 20051225:
 	Added amavisd-milter(8) manual page. README and website are
 	synchronized with this manual page.
@@ -73,4 +77,4 @@ This is the Changelog for amavisd-milter.
 	First public release. Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.14 2005/12/25 22:15:40 reho Exp $
+$Id: CHANGES,v 1.15 2006/01/09 21:46:34 reho Exp $

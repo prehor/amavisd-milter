@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.2 2005/06/05 20:40:29 reho Exp $
+ * $Id: mlfi.c,v 1.3 2005/12/04 23:59:52 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -184,6 +184,16 @@ struct smfiDesc smfilter =
 
 
 /*
+** MLFI_CLEANUP - Cleanup connection context
+*/
+#define MLFI_CLEANUP(mlfi) \
+{ \
+	mlfi_cleanup(mlfi); \
+	mlfi = NULL; \
+}
+
+
+/*
 ** MLFI_CLEANUP_MESSAGE - Cleanup message context
 **
 ** mlfi_cleanup_message() close message file if open, unlink work directory
@@ -314,7 +324,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     if (smfi_setpriv(ctx, mlfi) != MI_SUCCESS) {
 	LOGQIDERR(LOG_ERR, "could not set milter context");
 	SMFI_SETREPLY_TEMPFAIL();
-	mlfi_cleanup(mlfi);
+	MLFI_CLEANUP(mlfi);
 	return SMFIS_TEMPFAIL;
     }
 
@@ -825,7 +835,7 @@ mlfi_close(SMFICTX *ctx)
     }
 
     /* Release private data */
-    mlfi_cleanup(mlfi);
+    MLFI_CLEANUP(mlfi);
     if (smfi_setpriv(ctx, NULL) != MI_SUCCESS) {
 	/* NOTE: smfi_setpriv return MI_FAILURE when ctx is NULL */
 	/* LOGQIDERR(LOG_ERR, "could not release milter context"); */
