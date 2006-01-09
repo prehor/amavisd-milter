@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.1 2005/05/10 21:37:58 reho Exp $
+ * $Id: amavisd.c,v 1.2 2005/12/04 23:59:52 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -132,7 +132,7 @@ amavisd_response(int sd, char *line, size_t maxlen)
     char       *p = line;
 
     /* Read response line */
-    while (read_sock(sd, p, 1, amavisd_timeout) != -1) {
+    while (read_sock(sd, p, 1, amavisd_timeout) > 0) {
 	if (p >= line + maxlen - 2) {
 	    *(p + 1) = '\0';
 	    errno = EOVERFLOW;
