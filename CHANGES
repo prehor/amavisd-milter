@@ -1,8 +1,8 @@
-This is the Changelog for amavisd-milter.
+This is the CHANGELOG for amavisd-milter.
 
 20060109:
 	When stopping amavisd-new one (maybe not always just one) of milter
-	threads start to eat up a cpu time.
+	threads amavisd-milter start to eat up a cpu time.
 	Submitted by: Grzegorz Piszczek <grzegorz@piszczek.name>
 
 	Fixed bug in mlfi_close(): amavisd-milter dies randomly due to
@@ -10,7 +10,7 @@ This is the Changelog for amavisd-milter.
 	Submitted by: Grzegorz Piszczek <grzegorz@piszczek.name>
 
 20051225:
-	Added amavisd-milter(8) manual page. README and website are
+	Added amavisd-milter(8) manual page.  README and website are
 	synchronized with this manual page.
 
 	Changed default working directory to /var/amavis (default value
@@ -32,7 +32,7 @@ This is the Changelog for amavisd-milter.
 20050701:
 	amavisd-milter-1.0.3
 
-	Bugfix release. Properly set amavisd connection timeout.
+	Bugfix release.  Properly set amavisd connection timeout.
 
 20050701:
 	Set amavisd_timeout instead of mlfi_timeout for -T option.
@@ -44,13 +44,13 @@ This is the Changelog for amavisd-milter.
 20050605:
 	amavisd-milter-1.0.2
 
-	Bugix release. Fix memory leak in mlfi_cleanup.
+	Bugix release.  Fix memory leak in mlfi_cleanup.
 
 20050529:
 	amavisd-milter-1.0.1
 
-	Portability release. Now can be compiled on Debian 3.0, Fedora FC2 and
-	FC3, OpenBSD 3.4 and Solaris 9. Tested on Sourceforge compile farm.
+	Portability release.  Now can be compiled on Debian 3.0, Fedora FC2 and
+	FC3, OpenBSD 3.4 and Solaris 9.  Tested on Sourceforge compile farm.
 	Please report success or problems on the users mailing list:
 
 	http://lists.sourceforge.net/lists/listinfo/amavisd-milter-users
@@ -74,7 +74,7 @@ This is the Changelog for amavisd-milter.
 20050511:
 	amavisd-milter-1.0.0
 
-	First public release. Fully tested on FreeBSD 5.3.
+	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.15 2006/01/09 21:46:34 reho Exp $
+$Id: CHANGES,v 1.16 2006/01/09 22:11:24 reho Exp $
