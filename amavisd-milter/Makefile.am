@@ -1,7 +1,8 @@
-# $Id: Makefile.am,v 1.1 2005/05/10 21:37:58 reho Exp $
+# $Id: Makefile.am,v 1.2 2005/12/25 22:15:40 reho Exp $
 
 # Distribution files
 EXTRA_DIST= \
+	amavisd-milter.8 \
 	Makefile.am \
 	Makefile.in
 
