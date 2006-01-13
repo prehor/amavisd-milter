@@ -1,5 +1,17 @@
 This is the CHANGELOG for amavisd-milter.
 
+20060113:
+	amavisd-milter-1.0.4
+
+	Bugfix release.  Added manual page amavisd-milter(8).
+
+	INCOMPATIBILITY with 1.0.3 and previous version:
+
+	Default working directory was changed from /var/amavis/tmp
+	to /var/amavis to accordance with amavisd-new $helpers_home
+	default value.  To go back to the previous behaviour run
+	amavisd-milter with option -w /var/amavis/tmp
+
 20060109:
 	When stopping amavisd-new one (maybe not always just one) of milter
 	threads amavisd-milter start to eat up a cpu time.
@@ -77,4 +89,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.16 2006/01/09 22:11:24 reho Exp $
+$Id: CHANGES,v 1.17 2006/01/13 18:05:44 reho Exp $
