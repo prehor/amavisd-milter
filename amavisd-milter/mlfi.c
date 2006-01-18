@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.3 2005/12/04 23:59:52 reho Exp $
+ * $Id: mlfi.c,v 1.4 2006/01/09 22:11:24 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -775,7 +775,7 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Unknown response */
         } else {
-	    LOGQIDERR(LOG_WARNING, "ignore unknown response %s=%s",
+	    LOGQIDERR(LOG_WARNING, "ignore unknown amavisd response %s=%s",
 		name, value);
 	}
     }
