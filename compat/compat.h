@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id$
+ * $Id: compat.h,v 1.3 2005/05/20 21:21:41 reho Exp $
  */
 
 #ifndef _AMAVISD_COMPAT_H
@@ -37,6 +37,7 @@
 
 #include <libmilter/mfapi.h>
 #include <libmilter/mfdef.h>
+#include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

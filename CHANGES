@@ -1,5 +1,17 @@
 This is the CHANGELOG for amavisd-milter.
 
+20060123:
+	Limit maximum concurrent connections to amavisd:
+
+	    amavisd-milter -m 4 -M 600
+
+	means that there is limit to maximum 4 concurrent connections to
+	amavisd and wait maximum 10 minutes (10*60 sec) for connection to
+	amavisd.  When connection isn't available, amavisd-milter sleep for
+	1 sec.  Every minute of waiting is sendmail triggered via
+	smfi_progress.  When time limit run out then amvisd-milter return
+	temporary fail.
+
 20060113:
 	amavisd-milter-1.0.4
 
@@ -89,4 +101,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.17 2006/01/13 18:05:44 reho Exp $
+$Id: CHANGES,v 1.18 2006/01/13 18:13:36 reho Exp $

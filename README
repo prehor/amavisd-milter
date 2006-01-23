@@ -44,6 +44,10 @@ Usage:
 	-d level		Set debug level
 	-f			Run this proces in the foreground
 	-h			Print this page
+	-m max-conns		Maximum concurrent amavisd connections
+				(default 0 - unlimited number of connections)
+	-M max-wait		Maximum wait for connection in seconds
+				(default 300 = 5 minutes)
 	-p pidfile		Use this pid file
 				(default /var/amavis/amavisd-milter.pid)
 	-s socket		Milter communication socket
@@ -86,6 +90,7 @@ Amavisd-new:
 
     Now (re)start amavisd daemon.
 
+
 Sendmail:
 
     In the sendmail.mc file add the following entries (the last one is
@@ -99,6 +104,7 @@ Sendmail:
 
     Now rebuild your sendmail.cf file, install it (usually to
     /etc/mail/sendmail.cf) and (re)start sendmail daemon.
+
 
 Amavisd-milter:
 
@@ -116,6 +122,18 @@ Amavisd-milter:
 	su - amavis -c "amavisd-milter -w /var/amavis/tmp"
 
 
+Limit maximum concurrent connections to amavisd:
+
+        amavisd-milter -m 4 -M 600
+
+    means that there is limit to maximum 4 concurrent connections to
+    amavisd and wait maximum 10 minutes (10*60 sec) for connection to
+    amavisd.  When connection isn't available, amavisd-milter sleep for
+    1 sec.  Every minute of waiting is sendmail triggered via
+    smfi_progress.  When time limit run out then amvisd-milter return
+    temporary fail.
+
+
 References:
 
 [1] The amavisd-new home page
@@ -128,4 +146,4 @@ References:
     http://www.ijs.si/software/amavisd/README.milter.txt
 
 
-$Id: README,v 1.7 2005/12/25 22:15:40 reho Exp $
+$Id: README,v 1.8 2005/12/25 22:36:53 reho Exp $

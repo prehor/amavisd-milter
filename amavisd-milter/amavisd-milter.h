@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.3 2005/07/01 19:41:45 reho Exp $
+ * $Id: amavisd-milter.h,v 1.4 2005/12/04 23:59:52 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
@@ -56,6 +56,7 @@ struct mlfiCtx {
     char	mlfi_wrkdir[MAXPATHLEN];/* work directory */
     char	mlfi_fname[MAXPATHLEN]; /* mail file name */
     FILE       *mlfi_fp;		/* mail file handler */
+    int		mlfi_max_sem_locked;	/* connections semaphore locked */
 };
 
 /* Get private data from libmilter */
@@ -80,6 +81,9 @@ extern sfsistat	mlfi_abort(SMFICTX *);
 extern int	daemonize;		/* run as daemon */
 extern int	daemonized;		/* is daemon */
 extern int	debug_level;		/* max debug level */
+extern int	max_conns;		/* max amavisd connections */
+extern int	max_wait;		/* max wait for connection */
+extern sem_t	max_sem;		/* amavisd connections semaphore */
 extern char    *pid_file;		/* pid file name */
 extern char    *mlfi_socket;		/* sendmail milter socket */
 extern long	mlfi_timeout;		/* connection timeout */

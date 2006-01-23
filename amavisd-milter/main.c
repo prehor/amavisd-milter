@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.6 2005/07/01 20:02:54 reho Exp $
+ * $Id: main.c,v 1.7 2005/12/25 22:15:40 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -77,6 +77,9 @@
 int	daemonize = 1;
 int	daemonized = 0;
 int	debug_level = LOG_WARNING;
+int	max_conns = 0;
+int	max_wait = 5 * 60;
+sem_t	max_sem = NULL;
 char   *pid_file = "/var/amavis/" PACKAGE ".pid";
 char   *mlfi_socket = "/var/amavis/" PACKAGE ".sock";
 long	mlfi_timeout = 600;
@@ -123,6 +126,8 @@ usage(const char *progname)
 	-d debug-level		Set debug level\n\
 	-f			Run in the foreground\n\
 	-h			Print this page\n\
+	-m max-conns		Maximum amavisd connections \n\
+	-M max-wait		Maximum wait for connection in seconds\n\
 	-p pidfile		Use this pid file\n\
 	-s socket		Milter communication socket\n\
 	-S socket		Amavisd communication socket\n\
@@ -149,7 +154,7 @@ versioninfo(const char *progname)
 int
 main(int argc, char *argv[])
 {
-    static	const char *args = "d:fhp:s:S:t:T:vw:";
+    static	const char *args = "d:fhm:M:p:s:S:t:T:vw:";
 
     int		c, rstat;
     char       *p, *progname;
@@ -191,6 +196,28 @@ main(int argc, char *argv[])
 	case 'h':		/* help */
 	    usage(progname);
 	    exit(EX_OK);
+	    break;
+	case 'm':		/* maximum amavisd connections */
+	    max_conns = (int) strtol(optarg, &p, 10);
+	    if (p != NULL && *p != '\0') {
+		USAGEMSG("maximum amavisd connections isn't valid number: %s",
+		    optarg);
+	    }
+	    if (max_conns < 0) {
+		USAGEMSG("negative maximum amavisd connections: %d",
+		    max_conns);
+	    }
+	    break;
+	case 'M':		/* maximum wait for connection */
+	    max_wait = (int) strtol(optarg, &p, 10);
+	    if (p != NULL && *p != '\0') {
+		USAGEMSG("maximum wait for connection isn't valid number: %s",
+		    optarg);
+	    }
+	    if (max_wait < 0) {
+		USAGEMSG("negative maximum wait for connection: %d",
+		    max_wait);
+	    }
 	    break;
 	case 'p':		/* pid file name */
 	    CHECK_OPTARG(optarg);
@@ -248,6 +275,13 @@ main(int argc, char *argv[])
 	    USAGEMSG("illegal option -- %c", (char)c);
 	    break;
 	}
+    }
+
+    /* Create amavisd connections semaphore */
+    if (max_conns > 0 && sem_init(&max_sem, 0, max_conns) == -1) {
+	LOGERRMSG("%s: could not initialize amavisd connections semaphore: %s",
+	    progname, strerror(errno));
+	exit(EX_SOFTWARE);
     }
 
     /* Check permissions on work directory */
@@ -367,6 +401,12 @@ main(int argc, char *argv[])
 	    LOGWARNMSG("%s: could not unlink pid file %s: %s", progname,
 		pid_file, strerror(errno));
 	}
+    }
+
+    /* Destroy amavisd connections semaphore */
+    if (max_sem != NULL && sem_destroy(&max_sem) == -1) {
+	LOGWARNMSG("%s: could not destroy amavisd connections semaphore: %s",
+	    progname, strerror(errno));
     }
 
     return rstat;

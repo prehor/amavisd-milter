@@ -1,4 +1,4 @@
-dnl $Id$
+dnl $Id: acinclude.m4,v 1.2 2005/05/11 19:32:19 reho Exp $
 
 dnl Checks for C compiler
 AC_DEFUN([AC_CHECK_C_COMPILER],
@@ -34,4 +34,22 @@ AC_DEFUN([AC_CHECK_C_COMPILER],
   fi
 
   AC_LANG_C
+])
+
+dnl Checks for working POSIX semaphores
+AC_DEFUN([AC_CHECK_POSIX_SEMAPHORES],
+[
+  AC_MSG_CHECKING(if POSIX semaphores are working)
+  AC_TRY_RUN([
+  #include <semaphore.h>
+  int main() {
+    sem_t sem;
+    int rc;
+    rc = sem_init(&sem, 0, 0);
+    return rc;
+  }],
+    AC_MSG_RESULT(yes),
+    AC_MSG_ERROR(no),
+    AC_MSG_ERROR(no)
+  )
 ])

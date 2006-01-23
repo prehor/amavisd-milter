@@ -1,7 +1,7 @@
 .\"
-.\" $Id: amavisd-milter.8,v 1.4 2006/01/13 17:15:33 reho Exp $
+.\" $Id: amavisd-milter.8,v 1.5 2006/01/13 17:32:38 reho Exp $
 .\"
-.Dd December 05, 2005
+.Dd Januar 23, 2006
 .Dt amavisd-milter 8
 .Os
 .Sh NAME
@@ -11,6 +11,8 @@
 .Nm
 .Op Fl fhv
 .Op Fl d Ar debug-level
+.Op Fl m Ar max-conns
+.Op Fl M Ar max-wait
 .Op Fl p Ar pidfile
 .Op Fl s Ar socket
 .Op Fl t Ar timeout
@@ -18,7 +20,6 @@
 .Op Fl T Ar timeout
 .Op Fl w Ar directory
 .Sh DESCRIPTION
-.LP
 The
 .Nm
 is a sendmail milter (mail filter) for
@@ -56,6 +57,25 @@ in the foreground (i.e. do not daemonize).
 Print debug messages to the terminal.
 .It Fl h
 Print help page and exit.
+.It Fl m Ar max-conns
+Maximum concurrent
+.Sy amavisd
+connections (default 0 - unlimited number of connections).
+It must agree with the $max_servers entry in amavisd.conf.
+.It Fl M Ar max-wait
+Maximum wait for connection to
+.Sy amavisd
+in seconds (default 300 = 5 minutes).
+It must be less then sending MTA timeout for a response to the final "."
+that terminates a message on sending MTA.
+.Sy sendmail
+has default value 1 hour,
+.Sy postfix
+10 minutes and
+.Sy qmail
+20 minutes.
+We suggest to use less than 10 minutes. 
+
 .It Fl p Ar pidfile
 Use this pid file (default /var/amavis/amavisd-milter.pid).
 .It Fl s Ar socket
@@ -125,8 +145,7 @@ Then (re)start amavisd daemon.
 In the sendmail.mc file add the following entries:
 .Bd -literal -offset indent
 define(`confMILTER_MACROS_ENVFROM',
-	confMILTER_MACROS_ENVFROM``,
-	{i}'')
+	confMILTER_MACROS_ENVFROM``, {i}'')
 INPUT_MAIL_FILTER(`amavisd-milter',
 	`S=local:/var/amavis/amavisd-milter.sock,
 	F=T, T=S:10m;R:10m;E:10m')
@@ -154,6 +173,13 @@ Then start
 as non-priviledged user amavis:
 .Pp
 .Dl su - amavis -c \&" Ns Nm Fl w Ar /var/amavis/tmp Ns \&"
+.Ss Limit maximum concurrent connections to amavisd
+To limit concurrent connections to 4 and fail after 10 minutes
+(10*60 secs) of waiting run
+.Nm
+with this options:
+.Pp
+.Dl Nm Fl m Ar 4 Fl M Ar 600
 .Ss Troubleshooting
 For troubleshooting run
 .Nm

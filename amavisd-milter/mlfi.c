@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.4 2006/01/09 22:11:24 reho Exp $
+ * $Id: mlfi.c,v 1.5 2006/01/18 20:56:32 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -211,6 +211,13 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
     }
 
     LOGQIDMSG(LOG_INFO, "CLEANUP");
+
+    /* Unlock amavisd connections semaphore */
+    if (mlfi->mlfi_max_sem_locked != 0 && sem_post(&max_sem) == -1) {
+	LOGQIDERR(LOG_ERR, "could not unlock amavisd connections "
+	    "semaphore: %s", strerror(errno));
+    }
+    mlfi->mlfi_max_sem_locked = 0;
 
     /* Close the message file */
     if (mlfi->mlfi_fp != NULL) {
@@ -587,6 +594,7 @@ mlfi_eom(SMFICTX *ctx)
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
     struct	mlfiAddress *rcpt;
     struct	sockaddr_un amavisd_sock;
+    int		wait_counter;
 
     /* Check milter private data */
     MLFI_CHECK_CTX();
@@ -608,6 +616,49 @@ mlfi_eom(SMFICTX *ctx)
     }
     mlfi->mlfi_fp = NULL;
     LOGQIDMSG(LOG_DEBUG, "close message file %s", mlfi->mlfi_fname);
+
+    /* Wait for amavisd connection */
+    if (max_sem != NULL) {
+	wait_counter = 0;
+	while (sem_trywait(&max_sem) == -1) {
+	    if (errno != EAGAIN) {
+		LOGQIDERR(LOG_ERR, "could not lock amavisd connections "
+		    "semaphore: %s", strerror(errno));
+		SMFI_SETREPLY_TEMPFAIL();
+		return SMFIS_TEMPFAIL;
+	    }
+	    if (!(wait_counter++ < max_wait)) {
+		LOGQIDERR(LOG_WARNING, "amavisd connection not available "
+		    "for %d sec, giving up", wait_counter);
+		SMFI_SETREPLY_TEMPFAIL();
+		return SMFIS_TEMPFAIL;
+	    }
+	    if (!(wait_counter % 60)) {
+		LOGQIDMSG(LOG_DEBUG, "amavisd connection not available "
+		    "for %d sec, triggering sendmail", wait_counter);
+		if (smfi_progress(ctx) != MI_SUCCESS) {
+		    LOGQIDERR(LOG_ERR, "could not notify MTA that an "
+			"operation is still in progress");
+		    SMFI_SETREPLY_TEMPFAIL();
+		    return SMFIS_TEMPFAIL;
+		}
+	    } else {
+		LOGQIDMSG(LOG_DEBUG, "amavisd connection not available "
+		    "for %d sec, sleeping", wait_counter);
+	    }
+	    sleep(1);
+	}
+	sem_getvalue(&max_sem, &i);
+	mlfi->mlfi_max_sem_locked = 1;
+	LOGQIDMSG(LOG_DEBUG, "got amavisd connection %d for %d sec",
+	    max_conns - i, wait_counter);
+	if (smfi_progress(ctx) != MI_SUCCESS) {
+	    LOGQIDERR(LOG_ERR, "could not notify MTA that an operation is "
+		"still in progress");
+	    SMFI_SETREPLY_TEMPFAIL();
+	    return SMFIS_TEMPFAIL;
+	}
+    }
 
     /* Connect to amavisd */
     if ((sd = amavisd_connect(&amavisd_sock)) == -1) {
