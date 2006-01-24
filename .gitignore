@@ -26,10 +26,11 @@ _$*
 *.ln
 core
 # CVS default ignores end
-# $Id$
+# $Id: .cvsignore,v 1.1 2005/05/29 19:55:04 reho Exp $
 
 Makefile
 Makefile.in
+README
 aclocal.m4
 amavisd-milter-*.tar.gz
 autoconf
