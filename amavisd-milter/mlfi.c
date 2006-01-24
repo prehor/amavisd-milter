@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.5 2006/01/18 20:56:32 reho Exp $
+ * $Id: mlfi.c,v 1.6 2006/01/23 15:15:49 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -33,6 +33,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <fts.h>
 #include <netinet/in.h>
 #include <sys/stat.h>
 
@@ -202,6 +203,9 @@ struct smfiDesc smfilter =
 static void
 mlfi_cleanup_message(struct mlfiCtx *mlfi)
 {
+    FTS	       *fts;
+    FTSENT     *ftsent;
+    char * const wrkdir[] = { mlfi->mlfi_wrkdir, 0 };
     struct	mlfiAddress *rcpt;
 
     /* Check milter private data */
@@ -230,24 +234,76 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 	mlfi->mlfi_fp = NULL;
     }
 
-    /* Remove the message file */
-    if (mlfi->mlfi_fname[0] != '\0') {
-	if (unlink(mlfi->mlfi_fname) != 0 && errno != ENOENT) {
-	    LOGQIDERR(LOG_WARNING, "could not unlink message file %s: %s",
-		mlfi->mlfi_fname, strerror(errno));
-	} else {
-	    LOGQIDMSG(LOG_DEBUG, "unlink message file %s", mlfi->mlfi_fname);
-	}
-	mlfi->mlfi_fname[0] = '\0';
-    }
-
-    /* Unlink work directory */
+    /* Remove work directory */
     if (mlfi->mlfi_wrkdir[0] != '\0') {
-	if (rmdir(mlfi->mlfi_wrkdir) == -1 && errno != ENOENT) {
-	    LOGQIDERR(LOG_WARNING, "could not remove work dir %s: %s",
+	fts = fts_open(wrkdir, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
+	if (fts == NULL) {
+	    LOGQIDERR(LOG_ERR, "could not open file hierarchy %s: %s",
 		mlfi->mlfi_wrkdir, strerror(errno));
 	} else {
-	    LOGQIDMSG(LOG_DEBUG, "remove work directory %s", mlfi->mlfi_wrkdir);
+	    while ((ftsent = fts_read(fts)) != NULL) {
+		switch (ftsent->fts_info) {
+		case FTS_ERR:
+		    /*
+		     * This is an error return, and the fts_errno
+		     * field will be set to indicate what caused the
+		     * error.
+		     */
+		    LOGQIDERR(LOG_ERR, "could not traverse file hierarchy %s: "
+			"%s", ftsent->fts_path, strerror(ftsent->fts_errno));
+		    break;
+		case FTS_DNR:
+		    /*
+		     * Assume that since fts_read() couldn't read the
+		     * directory, it can't be removed.
+		     */
+		    if (ftsent->fts_errno != ENOENT) {
+			LOGQIDERR(LOG_ERR, "could not remove directory %s: %s",
+			     ftsent->fts_path, strerror(ftsent->fts_errno));
+		    }
+		    break;
+		case FTS_NS:
+		    /*
+		     * Assume that since fts_read() couldn't stat the
+		     * file, it can't be unlinked.
+		     */
+		    LOGQIDERR(LOG_ERR, "could not unlink file %s: %s",
+			ftsent->fts_path, strerror(ftsent->fts_errno));
+		    break;
+		case FTS_D:
+		    /*
+		     * Skip pre-order directory.
+		     */
+		    break;
+		case FTS_DP:
+		    /*
+		     * Remove post-order directory.
+		     */
+		    if (rmdir(ftsent->fts_accpath) != 0 && errno != ENOENT) {
+			LOGQIDERR(LOG_ERR, "could not remove directory %s: %s",
+			    ftsent->fts_path, strerror(ftsent->fts_errno));
+		    } else {
+			LOGQIDMSG(LOG_DEBUG, "remove directory %s",
+			    ftsent->fts_path);
+		    }
+		    break;
+		default:
+		    /*
+		     * A regular file or symbolic link.
+		     */
+		    if (unlink(ftsent->fts_accpath) != 0 && errno != ENOENT) {
+			LOGQIDERR(LOG_ERR, "could not unlink file %s: %s",
+			    ftsent->fts_path, strerror(ftsent->fts_errno));
+		    } else {
+			LOGQIDMSG(LOG_DEBUG, "unlink file %s",
+			    ftsent->fts_path);
+		    }
+		}
+	    }
+	    if (fts_close(fts) != 0) {
+		LOGQIDERR(LOG_ERR, "could not close file hirerachy %s: %s",
+		    mlfi->mlfi_wrkdir, strerror(errno));
+	    }
 	}
 	mlfi->mlfi_wrkdir[0] = '\0';
     }
@@ -682,7 +738,7 @@ mlfi_eom(SMFICTX *ctx)
 	rcpt = rcpt->q_next;
     }
     AMAVISD_REQUEST("tempdir", mlfi->mlfi_wrkdir);
-    AMAVISD_REQUEST("tempdir_removed_by", "server");
+    AMAVISD_REQUEST("tempdir_removed_by", "client");
     AMAVISD_REQUEST("mail_file", mlfi->mlfi_fname);
     AMAVISD_REQUEST("delivery_care_of", "client");
     AMAVISD_REQUEST("client_address", mlfi->mlfi_addr);

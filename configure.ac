@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.16 2006/01/18 20:45:15 reho Exp $
+dnl $Id: configure.ac,v 1.17 2006/01/23 15:15:48 reho Exp $
 
 AC_INIT(amavisd-milter, 1.0.4)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
@@ -19,9 +19,9 @@ AC_TYPE_MODE_T
 AC_TYPE_SIZE_T
 AC_HEADER_STDC
 AC_HEADER_STDBOOL
-AC_CHECK_HEADERS([arpa/inet.h ctype.h errno.h fcntl.h limits.h netinet/in.h \
-  stdarg.h stdio.h stdlib.h string.h sys/param.h sys/time.h sys/types.h \
-  sys/socket.h sys/stat.h sys/un.h syslog.h sysexits.h unistd.h],[],
+AC_CHECK_HEADERS([arpa/inet.h ctype.h errno.h fcntl.h fts.h limits.h \
+  netinet/in.h stdarg.h stdio.h stdlib.h string.h sys/param.h sys/time.h \
+  sys/types.h sys/socket.h sys/stat.h sys/un.h syslog.h sysexits.h unistd.h],[],
   AC_MSG_ERROR([unable to find required header files]))
 
 AC_CHECK_FUNCS([arc4random])
