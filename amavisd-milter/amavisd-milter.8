@@ -1,5 +1,5 @@
 .\"
-.\" $Id: amavisd-milter.8,v 1.6 2006/01/23 15:15:49 reho Exp $
+.\" $Id: amavisd-milter.8,v 1.7 2006/01/24 11:01:45 reho Exp $
 .\"
 .Dd Januar 23, 2006
 .Dt amavisd-milter 8
@@ -37,11 +37,16 @@ header fields, modifying Subject, adding address extensions and removing
 certain recipients from delivery while delivering the same message to
 the rest.
 .Pp
-You can visit amavisd-milter SourceForge project:
+For more informations you can visit amavisd-milter website:
 .Bd -literal -offset indent
-http://sourceforge.net/projects/amavisd-milter/
+http://amavisd-milter.sourceforge.net/
 .Ed
 .Pp
+and SourceForge project:
+.Bd -literal -offset indent
+http://sourceforge.net/projects/amavisd-milter
+.Ed
+.Ss Options
 The options are as follows:
 .Bl -tag -width indent
 .It Fl d Ar debug-level
@@ -131,7 +136,7 @@ communication socket.
 The default working directory.
 .El
 .Sh EXAMPLES
-.Ss Configure amavisd-new
+.Ss Configuring amavisd-new
 In amavisd.conf file change protocol and socket settings to:
 .Bd -literal -offset indent
 $protocol = "AM.PDP";                      # Use AM.PDP protocol
@@ -140,8 +145,8 @@ $unix_socketname = "$MYHOME/amavisd.sock"; # Listen on Unix socket
 .Ed
 .Pp
 Then (re)start amavisd daemon.
-.Ss Configure sendmail
-In the sendmail.mc file add the following entries:
+.Ss Configuring sendmail
+To the sendmail.mc file add the following entries:
 .Bd -literal -offset indent
 define(`confMILTER_MACROS_ENVFROM',
 	confMILTER_MACROS_ENVFROM``, {i}'')
@@ -152,7 +157,7 @@ INPUT_MAIL_FILTER(`amavisd-milter',
 .Pp
 Then rebuild your sendmail.cf file, install it (usually to
 /etc/mail/sendmail.cf) and (re)start sendmail daemon.
-.Ss Run Nm
+.Ss Running Nm
 This example assume that
 .Sy amavisd-new
 is running as user
@@ -172,13 +177,13 @@ Then start
 as non-priviledged user amavis:
 .Pp
 .Dl su - amavis -c \&" Ns Nm Fl w Ar /var/amavis/tmp Ns \&"
-.Ss Limit maximum concurrent connections to amavisd
+.Ss Limiting maximum concurrent connections to amavisd
 To limit concurrent connections to 4 and fail after 10 minutes
 (10*60 secs) of waiting run
 .Nm
 with this options:
 .Pp
-.Dl Nm Fl m Ar 4 Fl M Ar 600
+.Dl su - amavis -c \&" Ns Nm Fl w Ar /var/amavis/tmp Fl m Ar 4 Fl M Ar 600 Ns \&"
 .Ss Troubleshooting
 For troubleshooting run
 .Nm
