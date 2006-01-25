@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: compat.h,v 1.3 2005/05/20 21:21:41 reho Exp $
+ * $Id: compat.h,v 1.4 2006/01/23 15:15:49 reho Exp $
  */
 
 #ifndef _AMAVISD_COMPAT_H
@@ -35,13 +35,16 @@
 # include <config.h>
 #endif
 
+#include <errno.h>
 #include <libmilter/mfapi.h>
 #include <libmilter/mfdef.h>
+#include <limits.h>
 #include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/un.h>
 #include <syslog.h>
@@ -63,12 +66,44 @@ typedef unsigned char _Bool;
 # define __bool_true_false_are_defined 1
 #endif
 
-#ifndef HAVE_MKDTEMP
+#if HAVE_DIRENT_H
+# include <dirent.h>
+#else
+# define dirent direct
+# if HAVE_SYS_NDIR_H
+#  include <sys/ndir.h>
+# endif
+# if HAVE_SYS_DIR_H
+#  include <sys/dir.h>
+# endif
+# if HAVE_NDIR_H
+#  include <ndir.h>
+# endif
+#endif
+
+#if ! HAVE_D_NAMLEN
+# define DIRENT_MISSING_D_NAMLEN
+#endif
+
+#if ! defined(MIN)
+# define MIN(a, b)	((a) < (b) ? (a) : (b))
+#endif
+#if ! defined(MAX)
+# define MAX(a, b)	((a) < (b) ? (b) : (a))
+#endif
+
+#if HAVE_FTS_H
+# include <fts.h>
+#else
+# include "fts_compat.h"
+#endif
+
+#if ! HAVE_MKDTEMP
 /* Make temporary directory */
 extern char    *mkdtemp(char *);
 #endif
 
-#ifndef HAVE_STRLCPY
+#if ! HAVE_STRLCPY
 /* String copy */
 extern size_t	strlcpy(char *, const char *, size_t);
 #endif

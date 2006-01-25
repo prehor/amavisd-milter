@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.19 2006/01/24 15:31:58 reho Exp $
+dnl $Id: configure.ac,v 1.20 2006/01/25 21:14:09 reho Exp $
 
 AC_INIT(amavisd-milter, 1.1.0)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
@@ -16,9 +16,11 @@ ACX_PTHREAD([LIBS="$PTHREAD_LIBS $LIBS" CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
   AC_MSG_ERROR([no usable pthreads library found]))
 AC_TYPE_MODE_T
 AC_TYPE_SIZE_T
+AC_HEADER_DIRENT
+AC_CHECK_DIRENT_D_NAMLEN
 AC_HEADER_STDC
 AC_HEADER_STDBOOL
-AC_CHECK_HEADERS([arpa/inet.h ctype.h errno.h fcntl.h fts.h limits.h \
+AC_CHECK_HEADERS([arpa/inet.h ctype.h errno.h fcntl.h limits.h \
   netinet/in.h stdarg.h stdio.h stdlib.h string.h sys/param.h sys/time.h \
   sys/types.h sys/socket.h sys/stat.h sys/un.h syslog.h sysexits.h unistd.h],[],
   AC_MSG_ERROR([unable to find required header files]))
@@ -26,8 +28,9 @@ AC_CHECK_HEADERS([arpa/inet.h ctype.h errno.h fcntl.h fts.h limits.h \
 AC_CHECK_LIB(rt, sem_init, LIBS="$LIBS -lrt")
 AC_CHECK_POSIX_SEMAPHORES
 
+AC_CHECK_HEADERS([fts.h])
 AC_CHECK_FUNCS([arc4random])
-AC_REPLACE_FUNCS([mkdtemp strlcpy])
+AC_REPLACE_FUNCS([fts_open mkdtemp strlcpy])
 
 AX_PATH_MILTER([8.12],[LIBS="$MILTER_LIBS $LIBS"
   LDFLAGS="$MILTER_LDFLAGS $LDFLAGS" CPPFLAGS="$CPPFLAGS $MILTER_CPPFLAGS"],

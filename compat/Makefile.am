@@ -1,4 +1,4 @@
-# $Id$
+# $Id: Makefile.am,v 1.2 2005/05/20 20:32:31 reho Exp $
 
 # Distribution files
 EXTRA_DIST= \
@@ -7,7 +7,8 @@ EXTRA_DIST= \
 
 # Header files
 noinst_HEADERS=	\
-	compat.h
+	compat.h \
+	fts_compat.h
 
 # Libraries
 noinst_LIBRARIES= \

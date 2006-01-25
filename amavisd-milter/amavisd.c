@@ -25,14 +25,12 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.2 2005/12/04 23:59:52 reho Exp $
+ * $Id: amavisd.c,v 1.3 2006/01/09 21:46:35 reho Exp $
  */
 
 #include "amavisd-milter.h"
 
 #include <ctype.h>
-#include <errno.h>
-
 
 
 /*

@@ -25,17 +25,14 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.7 2006/01/24 10:41:15 reho Exp $
+ * $Id: mlfi.c,v 1.8 2006/01/25 21:10:26 reho Exp $
  */
 
 #include "amavisd-milter.h"
 
 #include <arpa/inet.h>
-#include <errno.h>
 #include <fcntl.h>
-#include <fts.h>
 #include <netinet/in.h>
-#include <sys/stat.h>
 
 
 /*

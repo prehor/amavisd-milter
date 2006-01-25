@@ -25,16 +25,13 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.8 2006/01/23 15:15:49 reho Exp $
+ * $Id: main.c,v 1.9 2006/01/25 21:10:26 reho Exp $
  */
 
 #include "amavisd-milter.h"
 
-#include <errno.h>
-#include <limits.h>
 #include <stdarg.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
 #include <sysexits.h>
 
 
