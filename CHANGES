@@ -4,6 +4,8 @@ This is the CHANGELOG for amavisd-milter.
 	Linux and Solaris portability fix: sem_t is declared as pointer on
 	*BSD but as structure on Linux and Solaris.
 
+	Solaris portability fix: search sem_init in librt.
+
 20060124:
 	amavisd-milter-1.1.0
 
@@ -120,4 +122,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.22 2006/01/24 15:31:58 reho Exp $
+$Id: CHANGES,v 1.23 2006/01/25 21:10:25 reho Exp $

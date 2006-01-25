@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.18 2006/01/24 10:41:15 reho Exp $
+dnl $Id: configure.ac,v 1.19 2006/01/24 15:31:58 reho Exp $
 
 AC_INIT(amavisd-milter, 1.1.0)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
@@ -14,7 +14,6 @@ AC_CHECK_C_COMPILER
 ACX_PTHREAD([LIBS="$PTHREAD_LIBS $LIBS" CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
   CC="$PTHREAD_CC"] AC_DEFINE(HAVE_PTHREAD, 1),
   AC_MSG_ERROR([no usable pthreads library found]))
-AC_CHECK_POSIX_SEMAPHORES
 AC_TYPE_MODE_T
 AC_TYPE_SIZE_T
 AC_HEADER_STDC
@@ -23,6 +22,9 @@ AC_CHECK_HEADERS([arpa/inet.h ctype.h errno.h fcntl.h fts.h limits.h \
   netinet/in.h stdarg.h stdio.h stdlib.h string.h sys/param.h sys/time.h \
   sys/types.h sys/socket.h sys/stat.h sys/un.h syslog.h sysexits.h unistd.h],[],
   AC_MSG_ERROR([unable to find required header files]))
+
+AC_CHECK_LIB(rt, sem_init, LIBS="$LIBS -lrt")
+AC_CHECK_POSIX_SEMAPHORES
 
 AC_CHECK_FUNCS([arc4random])
 AC_REPLACE_FUNCS([mkdtemp strlcpy])
