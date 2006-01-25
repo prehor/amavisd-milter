@@ -1,6 +1,13 @@
 This is the CHANGELOG for amavisd-milter.
 
 20060125:
+	amavisd-milter-1.1.1
+
+	Portability release. amavisd-milter-1.1 now can be compiled on
+	FreeBSD, NetBSD, OpenBSD, Linux and Solaris.  Please report 
+	success or problems on the users mailing list.
+
+20060125:
 	Linux and Solaris portability fix: sem_t is declared as pointer on
 	*BSD but as structure on Linux and Solaris.
 
@@ -124,4 +131,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.24 2006/01/25 21:14:09 reho Exp $
+$Id: CHANGES,v 1.25 2006/01/25 21:53:27 reho Exp $
