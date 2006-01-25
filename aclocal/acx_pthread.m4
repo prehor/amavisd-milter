@@ -39,7 +39,7 @@ dnl macros posted by Alejandro Forero Cuervo to the autoconf macro
 dnl repository.  We are also grateful for the helpful feedback of
 dnl numerous users.
 dnl
-dnl @version $Id: acx_pthread.m4,v 1.7 2005/01/16 14:28:19 guidod Exp $
+dnl @version $Id: acx_pthread.m4,v 1.1.1.1 2005/05/11 19:21:16 reho Exp $
 dnl @author Steven G. Johnson <stevenj@alum.mit.edu>
 
 AC_DEFUN([ACX_PTHREAD], [
@@ -223,7 +223,7 @@ AC_SUBST(PTHREAD_CC)
 
 # Finally, execute ACTION-IF-FOUND/ACTION-IF-NOT-FOUND:
 if test x"$acx_pthread_ok" = xyes; then
-        ifelse([$1],,AC_DEFINE(HAVE_PTHREAD,1,[Define if you have POSIX threads libraries and header files.]),[$1])
+        ifelse([$1],,AC_DEFINE(HAVE_PTHREAD,1,[Define to 1 if you have POSIX threads libraries and header files.]),[$1])
         :
 else
         acx_pthread_ok=no
