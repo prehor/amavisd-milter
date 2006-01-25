@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.6 2006/01/23 15:15:49 reho Exp $
+ * $Id: mlfi.c,v 1.7 2006/01/24 10:41:15 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -217,7 +217,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
     LOGQIDMSG(LOG_INFO, "CLEANUP");
 
     /* Unlock amavisd connections semaphore */
-    if (mlfi->mlfi_max_sem_locked != 0 && sem_post(&max_sem) == -1) {
+    if (mlfi->mlfi_max_sem_locked != 0 && sem_post(max_sem) == -1) {
 	LOGQIDERR(LOG_ERR, "could not unlock amavisd connections "
 	    "semaphore: %s", strerror(errno));
     }
@@ -676,7 +676,7 @@ mlfi_eom(SMFICTX *ctx)
     /* Wait for amavisd connection */
     if (max_sem != NULL) {
 	wait_counter = 0;
-	while (sem_trywait(&max_sem) == -1) {
+	while (sem_trywait(max_sem) == -1) {
 	    if (errno != EAGAIN) {
 		LOGQIDERR(LOG_ERR, "could not lock amavisd connections "
 		    "semaphore: %s", strerror(errno));
@@ -704,7 +704,7 @@ mlfi_eom(SMFICTX *ctx)
 	    }
 	    sleep(1);
 	}
-	sem_getvalue(&max_sem, &i);
+	sem_getvalue(max_sem, &i);
 	mlfi->mlfi_max_sem_locked = 1;
 	LOGQIDMSG(LOG_DEBUG, "got amavisd connection %d for %d sec",
 	    max_conns - i, wait_counter);

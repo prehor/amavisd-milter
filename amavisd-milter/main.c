@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.7 2005/12/25 22:15:40 reho Exp $
+ * $Id: main.c,v 1.8 2006/01/23 15:15:49 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -79,7 +79,8 @@ int	daemonized = 0;
 int	debug_level = LOG_WARNING;
 int	max_conns = 0;
 int	max_wait = 5 * 60;
-sem_t	max_sem = NULL;
+sem_t	max_sem_t;
+sem_t  *max_sem = NULL;
 char   *pid_file = "/var/amavis/" PACKAGE ".pid";
 char   *mlfi_socket = "/var/amavis/" PACKAGE ".sock";
 long	mlfi_timeout = 600;
@@ -278,10 +279,14 @@ main(int argc, char *argv[])
     }
 
     /* Create amavisd connections semaphore */
-    if (max_conns > 0 && sem_init(&max_sem, 0, max_conns) == -1) {
-	LOGERRMSG("%s: could not initialize amavisd connections semaphore: %s",
-	    progname, strerror(errno));
-	exit(EX_SOFTWARE);
+    if (max_conns > 0) {
+	if (sem_init(&max_sem_t, 0, max_conns) == -1) {
+	    LOGERRMSG("%s: could not initialize amavisd connections semaphore: "
+		"%s", progname, strerror(errno));
+	    exit(EX_SOFTWARE);
+	} else {
+	    max_sem = &max_sem_t;
+	}
     }
 
     /* Check permissions on work directory */
@@ -404,7 +409,7 @@ main(int argc, char *argv[])
     }
 
     /* Destroy amavisd connections semaphore */
-    if (max_sem != NULL && sem_destroy(&max_sem) == -1) {
+    if (max_sem != NULL && sem_destroy(max_sem) == -1) {
 	LOGWARNMSG("%s: could not destroy amavisd connections semaphore: %s",
 	    progname, strerror(errno));
     }
