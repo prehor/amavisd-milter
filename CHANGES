@@ -1,10 +1,12 @@
 This is the CHANGELOG for amavisd-milter.
 
+20060319:
+	Check if smfi_opensocket() is in milter library. It was introduced
+	in sendmail 8.13. Older versions opens communication socket in
+	smfi_main().
+
 20060124:
 	README is now generated from amavisd-milter(8) manual page.
-
-	Remove all files and directories in work directory because
-	amavisd-new sometimes don't do it (e.q. when antivirus fail).
 
 20060113:
 	amavisd-milter-1.0.4
@@ -95,4 +97,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.18 2006/01/13 18:13:36 reho Exp $
+$Id: CHANGES,v 1.18.2.1 2006/03/19 10:34:56 reho Exp $

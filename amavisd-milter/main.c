@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.6 2005/07/01 20:02:54 reho Exp $
+ * $Id: main.c,v 1.7 2005/12/25 22:15:40 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -321,11 +321,16 @@ main(int argc, char *argv[])
 	}
     }
 
+#ifdef HAVE_SMFI_OPENSOCKET
+    /* smfi_opensocket() was introduced in sendmail 8.13. */
+    /* Older versions opens communication socket in smfi_main() */
+
     /* Connect to milter socket */
     if (smfi_opensocket(false) != MI_SUCCESS) {
 	LOGERRMSG("could not open milter socket %s", mlfi_socket);
         exit(EX_SOFTWARE);
     }
+#endif /*HAVE_SMFI_OPENSOCKET */
 
     /* Greetings message */
     LOGWARNMSG("starting %s %s on socket %s", progname, VERSION,
