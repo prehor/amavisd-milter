@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.2 2005/05/11 19:32:17 reho Exp $
+# $Id: Makefile.am,v 1.2.2.1 2006/03/19 10:34:56 reho Exp $
 
 # Subdirectories
 SUBDIRS= \
@@ -29,8 +29,8 @@ EXTRA_DIST= \
 	configure.ac
 
 README: amavisd-milter/amavisd-milter.8
-       nroff -mdoc amavisd-milter/amavisd-milter.8 | col -b | \
-       sed -e '1s/.*/This is the README for the amavisd-milter(8)./' \
+	nroff -mdoc amavisd-milter/amavisd-milter.8 | col -b | \
+	sed -e '1s/.*/This is the README for the amavisd-milter(8)./' \
 	   -e '$$s/.*//' > README
 
 dist-hook: README
