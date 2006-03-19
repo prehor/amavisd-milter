@@ -1,4 +1,4 @@
-# $Id$
+# $Id: Makefile.am,v 1.2 2005/05/11 19:32:17 reho Exp $
 
 # Subdirectories
 SUBDIRS= \
@@ -28,7 +28,12 @@ EXTRA_DIST= \
 	configure \
 	configure.ac
 
-dist-hook:
+README: amavisd-milter/amavisd-milter.8
+       nroff -mdoc amavisd-milter/amavisd-milter.8 | col -b | \
+       sed -e '1s/.*/This is the README for the amavisd-milter(8)./' \
+	   -e '$$s/.*//' > README
+
+dist-hook: README
 	@find $(distdir) -type d -name CVS -print | xargs rm -rf
 	@find $(distdir) -type f -name .cvsignore -print | xargs rm -f
 
