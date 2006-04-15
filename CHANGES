@@ -1,5 +1,10 @@
 This is the CHANGELOG for amavisd-milter.
 
+20060414:
+	Added new configure option --with-sendmail which change base directory
+	in which are placed libmilter header files and library (e.q. /usr/local
+	on FreeBSD when you using sendmail from ports).
+
 20060125:
 	amavisd-milter-1.1.1
 
@@ -131,4 +136,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.25 2006/01/25 21:53:27 reho Exp $
+$Id: CHANGES,v 1.26 2006/01/25 22:05:14 reho Exp $

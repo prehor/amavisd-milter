@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.21 2006/01/25 21:53:27 reho Exp $
+dnl $Id: configure.ac,v 1.22 2006/01/25 22:05:14 reho Exp $
 
 AC_INIT(amavisd-milter, 1.1.1)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
@@ -32,9 +32,11 @@ AC_CHECK_HEADERS([fts.h])
 AC_CHECK_FUNCS([arc4random])
 AC_REPLACE_FUNCS([fts_open mkdtemp strlcpy])
 
-AX_PATH_MILTER([8.12],[LIBS="$MILTER_LIBS $LIBS"
+AX_PATH_MILTER([8.13], [LIBS="$MILTER_LIBS $LIBS"
   LDFLAGS="$MILTER_LDFLAGS $LDFLAGS" CPPFLAGS="$CPPFLAGS $MILTER_CPPFLAGS"],
   AC_MSG_ERROR([required milter library and header not found]))
+AC_CHECK_FUNCS([smfi_opensocket smfi_progress], [],
+  AC_MSG_ERROR([no usable libmilter library found]))
 
 AC_EILSEQ
 gl_EOVERFLOW

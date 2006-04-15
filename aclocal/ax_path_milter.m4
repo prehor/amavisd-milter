@@ -64,7 +64,7 @@ dnl or it will not find libmilter.a even if it exists.  The easiest way is
 dnl to use the ACX_PTHREAD macro by Steven G. Johnson and Alejandro Forero 
 dnl Cuervo which is available from the Autoconf Macro Archive.
 dnl
-dnl @version $Id: ax_path_milter.m4,v 1.1 2004/03/01 19:18:14 guidod Exp $
+dnl @version $Id: ax_path_milter.m4,v 1.1.1.1 2005/05/11 19:21:15 reho Exp $
 dnl @author Tim Toolan <toolan@ele.uri.edu>
 dnl
 ###############################################################################
@@ -77,7 +77,10 @@ ax_path_milter_ok=no
 # For example 8.12.9 would become 008.012.009 
 ac_milter_minimum_version=`echo "$1" | sed 's,\([[0-9]]*\),x\1x,g;s,x\([[0-9]]\)x,x0\1x,g;s,x\([[0-9]][[0-9]]\)x,x0\1x,g;s,x,,g'`
 
-# Add options --with-sendmail-base and --with-sendmail-obj to configure.
+# Add options --with-sendmail --with-sendmail-base and --with-sendmail-obj
+# to configure.
+AC_ARG_WITH([sendmail], 
+  [  --with-sendmail=<DIR>       base directory of sendmail installation])
 AC_ARG_WITH([sendmail-base], 
   [  --with-sendmail-base=<DIR>  base directory of sendmail distribution])
 AC_ARG_WITH([sendmail-obj], 
@@ -88,6 +91,16 @@ AC_CHECK_FUNC(inet_aton, [], [AC_SEARCH_LIBS(inet_aton, [socket nsl resolv])])
 AC_CHECK_FUNC(socket, [], [AC_SEARCH_LIBS(socket, [socket nsl])])
 AC_CHECK_FUNC(gethostbyname, [], [AC_SEARCH_LIBS(gethostbyname, [socket nsl])])
 
+# Check if the linker accepts --rpath (for Darwin)
+AC_MSG_CHECKING([if ld accepts --rpath])
+SAVEDLDFLAGS=$LDFLAGS
+LDFLAGS=$LDFLAGS" -Wl,--rpath=/"
+AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
+    [rpath="--rpath="; ldrpath=yes], [rpath="-L"; ldrpath=no])
+LDFLAGS=$SAVEDLDFLAGS
+AC_MSG_RESULT([$ldrpath])
+
+
 ###############################################################################
 #
 # If neither --with-sendmail-base or --with-sendmail-obj is specified
@@ -95,6 +108,15 @@ AC_CHECK_FUNC(gethostbyname, [], [AC_SEARCH_LIBS(gethostbyname, [socket nsl])])
 # modifying CPPFLAGS, LDFLAGS, and LIBS first. 
 #
 if test "x$with_sendmail_base$with_sendmail_obj" = "x" ; then 
+  if test "x$with_sendmail" != "x" ; then
+    CPPFLAGS="$CPPFLAGS -I$with_sendmail/include"
+    LDFLAGS="$LDFLAGS -L$with_sendmail/lib -Wl,$rpath$with_sendmail/lib"
+    AC_MSG_CHECKING([for sendmail install directory])
+    AC_MSG_RESULT([$with_sendmail])
+  else
+    AC_MSG_CHECKING([for sendmail install directory])
+    AC_MSG_RESULT([default])
+  fi
   AC_CHECK_HEADER([libmilter/mfapi.h],[
     AC_CHECK_LIB([milter],[smfi_main],[
       # both tests succeeded so indicate success
@@ -129,8 +151,10 @@ if test "$ax_path_milter_ok" = "no" ; then
   # Determine the sendmail base directory and set SENDMAIL_BASE_DIR.
   #
   if test "x$with_sendmail_base" != "x" ; then 
+    AC_MSG_CHECKING([for sendmail base directory])
     # set SENDMAIL_BASE_DIR to the one specified by--with-sendmail-base
     SENDMAIL_BASE_DIR="$with_sendmail_base"
+    AC_MSG_RESULT([$SENDMAIL_BASE_DIR])
   else
     AC_MSG_CHECKING([for sendmail base directory in ../ ])
     #
@@ -167,8 +191,8 @@ x$ac_milter_found_version" | sort | sed '1q' | sed "s,x${ac_milter_minimum_versi
     if test -r "${ac_milter_tmp}/include/libmilter/mfapi.h" && \
        test "$ac_milter_version_ok" = "yes" ; then
       # The file mfapi.h exists so we will use this as SENDMAIL_BASE_DIR.
-      AC_MSG_RESULT([yes])
       SENDMAIL_BASE_DIR="$ac_milter_tmp"
+      AC_MSG_RESULT([$SENDMAIL_BASE_DIR])
     else
       AC_MSG_RESULT([no])
       AC_MSG_CHECKING([for sendmail base from /etc/mail/sendmail.cf])
@@ -199,8 +223,8 @@ x$ac_milter_found_version" | sort | sed '1q' | sed "s,x${ac_milter_minimum_versi
       if test -r "${ac_milter_tmp}/include/libmilter/mfapi.h" && \
          test "$ac_milter_version_ok" = "yes" ; then
         # The file mfapi.h exists so we will use this as SENDMAIL_BASE_DIR.
-	AC_MSG_RESULT([yes])
 	SENDMAIL_BASE_DIR="$ac_milter_tmp"
+        AC_MSG_RESULT([$SENDMAIL_BASE_DIR])
       else  
         AC_MSG_RESULT([no])
       fi
@@ -229,9 +253,9 @@ x$ac_milter_found_version" | sort | sed '1q' | sed "s,x${ac_milter_minimum_versi
 
       if test -f "${ac_milter_tmp}/libmilter.a" ; then
         # libmilter.a exists so this is the one we will choose
-        AC_MSG_RESULT([yes])
         # Remove beginning and end of path from obj.* directory.
         SENDMAIL_OBJ_DIR=`echo "$ac_milter_tmp" | sed 's,/libmilter$,,;s,.*/,,'`
+        AC_MSG_RESULT([${SENDMAIL_BASE_DIR}/${SENDMAIL_OBJ_DIR}])
       else
         AC_MSG_RESULT([no])
         AC_MSG_CHECKING([for sendmail obj.* subdirectory using ls])
@@ -243,9 +267,9 @@ x$ac_milter_found_version" | sort | sed '1q' | sed "s,x${ac_milter_minimum_versi
 
         if test -f "${ac_milter_tmp}/libmilter.a" ; then
           # libmilter.a exists so this is the one we will choose
-          AC_MSG_RESULT([yes])
           # Remove beginning and end of path from obj.* directory.
           SENDMAIL_OBJ_DIR=`echo "$ac_milter_tmp" | sed 's,/libmilter$,,;s,.*/,,'`
+          AC_MSG_RESULT([${SENDMAIL_BASE_DIR}/${SENDMAIL_OBJ_DIR}])
         else
           AC_MSG_RESULT([no])
         fi
