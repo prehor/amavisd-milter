@@ -1,5 +1,17 @@
 This is the CHANGELOG for amavisd-milter.
 
+20060414:
+	amavisd-milter-1.0.6
+
+	MAXAMABUF is increased from 2048 to 65536 because it must be greater
+	then confMAX_HEADERS_LENGTH which is usually set to 32768. If mail
+	header is longer than MAXAMABUF, mail is permanently rejected with
+	temporary fail return code and will never reach the recipents.
+
+	Added new configure option --with-sendmail=<DIR> which change base
+	directory in which are placed libmilter header files and library
+	(e.q. /usr/local on FreeBSD when you using sendmail from ports).
+
 20060319:
 	amavisd-milter-1.0.5
 
@@ -103,4 +115,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.18.2.2 2006/03/19 10:56:41 reho Exp $
+$Id: CHANGES,v 1.18.2.3 2006/03/19 11:26:31 reho Exp $

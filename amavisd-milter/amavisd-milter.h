@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.3 2005/07/01 19:41:45 reho Exp $
+ * $Id: amavisd-milter.h,v 1.4 2005/12/04 23:59:52 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
@@ -35,7 +35,7 @@
 
 /* Maximum message buffers length */
 #define MAXLOGBUF	1024	/* syslog message buffer */
-#define MAXAMABUF	2048	/* amavisd communication buffer */
+#define MAXAMABUF	65536	/* amavisd communication buffer */
 
 struct mlfiCtx;
 
