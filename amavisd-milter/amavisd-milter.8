@@ -1,5 +1,5 @@
 .\"
-.\" $Id: amavisd-milter.8,v 1.7 2006/01/24 11:01:45 reho Exp $
+.\" $Id: amavisd-milter.8,v 1.8 2006/01/24 15:20:05 reho Exp $
 .\"
 .Dd Januar 23, 2006
 .Dt amavisd-milter 8
@@ -105,20 +105,26 @@ It must agree with the $unix_socketname entry in amavisd.conf.
 .It Fl t Ar timeout
 .Sy sendmail
 connection timeout in seconds (default 600 = 10 minutes).
-It must agree with the INPUT_MAIL_FILTER entry in sendmail.mc.
+It must agree with the INPUT_MAIL_FILTER entry in sendmail.mc and must be
+greater than or equal to the
+.Sy amavisd-new
+connection timeout.
+When you use other milters (especially time-consuming), the timeout must be
+sufficient to process message in all milters.
 .It Fl T Ar timeout
 .Sy amavisd-new
 connection timeout in seconds (default 600 = 10 minutes).
-.It Fl v                      
+This timeout must be sufficient for message processing in
+.Sy amavisd-new Ns
+\&.
+It's usually a good idea to adjust them to the same value as
+.Sy sendmail
+connection timeout.
+.It Fl v
 Report the version number and exit.
 .It Fl w Ar directory
 Set working directory (default /var/amavis).
 .El
-.Pp
-The both sockets timeout must be sufficient for whole check of the message in
-.Sy amavisd-new Ns
-\&.
-It is a good idea to adjust both to the same value.
 .Pp
 .Sh FILES
 .Bl -tag -width indent
