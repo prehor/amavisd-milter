@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.9 2006/01/25 21:53:27 reho Exp $
+ * $Id: mlfi.c,v 1.10 2006/05/14 20:27:56 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -116,7 +116,7 @@ struct smfiDesc smfilter =
     if (name != NULL) { \
 	LOGQIDMSG(LOG_DEBUG, "%s=%s", name, value); \
     } \
-    if (amavisd_request(sd, name, value) == -1) {  \
+    if (amavisd_request(mlfi, sd, name, value) == -1) {  \
 	LOGQIDERR(LOG_CRIT, "could not write to socket %s: %s", \
 	    amavisd_socket, strerror(errno)); \
 	SMFI_SETREPLY_TEMPFAIL(); \
@@ -127,9 +127,16 @@ struct smfiDesc smfilter =
 
 
 /*
-** AMAVISD_RESPONSE - Parse amavisd response line
+** AMAVISD_RESPONSE - Read response line from amavisd
 */
-#define AMAVISD_RESPONSE(item, value, sep) \
+#define AMAVISD_RESPONSE(sd) \
+    amavisd_response(mlfi, sd)
+
+
+/*
+** AMAVISD_PARSE_RESPONSE - Parse amavisd response line
+*/
+#define AMAVISD_PARSE_RESPONSE(item, value, sep) \
 { \
     item = value; \
     if ((value = strchr(value, sep)) == NULL) { \
@@ -338,6 +345,7 @@ mlfi_cleanup(struct mlfiCtx *mlfi)
     MLFI_FREE(mlfi->mlfi_addr);
     MLFI_FREE(mlfi->mlfi_hostname);
     MLFI_FREE(mlfi->mlfi_helo);
+    MLFI_FREE(mlfi->mlfi_amabuf);
 
     /* Free context */
     free(mlfi);
@@ -377,6 +385,15 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     if (hostaddr != NULL) {
 	addr = inet_ntoa(((struct sockaddr_in *)hostaddr)->sin_addr);
 	MLFI_STRDUP(mlfi->mlfi_addr, addr);
+    }
+
+    /* Allocate amavisd communication buffer */
+    mlfi->mlfi_amabuf_length = AMABUFCHUNK;
+    if ((mlfi->mlfi_amabuf = malloc(mlfi->mlfi_amabuf_length)) == NULL) {
+	LOGQIDERR(LOG_ERR, "could not allocate amavisd communication buffer");
+	SMFI_SETREPLY_TEMPFAIL();
+	MLFI_CLEANUP(mlfi);
+	return SMFIS_TEMPFAIL;
     }
 
     /* Save the private data */
@@ -640,8 +657,7 @@ sfsistat
 mlfi_eom(SMFICTX *ctx)
 {
     int		sd, i;
-    char       *idx, *header, *rcode, *xcode, *value;
-    char	name[MAXAMABUF];
+    char       *idx, *header, *rcode, *xcode, *name, *value;
     sfsistat	rstat;
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
     struct	mlfiAddress *rcpt;
@@ -750,17 +766,18 @@ mlfi_eom(SMFICTX *ctx)
 
     /* Process response from amavisd */
     rstat = SMFIS_TEMPFAIL;
-    while (amavisd_response(sd, name, sizeof(name)) != -1) {
+    while (AMAVISD_RESPONSE(sd) != -1) {
+	name = mlfi->mlfi_amabuf;
 
-	/* End of response */
-	if (name[0] == '\0') {
+	/* Last response */
+	if (*name == '\0') {
 	    (void) amavisd_close(sd);
 	    return rstat;
 	}
 
 	/* Get name and value */
         value = name;
-	AMAVISD_RESPONSE(value, value, '=');
+	AMAVISD_PARSE_RESPONSE(value, value, '=');
 
 	/* Add recipient */
 	if (strcmp(name, "addrcpt") == 0) {
@@ -785,7 +802,7 @@ mlfi_eom(SMFICTX *ctx)
 	/* Add header */
 	} else if (strcmp(name, "addheader") == 0) {
 	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
-	    AMAVISD_RESPONSE(header, value, ' ');
+	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
 	    if (smfi_addheader(ctx, header, value) != MI_SUCCESS) {
 		LOGQIDERR(LOG_ERR, "could not add header %s: %s", header,
 		    value);
@@ -797,15 +814,16 @@ mlfi_eom(SMFICTX *ctx)
 	/* Change header */
 	} else if (strcmp(name, "chgheader") == 0) {
 	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
-	    AMAVISD_RESPONSE(idx, value, ' ');
+	    AMAVISD_PARSE_RESPONSE(idx, value, ' ');
 	    i = (int) strtol(idx, &header, 10);
 	    if (header != NULL && *header != '\0') {
-		LOGQIDERR(LOG_ERR, "malformed line '%s=%s'", name, idx);
+		LOGQIDERR(LOG_ERR, "malformed line '%s=%s %s'", name, idx,
+		    value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
 	    }
-	    AMAVISD_RESPONSE(header, value, ' ');
+	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
 	    if (smfi_chgheader(ctx, header, i, value) != MI_SUCCESS) {
 		LOGQIDERR(LOG_ERR, "could not change header %s %s: %s",
 		    idx, header, value);
@@ -817,10 +835,11 @@ mlfi_eom(SMFICTX *ctx)
 	/* Delete header */
         } else if (strcmp(name, "delheader") == 0) {
 	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
-	    AMAVISD_RESPONSE(idx, value, ' ');
+	    AMAVISD_PARSE_RESPONSE(idx, value, ' ');
 	    i = (int) strtol(idx, &header, 10);
 	    if (header != NULL && *header != '\0') {
-		LOGQIDERR(LOG_ERR, "malformed line '%s=%s'", name, idx);
+		LOGQIDERR(LOG_ERR, "malformed line '%s=%s %s'", name, idx,
+		    value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
@@ -855,8 +874,8 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Set SMTP reply */
         } else if (strcmp(name, "setreply") == 0) {
-	    AMAVISD_RESPONSE(rcode, value, ' ');
-	    AMAVISD_RESPONSE(xcode, value, ' ');
+	    AMAVISD_PARSE_RESPONSE(rcode, value, ' ');
+	    AMAVISD_PARSE_RESPONSE(xcode, value, ' ');
 	    if (*rcode != '4' && *rcode != '5') {
 		/* smfi_setreply accept only 4xx and 5XX codes */
 		LOGQIDMSG(LOG_DEBUG, "%s=%s %s %s", name, rcode, xcode, value);
