@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: compat.h,v 1.5 2006/01/25 21:53:27 reho Exp $
+ * $Id: compat.h,v 1.6 2006/05/14 20:27:56 reho Exp $
  */
 
 #ifndef _AMAVISD_COMPAT_H
@@ -91,6 +91,14 @@ typedef unsigned char _Bool;
 #endif
 #if ! defined(MAX)
 # define MAX(a, b)	((a) < (b) ? (b) : (a))
+#endif
+
+#if ! HAVE_DAEMON
+# ifndef _PATH_DEVNULL
+#  define _PATH_DEVNULL "/dev/null"
+# endif
+/* Run detached from the controlling terminal */
+extern int     daemon(int, int);
 #endif
 
 #if HAVE_FTS_H

@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.23 2006/04/15 23:15:54 reho Exp $
+dnl $Id: configure.ac,v 1.24 2006/04/15 23:51:59 reho Exp $
 
 AC_INIT(amavisd-milter, 1.1.2)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
@@ -30,7 +30,7 @@ AC_CHECK_POSIX_SEMAPHORES
 
 AC_CHECK_HEADERS([fts.h])
 AC_CHECK_FUNCS([arc4random])
-AC_REPLACE_FUNCS([fts_open mkdtemp strlcpy])
+AC_REPLACE_FUNCS([daemon fts_open mkdtemp strlcpy])
 
 AX_PATH_MILTER([8.13], [LIBS="$MILTER_LIBS $LIBS"
   LDFLAGS="$MILTER_LDFLAGS $LDFLAGS" CPPFLAGS="$CPPFLAGS $MILTER_CPPFLAGS"],

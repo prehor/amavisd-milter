@@ -5,6 +5,8 @@ This is the CHANGELOG for amavisd-milter.
 	MAXAMABUF is maximum buffer length, AMABUFCHUNK is initial length
 	and reallocation step.  Buffer is allocated for every connection.
 
+	Tru64 portability fix: replace missing daemon(8) function.
+
 20060414:
 	amavisd-milter-1.1.2
 
@@ -148,4 +150,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.29 2006/04/15 23:51:59 reho Exp $
+$Id: CHANGES,v 1.30 2006/06/16 06:40:37 reho Exp $
