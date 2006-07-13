@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.10 2006/05/14 20:27:56 reho Exp $
+ * $Id: mlfi.c,v 1.11 2006/06/16 06:40:38 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -803,7 +803,7 @@ mlfi_eom(SMFICTX *ctx)
 	} else if (strcmp(name, "addheader") == 0) {
 	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
 	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
-	    if (smfi_addheader(ctx, header, value) != MI_SUCCESS) {
+	    if (smfi_insheader(ctx, INT_MAX, header, value) != MI_SUCCESS) {
 		LOGQIDERR(LOG_ERR, "could not add header %s: %s", header,
 		    value);
 		SMFI_SETREPLY_TEMPFAIL();
