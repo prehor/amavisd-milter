@@ -25,13 +25,16 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.7 2006/04/15 23:22:53 reho Exp $
+ * $Id: amavisd-milter.h,v 1.8 2006/06/16 06:40:38 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
 #define _AMAVISD_MILTER_H
 
 #include "compat.h"
+
+/* AM.PDP protocol version */
+#define AMPDP_VERSION	2
 
 /* Maximum message buffers length */
 #define MAXLOGBUF	1024	/* syslog message buffer */

@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.11 2006/06/16 06:40:38 reho Exp $
+ * $Id: mlfi.c,v 1.12 2006/07/13 22:56:58 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -779,8 +779,25 @@ mlfi_eom(SMFICTX *ctx)
         value = name;
 	AMAVISD_PARSE_RESPONSE(value, value, '=');
 
+	/* AM.PDP protocol version */
+	if (strcmp(name, "version_server") == 0) {
+	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
+	    i = (int) strtol(value, &header, 10);
+	    if (header != NULL && *header != '\0') {
+		LOGQIDERR(LOG_ERR, "malformed line '%s=%s'", name, value);
+		SMFI_SETREPLY_TEMPFAIL();
+		(void) amavisd_close(sd);
+		return SMFIS_TEMPFAIL;
+	    }
+	    if (i > AMPDP_VERSION) {
+		LOGQIDERR(LOG_CRIT, "unknown AM.PDP protocol version %d", i);
+		SMFI_SETREPLY_TEMPFAIL();
+		(void) amavisd_close(sd);
+		return SMFIS_TEMPFAIL;
+	    }
+
 	/* Add recipient */
-	if (strcmp(name, "addrcpt") == 0) {
+	} else if (strcmp(name, "addrcpt") == 0) {
 	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
 	    if (smfi_addrcpt(ctx, value) != MI_SUCCESS) {
 		LOGQIDERR(LOG_ERR, "could not add recipient %s", value);
@@ -799,13 +816,34 @@ mlfi_eom(SMFICTX *ctx)
 		return SMFIS_TEMPFAIL;
 	    }
 
-	/* Add header */
+	/* Append header */
 	} else if (strcmp(name, "addheader") == 0) {
 	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
 	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
 	    if (smfi_insheader(ctx, INT_MAX, header, value) != MI_SUCCESS) {
 		LOGQIDERR(LOG_ERR, "could not add header %s: %s", header,
 		    value);
+		SMFI_SETREPLY_TEMPFAIL();
+		(void) amavisd_close(sd);
+		return SMFIS_TEMPFAIL;
+	    }
+
+	/* Insert header */
+	} else if (strcmp(name, "insheader") == 0) {
+	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
+	    AMAVISD_PARSE_RESPONSE(idx, value, ' ');
+	    i = (int) strtol(idx, &header, 10);
+	    if (header != NULL && *header != '\0') {
+		LOGQIDERR(LOG_ERR, "malformed line '%s=%s %s'", name, idx,
+		    value);
+		SMFI_SETREPLY_TEMPFAIL();
+		(void) amavisd_close(sd);
+		return SMFIS_TEMPFAIL;
+	    }
+	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
+	    if (smfi_insheader(ctx, i, header, value) != MI_SUCCESS) {
+		LOGQIDERR(LOG_ERR, "could not insert header %s %s: %s",
+		    idx, header, value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
@@ -847,6 +885,16 @@ mlfi_eom(SMFICTX *ctx)
 	    if (smfi_chgheader(ctx, value, i, NULL) != MI_SUCCESS) {
 		LOGQIDERR(LOG_ERR, "could not delete header %s %s:",
 		    idx, header);
+		SMFI_SETREPLY_TEMPFAIL();
+		(void) amavisd_close(sd);
+		return SMFIS_TEMPFAIL;
+	    }
+
+	/* Quarantine message */
+	} else if (strcmp(name, "quarantine") == 0) {
+	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
+	    if (smfi_quarantine(ctx, value) != MI_SUCCESS) {
+		LOGQIDERR(LOG_ERR, "could not quarantine message (%s)", value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;

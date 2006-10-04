@@ -1,5 +1,9 @@
 This is the CHANGELOG for amavisd-milter.
 
+20061004:
+	Implemented AM.PDP protocol version 2. New response attributes
+	are version_server, insheader and quarantine.
+
 20060714:
 	Fixed bug with addheader: amavisd-new assume that header is added
 	to the end of headers but sendmail insert it before first occurence
@@ -156,4 +160,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.31 2006/06/16 07:00:50 reho Exp $
+$Id: CHANGES,v 1.32 2006/07/13 22:56:57 reho Exp $
