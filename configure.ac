@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.24 2006/04/15 23:51:59 reho Exp $
+dnl $Id: configure.ac,v 1.25 2006/06/16 07:00:50 reho Exp $
 
 AC_INIT(amavisd-milter, 1.1.2)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
@@ -11,6 +11,7 @@ AM_INIT_AUTOMAKE
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AC_CHECK_C_COMPILER
+AC_CPP_FUNC
 ACX_PTHREAD([LIBS="$PTHREAD_LIBS $LIBS" CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
   CC="$PTHREAD_CC"] AC_DEFINE(HAVE_PTHREAD, 1),
   AC_MSG_ERROR([no usable pthreads library found]))

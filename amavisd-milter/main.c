@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.9 2006/01/25 21:10:26 reho Exp $
+ * $Id: main.c,v 1.10 2006/01/25 21:53:27 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -84,33 +84,6 @@ long	mlfi_timeout = 600;
 char   *amavisd_socket = "/var/amavis/amavisd.sock";
 long	amavisd_timeout = 600;
 char   *work_dir = "/var/amavis";
-
-
-/*
-** LOGMSG - Print log message
-*/
-void
-logmsg(int priority, const char *fmt, ...)
-{
-    char	buf[MAXLOGBUF];
-    va_list	ap;
-
-    if (priority <= debug_level || priority <= LOG_WARNING) {
-
-	/* Format message */
-	va_start(ap, fmt);
-	(void) vsnprintf(buf, sizeof(buf), fmt, ap);
-	va_end(ap);
-
-	/* Write message to syslog */
-	syslog(priority, "%s", buf);
-
-	/* Print message to terminal */
-	if (!daemonized) {
-	    (void) fprintf(stdout, "%s\n", buf);
-	}
-    }
-}
 
 
 /*

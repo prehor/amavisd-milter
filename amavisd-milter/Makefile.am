@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.2 2005/12/25 22:15:40 reho Exp $
+# $Id: Makefile.am,v 1.3 2006/01/13 17:56:00 reho Exp $
 
 # Distribution files
 EXTRA_DIST= \
@@ -21,6 +21,7 @@ sbin_PROGRAMS=	\
 # amavisd-milter compiling parameters
 amavisd_milter_SOURCES= \
 	amavisd.c \
+	log.c \
 	main.c \
 	mlfi.c
 amavisd_milter_LDADD= \

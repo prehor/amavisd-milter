@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.12 2006/07/13 22:56:58 reho Exp $
+ * $Id: mlfi.c,v 1.13 2006/10/04 19:47:27 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -59,42 +59,15 @@ struct smfiDesc smfilter =
 
 
 /*
-** LOGQIDMSG - Log message with mail queue id
-*/
-#define LOGQIDMSG(priority, format, args...) \
-{ \
-    if (mlfi != NULL && mlfi->mlfi_qid != '\0') { \
-	logmsg(priority, "%s: " format, mlfi->mlfi_qid , ## args); \
-    } else { \
-	logmsg(priority, "NOQUEUE: " format , ## args); \
-    } \
-}
-
-
-/*
-** LOGQIDERR - Log error message with mail queue id
-*/
-#define LOGQIDERR(priority, format, args...) \
-{ \
-    if (mlfi != NULL && mlfi->mlfi_qid != '\0') { \
-	logmsg(priority, "%s: %s: " format, mlfi->mlfi_qid, __FUNCTION__ , \
-	    ## args); \
-    } else { \
-	logmsg(priority, "NOQUEUE: %s: " format, __FUNCTION__ , ## args); \
-    } \
-}
-
-
-/*
 ** SMFI_SETREPLY - Set SMTP reply
 */
 #define SMFI_SETREPLY(rcode, xcode, reason) \
 { \
     if (smfi_setreply(ctx, rcode, xcode, reason) != MI_SUCCESS) { \
-	LOGQIDERR(LOG_WARNING, "could not set SMTP reply: %s %s %s", rcode, \
-	    xcode, reason); \
+	logqiderr(mlfi, __func__, LOG_WARNING, \
+	    "could not set SMTP reply: %s %s %s", rcode, xcode, reason); \
     } else { \
-	LOGQIDMSG(LOG_DEBUG, "set reply %s %s %s", rcode, xcode, reason); \
+	logqidmsg(mlfi, LOG_DEBUG, "set reply %s %s %s", rcode, xcode, reason); \
     } \
 }
 
@@ -114,11 +87,12 @@ struct smfiDesc smfilter =
 #define AMAVISD_REQUEST(name, value) \
 { \
     if (name != NULL) { \
-	LOGQIDMSG(LOG_DEBUG, "%s=%s", name, value); \
+	logqidmsg(mlfi, LOG_DEBUG, "%s=%s", name, value); \
     } \
     if (amavisd_request(mlfi, sd, name, value) == -1) {  \
-	LOGQIDERR(LOG_CRIT, "could not write to socket %s: %s", \
-	    amavisd_socket, strerror(errno)); \
+	logqiderr(mlfi, __func__, LOG_CRIT, \
+	    "could not write to socket %s: %s", amavisd_socket, \
+	    strerror(errno)); \
 	SMFI_SETREPLY_TEMPFAIL(); \
 	(void) amavisd_close(sd); \
 	return SMFIS_TEMPFAIL; \
@@ -140,7 +114,7 @@ struct smfiDesc smfilter =
 { \
     item = value; \
     if ((value = strchr(value, sep)) == NULL) { \
-	LOGQIDERR(LOG_ERR, "malformed line: %s", name); \
+	logqiderr(mlfi, __func__, LOG_ERR, "malformed line: %s", name); \
 	SMFI_SETREPLY_TEMPFAIL(); \
 	(void) amavisd_close(sd); \
 	return SMFIS_TEMPFAIL; \
@@ -155,7 +129,7 @@ struct smfiDesc smfilter =
 #define MLFI_CHECK_CTX() \
 { \
     if (mlfi == NULL) { \
-	LOGQIDERR(LOG_CRIT, "context is not set"); \
+	logqiderr(mlfi, __func__, LOG_CRIT, "context is not set"); \
 	SMFI_SETREPLY_TEMPFAIL(); \
 	return SMFIS_TEMPFAIL; \
     } \
@@ -179,7 +153,7 @@ struct smfiDesc smfilter =
 { \
     if ((str) != NULL && *(str) != '\0') { \
 	if ((mlfi = strdup(str)) == NULL) { \
-	    LOGQIDERR(LOG_ALERT, "could not allocate memory"); \
+	    logqiderr(mlfi, __func__, LOG_ALERT, "could not allocate memory"); \
 	    SMFI_SETREPLY_TEMPFAIL(); \
 	    return SMFIS_TEMPFAIL; \
 	} \
@@ -213,26 +187,27 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 
     /* Check milter private data */
     if (mlfi == NULL) {
-	LOGQIDERR(LOG_DEBUG, "context is not set");
+	logqiderr(mlfi, __func__, LOG_DEBUG, "context is not set");
 	return;
     }
 
-    LOGQIDMSG(LOG_INFO, "CLEANUP");
+    logqidmsg(mlfi, LOG_INFO, "CLEANUP");
 
     /* Unlock amavisd connections semaphore */
     if (mlfi->mlfi_max_sem_locked != 0 && sem_post(max_sem) == -1) {
-	LOGQIDERR(LOG_ERR, "could not unlock amavisd connections "
-	    "semaphore: %s", strerror(errno));
+	logqiderr(mlfi, __func__, LOG_ERR, "could not unlock amavisd "
+	    "connections semaphore: %s", strerror(errno));
     }
     mlfi->mlfi_max_sem_locked = 0;
 
     /* Close the message file */
     if (mlfi->mlfi_fp != NULL) {
 	if (fclose(mlfi->mlfi_fp) != 0 && errno != EBADF) {
-	    LOGQIDERR(LOG_WARNING, "could not close message file %s: %s",
-		mlfi->mlfi_fname, strerror(errno));
+	    logqiderr(mlfi, __func__, LOG_WARNING, "could not close message "
+		"file %s: %s", mlfi->mlfi_fname, strerror(errno));
 	} else {
-	    LOGQIDMSG(LOG_DEBUG, "close message file %s", mlfi->mlfi_fname);
+	    logqidmsg(mlfi, LOG_DEBUG, "close message file %s",
+		mlfi->mlfi_fname);
 	}
 	mlfi->mlfi_fp = NULL;
     }
@@ -241,8 +216,8 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
     if (mlfi->mlfi_wrkdir[0] != '\0') {
 	fts = fts_open(wrkdir, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
 	if (fts == NULL) {
-	    LOGQIDERR(LOG_ERR, "could not open file hierarchy %s: %s",
-		mlfi->mlfi_wrkdir, strerror(errno));
+	    logqiderr(mlfi, __func__, LOG_ERR, "could not open file hierarchy "
+		"%s: %s", mlfi->mlfi_wrkdir, strerror(errno));
 	} else {
 	    while ((ftsent = fts_read(fts)) != NULL) {
 		switch (ftsent->fts_info) {
@@ -252,8 +227,9 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 		     * field will be set to indicate what caused the
 		     * error.
 		     */
-		    LOGQIDERR(LOG_ERR, "could not traverse file hierarchy %s: "
-			"%s", ftsent->fts_path, strerror(ftsent->fts_errno));
+		    logqiderr(mlfi, __func__, LOG_ERR, "could not traverse "
+			"file hierarchy %s: %s", ftsent->fts_path,
+			strerror(ftsent->fts_errno));
 		    break;
 		case FTS_DNR:
 		    /*
@@ -261,8 +237,9 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 		     * directory, it can't be removed.
 		     */
 		    if (ftsent->fts_errno != ENOENT) {
-			LOGQIDERR(LOG_ERR, "could not remove directory %s: %s",
-			     ftsent->fts_path, strerror(ftsent->fts_errno));
+			logqiderr(mlfi, __func__, LOG_ERR, "could not remove "
+			    "directory %s: %s", ftsent->fts_path,
+			    strerror(ftsent->fts_errno));
 		    }
 		    break;
 		case FTS_NS:
@@ -270,8 +247,9 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 		     * Assume that since fts_read() couldn't stat the
 		     * file, it can't be unlinked.
 		     */
-		    LOGQIDERR(LOG_ERR, "could not unlink file %s: %s",
-			ftsent->fts_path, strerror(ftsent->fts_errno));
+		    logqiderr(mlfi, __func__, LOG_ERR, "could not unlink file "
+			"%s: %s", ftsent->fts_path,
+			strerror(ftsent->fts_errno));
 		    break;
 		case FTS_D:
 		    /*
@@ -283,10 +261,11 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 		     * Remove post-order directory.
 		     */
 		    if (rmdir(ftsent->fts_accpath) != 0 && errno != ENOENT) {
-			LOGQIDERR(LOG_ERR, "could not remove directory %s: %s",
-			    ftsent->fts_path, strerror(ftsent->fts_errno));
+			logqiderr(mlfi, __func__, LOG_ERR, "could not remove "
+			    "directory %s: %s", ftsent->fts_path,
+			    strerror(ftsent->fts_errno));
 		    } else {
-			LOGQIDMSG(LOG_DEBUG, "remove directory %s",
+			logqidmsg(mlfi, LOG_DEBUG, "remove directory %s",
 			    ftsent->fts_path);
 		    }
 		    break;
@@ -295,24 +274,26 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 		     * A regular file or symbolic link.
 		     */
 		    if (unlink(ftsent->fts_accpath) != 0 && errno != ENOENT) {
-			LOGQIDERR(LOG_ERR, "could not unlink file %s: %s",
-			    ftsent->fts_path, strerror(ftsent->fts_errno));
+			logqiderr(mlfi, __func__, LOG_ERR, "could not unlink "
+			    "file %s: %s", ftsent->fts_path,
+			    strerror(ftsent->fts_errno));
 		    } else {
-			LOGQIDMSG(LOG_DEBUG, "unlink file %s",
+			logqidmsg(mlfi, LOG_DEBUG, "unlink file %s",
 			    ftsent->fts_path);
 		    }
 		}
 	    }
 	    if (fts_close(fts) != 0) {
-		LOGQIDERR(LOG_ERR, "could not close file hirerachy %s: %s",
-		    mlfi->mlfi_wrkdir, strerror(errno));
+		logqiderr(mlfi, __func__, LOG_ERR, "could not close file "
+		    "hirerachy %s: %s", mlfi->mlfi_wrkdir, strerror(errno));
 	    }
 	}
 	mlfi->mlfi_wrkdir[0] = '\0';
     }
 
     /* Free memory */
-    MLFI_FREE(mlfi->mlfi_qid);
+    MLFI_FREE(mlfi->mlfi_prev_qid);
+    mlfi->mlfi_prev_qid = mlfi->mlfi_qid;
     MLFI_FREE(mlfi->mlfi_from);
     while(mlfi->mlfi_rcpt != NULL) {
 	rcpt = mlfi->mlfi_rcpt;
@@ -332,20 +313,21 @@ mlfi_cleanup(struct mlfiCtx *mlfi)
 {
     /* Check milter private data */
     if (mlfi == NULL) {
-	LOGQIDERR(LOG_DEBUG, "context is not set");
+	logqiderr(mlfi, __func__, LOG_DEBUG, "context is not set");
 	return;
     }
 
     /* Cleanup the message context */
     mlfi_cleanup_message(mlfi);
 
-    LOGQIDMSG(LOG_INFO, "cleanup connection context");
+    logqidmsg(mlfi, LOG_INFO, "cleanup connection context");
 
     /* Cleanup the connection context */
     MLFI_FREE(mlfi->mlfi_addr);
     MLFI_FREE(mlfi->mlfi_hostname);
     MLFI_FREE(mlfi->mlfi_helo);
     MLFI_FREE(mlfi->mlfi_amabuf);
+    MLFI_FREE(mlfi->mlfi_prev_qid);
 
     /* Free context */
     free(mlfi);
@@ -363,7 +345,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     struct	mlfiCtx *mlfi = NULL;
     char       *addr;
 
-    LOGQIDMSG(LOG_INFO, "CONNECT: %s", hostname);
+    logqidmsg(mlfi, LOG_INFO, "CONNECT: %s", hostname);
 
     /* Check amavisd socket */
     if (amavisd_init() == -1) {
@@ -374,7 +356,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     /* Allocate memory for private data */
     mlfi = malloc(sizeof(*mlfi));
     if (mlfi == NULL) {
-        LOGQIDERR(LOG_ALERT, "could not allocate memory");
+        logqiderr(mlfi, __func__, LOG_ALERT, "could not allocate memory");
         SMFI_SETREPLY_TEMPFAIL();
         return SMFIS_TEMPFAIL;
     }
@@ -390,7 +372,8 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     /* Allocate amavisd communication buffer */
     mlfi->mlfi_amabuf_length = AMABUFCHUNK;
     if ((mlfi->mlfi_amabuf = malloc(mlfi->mlfi_amabuf_length)) == NULL) {
-	LOGQIDERR(LOG_ERR, "could not allocate amavisd communication buffer");
+	logqiderr(mlfi, __func__, LOG_ERR, "could not allocate amavisd "
+	    "communication buffer");
 	SMFI_SETREPLY_TEMPFAIL();
 	MLFI_CLEANUP(mlfi);
 	return SMFIS_TEMPFAIL;
@@ -398,7 +381,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
 
     /* Save the private data */
     if (smfi_setpriv(ctx, mlfi) != MI_SUCCESS) {
-	LOGQIDERR(LOG_ERR, "could not set milter context");
+	logqiderr(mlfi, __func__, LOG_ERR, "could not set milter context");
 	SMFI_SETREPLY_TEMPFAIL();
 	MLFI_CLEANUP(mlfi);
 	return SMFIS_TEMPFAIL;
@@ -423,7 +406,7 @@ mlfi_helo(SMFICTX *ctx, char* helohost)
     /* Check milter private data */
     MLFI_CHECK_CTX();
 
-    LOGQIDMSG(LOG_DEBUG, "HELO: %s", helohost);
+    logqidmsg(mlfi, LOG_DEBUG, "HELO: %s", helohost);
 
     /* Save helo hostname */
     if (helohost != NULL && *helohost != '\0') {
@@ -459,7 +442,7 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 	MLFI_STRDUP(mlfi->mlfi_qid, qid);
     }
 
-    LOGQIDMSG(LOG_INFO, "MAIL FROM: %s", *envfrom);
+    logqidmsg(mlfi, LOG_INFO, "MAIL FROM: %s", *envfrom);
 
     /* Save from mail address */
     MLFI_STRDUP(mlfi->mlfi_from, *envfrom);
@@ -479,37 +462,37 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 	    (void) strlcpy(mlfi->mlfi_wrkdir, wrkdir,
 		sizeof(mlfi->mlfi_wrkdir));
 	} else {
-	    LOGQIDERR(LOG_ERR, "could not create work directory: %s",
-		strerror(errno));
+	    logqiderr(mlfi, __func__, LOG_ERR, "could not create work "
+		"directory: %s", strerror(errno));
 	    mlfi->mlfi_wrkdir[0] = '\0';
             SMFI_SETREPLY_TEMPFAIL();
             return SMFIS_TEMPFAIL;
 	}
 	if (chmod(mlfi->mlfi_wrkdir, S_IRWXU|S_IRGRP|S_IXGRP) == -1) {
-	    LOGQIDERR(LOG_ERR, "could not change mode of directory %s: %s",
-		mlfi->mlfi_wrkdir, strerror(errno));
+	    logqiderr(mlfi, __func__, LOG_ERR, "could not change mode of "
+		"directory %s: %s", mlfi->mlfi_wrkdir, strerror(errno));
 	    SMFI_SETREPLY_TEMPFAIL();
 	    return SMFIS_TEMPFAIL;
 	}
     }
-    LOGQIDMSG(LOG_DEBUG, "create work directory %s", mlfi->mlfi_wrkdir);
+    logqidmsg(mlfi, LOG_DEBUG, "create work directory %s", mlfi->mlfi_wrkdir);
 
     /* Open file to store this message */
     (void) snprintf(mlfi->mlfi_fname, sizeof(mlfi->mlfi_fname) - 1,
 	"%s/email.txt", mlfi->mlfi_wrkdir);
     if ((mlfi->mlfi_fp = fopen(mlfi->mlfi_fname, "w+")) == NULL) {
-	LOGQIDERR(LOG_ERR, "could not create message file %s: %s",
-	    mlfi->mlfi_fname, strerror(errno));
+	logqiderr(mlfi, __func__, LOG_ERR, "could not create message file "
+	    "%s: %s", mlfi->mlfi_fname, strerror(errno));
 	SMFI_SETREPLY_TEMPFAIL();
 	return SMFIS_TEMPFAIL;
     }
     if (fchmod(fileno(mlfi->mlfi_fp), S_IRUSR|S_IWUSR|S_IRGRP) == -1) {
-	LOGQIDERR(LOG_ERR, "could not change mode of file %s: %s",
-	    mlfi->mlfi_fname, strerror(errno));
+	logqiderr(mlfi, __func__, LOG_ERR, "could not change mode of file "
+	    "%s: %s", mlfi->mlfi_fname, strerror(errno));
 	SMFI_SETREPLY_TEMPFAIL();
 	return SMFIS_TEMPFAIL;
     }
-    LOGQIDMSG(LOG_DEBUG, "create message file %s", mlfi->mlfi_fname);
+    logqidmsg(mlfi, LOG_DEBUG, "create message file %s", mlfi->mlfi_fname);
 
     /* Continue processing */
     return SMFIS_CONTINUE;
@@ -532,12 +515,12 @@ mlfi_envrcpt(SMFICTX *ctx, char **envrcpt)
     /* Check milter private data */
     MLFI_CHECK_CTX();
 
-    LOGQIDMSG(LOG_INFO, "RCPT TO: %s",  *envrcpt);
+    logqidmsg(mlfi, LOG_INFO, "RCPT TO: %s",  *envrcpt);
 
     /* Store recipient address */
     rcptlen = strlen(*envrcpt);
     if ((rcpt = malloc(sizeof(*rcpt) + rcptlen)) == NULL) {
-	LOGQIDERR(LOG_ALERT, "could not allocate memory");
+	logqiderr(mlfi, __func__, LOG_ALERT, "could not allocate memory");
 	SMFI_SETREPLY_TEMPFAIL();
 	return SMFIS_TEMPFAIL;
     }
@@ -572,14 +555,14 @@ mlfi_header(SMFICTX *ctx, char *headerf, char *headerv)
     /* Check milter private data */
     MLFI_CHECK_CTX();
 
-    LOGQIDMSG(LOG_DEBUG, "HEADER: %s: %s", headerf, headerv);
+    logqidmsg(mlfi, LOG_DEBUG, "HEADER: %s: %s", headerf, headerv);
 
     /* Write the header to the message file */
     /* amavisd_new require \n instead of \r\n at the end of header */
     (void) fprintf(mlfi->mlfi_fp, "%s: %s\n", headerf, headerv);
     if (ferror(mlfi->mlfi_fp)) {
-	LOGQIDERR(LOG_ERR, "could not write to message file %s: %s",
-	    mlfi->mlfi_fname, strerror(errno));
+	logqiderr(mlfi, __func__, LOG_ERR, "could not write to message file "
+	    "%s: %s", mlfi->mlfi_fname, strerror(errno));
 	SMFI_SETREPLY_TEMPFAIL();
 	return SMFIS_TEMPFAIL;
     }
@@ -602,14 +585,14 @@ mlfi_eoh(SMFICTX *ctx)
     /* Check milter private data */
     MLFI_CHECK_CTX();
 
-    LOGQIDMSG(LOG_DEBUG, "END OF HEADERS");
+    logqidmsg(mlfi, LOG_DEBUG, "END OF HEADERS");
 
     /* Write the blank line between the header and the body */
     /* XXX: amavisd_new require \n instead of \r\n at the end of line */
     (void) fprintf(mlfi->mlfi_fp, "\n");
     if (ferror(mlfi->mlfi_fp)) {
-	LOGQIDERR(LOG_ERR, "could not write to message file %s: %s",
-	    mlfi->mlfi_fname, strerror(errno));
+	logqiderr(mlfi, __func__, LOG_ERR, "could not write to message file "
+	    "%s: %s", mlfi->mlfi_fname, strerror(errno));
 	SMFI_SETREPLY_TEMPFAIL();
 	return SMFIS_TEMPFAIL;
     }
@@ -632,12 +615,12 @@ mlfi_body(SMFICTX *ctx, unsigned char * bodyp, size_t bodylen)
     /* Check milter private data */
     MLFI_CHECK_CTX();
 
-    LOGQIDMSG(LOG_DEBUG, "body chunk: %ld", (long)bodylen);
+    logqidmsg(mlfi, LOG_DEBUG, "body chunk: %ld", (long)bodylen);
 
     /* Write the body chunk to the message file */
     if (fwrite(bodyp, bodylen, 1, mlfi->mlfi_fp) < 1) {
-	LOGQIDERR(LOG_ERR, "could not write to message file %s: %s",
-	    mlfi->mlfi_fname, strerror(errno));
+	logqiderr(mlfi, __func__, LOG_ERR, "could not write to message file "
+	    "%s: %s", mlfi->mlfi_fname, strerror(errno));
 	SMFI_SETREPLY_TEMPFAIL();
 	return SMFIS_TEMPFAIL;
     }
@@ -667,62 +650,63 @@ mlfi_eom(SMFICTX *ctx)
     /* Check milter private data */
     MLFI_CHECK_CTX();
 
-    LOGQIDMSG(LOG_INFO, "CONTENT CHECK");
+    logqidmsg(mlfi, LOG_INFO, "CONTENT CHECK");
 
     /* Close the message file */
     if (mlfi->mlfi_fp == NULL) {
-	LOGQIDERR(LOG_ERR, "message file %s is not opened", mlfi->mlfi_fname);
+	logqiderr(mlfi, __func__, LOG_ERR, "message file %s is not opened",
+	    mlfi->mlfi_fname);
 	SMFI_SETREPLY_TEMPFAIL();
 	return SMFIS_TEMPFAIL;
     }
     if (fclose(mlfi->mlfi_fp) == -1) {
 	mlfi->mlfi_fp = NULL;
-	LOGQIDERR(LOG_ERR, "could not close message file %s: %s",
-	    mlfi->mlfi_fname, strerror(errno));
+	logqiderr(mlfi, __func__, LOG_ERR, "could not close message file "
+	    "%s: %s", mlfi->mlfi_fname, strerror(errno));
 	SMFI_SETREPLY_TEMPFAIL();
 	return SMFIS_TEMPFAIL;
     }
     mlfi->mlfi_fp = NULL;
-    LOGQIDMSG(LOG_DEBUG, "close message file %s", mlfi->mlfi_fname);
+    logqidmsg(mlfi, LOG_DEBUG, "close message file %s", mlfi->mlfi_fname);
 
     /* Wait for amavisd connection */
     if (max_sem != NULL) {
 	wait_counter = 0;
 	while (sem_trywait(max_sem) == -1) {
 	    if (errno != EAGAIN) {
-		LOGQIDERR(LOG_ERR, "could not lock amavisd connections "
-		    "semaphore: %s", strerror(errno));
+		logqiderr(mlfi, __func__, LOG_ERR, "could not lock amavisd "
+		    "connections semaphore: %s", strerror(errno));
 		SMFI_SETREPLY_TEMPFAIL();
 		return SMFIS_TEMPFAIL;
 	    }
 	    if (!(wait_counter++ < max_wait)) {
-		LOGQIDERR(LOG_WARNING, "amavisd connection not available "
-		    "for %d sec, giving up", wait_counter);
+		logqiderr(mlfi, __func__, LOG_WARNING, "amavisd connection "
+		    "not available for %d sec, giving up", wait_counter);
 		SMFI_SETREPLY_TEMPFAIL();
 		return SMFIS_TEMPFAIL;
 	    }
 	    if (!(wait_counter % 60)) {
-		LOGQIDMSG(LOG_DEBUG, "amavisd connection not available "
+		logqidmsg(mlfi, LOG_DEBUG, "amavisd connection not available "
 		    "for %d sec, triggering sendmail", wait_counter);
 		if (smfi_progress(ctx) != MI_SUCCESS) {
-		    LOGQIDERR(LOG_ERR, "could not notify MTA that an "
-			"operation is still in progress");
+		    logqiderr(mlfi, __func__, LOG_ERR, "could not notify MTA "
+			"that an operation is still in progress");
 		    SMFI_SETREPLY_TEMPFAIL();
 		    return SMFIS_TEMPFAIL;
 		}
 	    } else {
-		LOGQIDMSG(LOG_DEBUG, "amavisd connection not available "
+		logqidmsg(mlfi, LOG_DEBUG, "amavisd connection not available "
 		    "for %d sec, sleeping", wait_counter);
 	    }
 	    sleep(1);
 	}
 	sem_getvalue(max_sem, &i);
 	mlfi->mlfi_max_sem_locked = 1;
-	LOGQIDMSG(LOG_DEBUG, "got amavisd connection %d for %d sec",
+	logqidmsg(mlfi, LOG_DEBUG, "got amavisd connection %d for %d sec",
 	    max_conns - i, wait_counter);
 	if (smfi_progress(ctx) != MI_SUCCESS) {
-	    LOGQIDERR(LOG_ERR, "could not notify MTA that an operation is "
-		"still in progress");
+	    logqiderr(mlfi, __func__, LOG_ERR, "could not notify MTA that an "
+		"operation is still in progress");
 	    SMFI_SETREPLY_TEMPFAIL();
 	    return SMFIS_TEMPFAIL;
 	}
@@ -730,13 +714,13 @@ mlfi_eom(SMFICTX *ctx)
 
     /* Connect to amavisd */
     if ((sd = amavisd_connect(&amavisd_sock)) == -1) {
-	LOGQIDERR(LOG_CRIT, "could not connect to amavisd socket %s: %s",
-	    amavisd_socket, strerror(errno));
+	logqiderr(mlfi, __func__, LOG_CRIT, "could not connect to amavisd "
+	    "socket %s: %s", amavisd_socket, strerror(errno));
 	SMFI_SETREPLY_TEMPFAIL();
 	return SMFIS_TEMPFAIL;
     }
 
-    LOGQIDMSG(LOG_DEBUG, "AMAVISD REQUEST");
+    logqidmsg(mlfi, LOG_DEBUG, "AMAVISD REQUEST");
 
     /* Send email to amavisd */
     AMAVISD_REQUEST("request", "AM.PDP");
@@ -762,7 +746,7 @@ mlfi_eom(SMFICTX *ctx)
     }
     AMAVISD_REQUEST(NULL, NULL);
 
-    LOGQIDMSG(LOG_DEBUG, "AMAVISD RESPONSE");
+    logqidmsg(mlfi, LOG_DEBUG, "AMAVISD RESPONSE");
 
     /* Process response from amavisd */
     rstat = SMFIS_TEMPFAIL;
@@ -781,16 +765,18 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* AM.PDP protocol version */
 	if (strcmp(name, "version_server") == 0) {
-	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    i = (int) strtol(value, &header, 10);
 	    if (header != NULL && *header != '\0') {
-		LOGQIDERR(LOG_ERR, "malformed line '%s=%s'", name, value);
+		logqiderr(mlfi, __func__, LOG_ERR, "malformed line '%s=%s'",
+		    name, value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
 	    }
 	    if (i > AMPDP_VERSION) {
-		LOGQIDERR(LOG_CRIT, "unknown AM.PDP protocol version %d", i);
+		logqiderr(mlfi, __func__, LOG_CRIT, "unknown AM.PDP protocol "
+		    "version %d", i);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
@@ -798,9 +784,10 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Add recipient */
 	} else if (strcmp(name, "addrcpt") == 0) {
-	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    if (smfi_addrcpt(ctx, value) != MI_SUCCESS) {
-		LOGQIDERR(LOG_ERR, "could not add recipient %s", value);
+		logqiderr(mlfi, __func__, LOG_ERR, "could not add recipient %s",
+		    value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
@@ -808,9 +795,10 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Delete recipient */
 	} else if (strcmp(name, "delrcpt") == 0) {
-	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    if (smfi_delrcpt(ctx, value) != MI_SUCCESS) {
-		LOGQIDERR(LOG_ERR, "could not delete recipient %s", value);
+		logqiderr(mlfi, __func__, LOG_ERR, "could not delete recipient "
+		    "%s", value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
@@ -818,11 +806,11 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Append header */
 	} else if (strcmp(name, "addheader") == 0) {
-	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
 	    if (smfi_insheader(ctx, INT_MAX, header, value) != MI_SUCCESS) {
-		LOGQIDERR(LOG_ERR, "could not add header %s: %s", header,
-		    value);
+		logqiderr(mlfi, __func__, LOG_ERR, "could not add header "
+		    "%s: %s", header, value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
@@ -830,20 +818,20 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Insert header */
 	} else if (strcmp(name, "insheader") == 0) {
-	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    AMAVISD_PARSE_RESPONSE(idx, value, ' ');
 	    i = (int) strtol(idx, &header, 10);
 	    if (header != NULL && *header != '\0') {
-		LOGQIDERR(LOG_ERR, "malformed line '%s=%s %s'", name, idx,
-		    value);
+		logqiderr(mlfi, __func__, LOG_ERR, "malformed line '%s=%s %s'",
+		    name, idx, value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
 	    }
 	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
 	    if (smfi_insheader(ctx, i, header, value) != MI_SUCCESS) {
-		LOGQIDERR(LOG_ERR, "could not insert header %s %s: %s",
-		    idx, header, value);
+		logqiderr(mlfi, __func__, LOG_ERR, "could not insert header "
+		    "%s %s: %s", idx, header, value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
@@ -851,20 +839,20 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Change header */
 	} else if (strcmp(name, "chgheader") == 0) {
-	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    AMAVISD_PARSE_RESPONSE(idx, value, ' ');
 	    i = (int) strtol(idx, &header, 10);
 	    if (header != NULL && *header != '\0') {
-		LOGQIDERR(LOG_ERR, "malformed line '%s=%s %s'", name, idx,
-		    value);
+		logqiderr(mlfi, __func__, LOG_ERR, "malformed line '%s=%s %s'",
+		    name, idx, value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
 	    }
 	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
 	    if (smfi_chgheader(ctx, header, i, value) != MI_SUCCESS) {
-		LOGQIDERR(LOG_ERR, "could not change header %s %s: %s",
-		    idx, header, value);
+		logqiderr(mlfi, __func__, LOG_ERR, "could not change header "
+		    "%s %s: %s", idx, header, value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
@@ -872,19 +860,19 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Delete header */
         } else if (strcmp(name, "delheader") == 0) {
-	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    AMAVISD_PARSE_RESPONSE(idx, value, ' ');
 	    i = (int) strtol(idx, &header, 10);
 	    if (header != NULL && *header != '\0') {
-		LOGQIDERR(LOG_ERR, "malformed line '%s=%s %s'", name, idx,
-		    value);
+		logqiderr(mlfi, __func__, LOG_ERR, "malformed line '%s=%s %s'",
+		    name, idx, value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
 	    }
 	    if (smfi_chgheader(ctx, value, i, NULL) != MI_SUCCESS) {
-		LOGQIDERR(LOG_ERR, "could not delete header %s %s:",
-		    idx, header);
+		logqiderr(mlfi, __func__, LOG_ERR, "could not delete header "
+		    "%s %s:", idx, header);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
@@ -892,9 +880,10 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Quarantine message */
 	} else if (strcmp(name, "quarantine") == 0) {
-	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    if (smfi_quarantine(ctx, value) != MI_SUCCESS) {
-		LOGQIDERR(LOG_ERR, "could not quarantine message (%s)", value);
+		logqiderr(mlfi, __func__, LOG_ERR, "could not quarantine "
+		    "message (%s)", value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
@@ -902,7 +891,7 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Set response code */
         } else if (strcmp(name, "return_value") == 0) {
-	    LOGQIDMSG(LOG_INFO, "%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    if (strcmp(value, "continue") == 0) {
 		rstat = SMFIS_CONTINUE;
 	    } else if (strcmp(value, "accept") == 0) {
@@ -914,7 +903,8 @@ mlfi_eom(SMFICTX *ctx)
 	    } else if (strcmp(value, "tempfail") == 0) {
 		rstat = SMFIS_TEMPFAIL;
 	    } else {
-		LOGQIDERR(LOG_ERR, "unknown return value %s", value);
+		logqiderr(mlfi, __func__, LOG_ERR, "unknown return value %s",
+		    value);
 		SMFI_SETREPLY_TEMPFAIL();
 		(void) amavisd_close(sd);
 		return SMFIS_TEMPFAIL;
@@ -926,12 +916,14 @@ mlfi_eom(SMFICTX *ctx)
 	    AMAVISD_PARSE_RESPONSE(xcode, value, ' ');
 	    if (*rcode != '4' && *rcode != '5') {
 		/* smfi_setreply accept only 4xx and 5XX codes */
-		LOGQIDMSG(LOG_DEBUG, "%s=%s %s %s", name, rcode, xcode, value);
+		logqidmsg(mlfi, LOG_DEBUG, "%s=%s %s %s", name, rcode, xcode,
+		    value);
 	    } else {
-		LOGQIDMSG(LOG_NOTICE, "%s=%s %s %s", name, rcode, xcode, value);
+		logqidmsg(mlfi, LOG_NOTICE, "%s=%s %s %s", name, rcode, xcode,
+		    value);
 		if (smfi_setreply(ctx, rcode, xcode, value) != MI_SUCCESS) {
-		    LOGQIDERR(LOG_ERR, "could not set reply %s %s %s",
-			rcode, xcode, value);
+		    logqiderr(mlfi, __func__, LOG_ERR, "could not set reply "
+			"%s %s %s", rcode, xcode, value);
 		    SMFI_SETREPLY_TEMPFAIL();
 		    (void) amavisd_close(sd);
 		    return SMFIS_TEMPFAIL;
@@ -941,19 +933,19 @@ mlfi_eom(SMFICTX *ctx)
 	/* Exit code */
         } else if (strcmp(name, "exit_code") == 0) {
 	    /* ignore legacy exit_code */
-	    LOGQIDMSG(LOG_DEBUG, "%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_DEBUG, "%s=%s", name, value);
 
 	/* Unknown response */
         } else {
-	    LOGQIDERR(LOG_WARNING, "ignore unknown amavisd response %s=%s",
-		name, value);
+	    logqiderr(mlfi, __func__, LOG_WARNING, "ignore unknown amavisd "
+		"response %s=%s", name, value);
 	}
     }
 
     /* Amavisd response fail */
-    LOGQIDMSG(LOG_DEBUG, "amavisd response line %s", name);
-    LOGQIDERR(LOG_ERR, "could not read from amavisd socket %s: %s",
-	amavisd_socket, strerror(errno));
+    logqidmsg(mlfi, LOG_DEBUG, "amavisd response line %s", name);
+    logqiderr(mlfi, __func__, LOG_ERR, "could not read from amavisd socket "
+	"%s: %s", amavisd_socket, strerror(errno));
     SMFI_SETREPLY_TEMPFAIL();
     (void) amavisd_close(sd);
     return SMFIS_TEMPFAIL;
@@ -974,11 +966,11 @@ mlfi_abort(SMFICTX *ctx)
 
     /* Check milter private data */
     if (mlfi == NULL) {
-	LOGQIDERR(LOG_DEBUG, "context is not set");
+	logqiderr(mlfi, __func__, LOG_DEBUG, "context is not set");
 	return SMFIS_CONTINUE;
     }
 
-    LOGQIDMSG(LOG_NOTICE, "ABORT");
+    logqidmsg(mlfi, LOG_NOTICE, "ABORT");
 
     /* Cleanup message data */
     mlfi_cleanup_message(mlfi);
@@ -1000,7 +992,7 @@ mlfi_close(SMFICTX *ctx)
 
     /* Check milter private data */
     if (mlfi == NULL) {
-	LOGQIDERR(LOG_DEBUG, "context is not set");
+	logqiderr(mlfi, __func__, LOG_DEBUG, "context is not set");
 	return SMFIS_CONTINUE;
     }
 
@@ -1008,10 +1000,10 @@ mlfi_close(SMFICTX *ctx)
     MLFI_CLEANUP(mlfi);
     if (smfi_setpriv(ctx, NULL) != MI_SUCCESS) {
 	/* NOTE: smfi_setpriv return MI_FAILURE when ctx is NULL */
-	/* LOGQIDERR(LOG_ERR, "could not release milter context"); */
+	/* logqiderr(mlfi, __func__, LOG_ERR, "could not release milter context"); */
     }
 
-    LOGQIDMSG(LOG_INFO, "CLOSE");
+    logqidmsg(mlfi, LOG_INFO, "CLOSE");
 
     /* Continue processing */
     return SMFIS_CONTINUE;
