@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.5 2006/06/16 06:40:38 reho Exp $
+ * $Id: amavisd.c,v 1.6 2006/10/07 10:09:56 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -36,26 +36,40 @@
 /*
 ** AMAVISD_GROW_AMABUF - Reallocate amavisd communication buffer
 */
-static size_t
+static void *
 amavisd_grow_amabuf(struct mlfiCtx *mlfi)
 {
-    char       *newamabuf;
-    size_t	newamabuf_length = mlfi->mlfi_amabuf_length + AMABUFCHUNK;
+    char       *amabuf;
+    size_t	buflen;
+
+    /* Calculate new buffer size */
+    buflen = mlfi->mlfi_amabuf_length + AMABUFCHUNK;
+    if (mlfi->mlfi_amabuf_length < MAXAMABUF && buflen >= MAXAMABUF) {
+	buflen = MAXAMABUF;
+	logqidmsg(mlfi, LOG_NOTICE,
+	    "maximum size of amavisd communication buffer was reached");
+    } else if (buflen > MAXAMABUF) {
+	logqiderr(mlfi, __func__, LOG_ERR,
+	    "amavisd communication buffer size is too big (%lu)",
+	    (unsigned long)buflen);
+	errno = EOVERFLOW;
+	return NULL;
+    }
+
+    /* Reallocate buffer */
+    if ((amabuf = realloc(mlfi->mlfi_amabuf, buflen)) == NULL) {
+	logqiderr(mlfi, __func__, LOG_ALERT,
+	    "could not reallocate  amavisd communication buffer (%lu)",
+	    (unsigned long)buflen);
+	return NULL;
+    }
+    mlfi->mlfi_amabuf = amabuf;
+    mlfi->mlfi_amabuf_length = buflen;
 
     logqidmsg(mlfi, LOG_DEBUG, "amavisd communication buffer was increased to "
-	"%lu", (unsigned long)newamabuf_length);
+	"%lu", (unsigned long)buflen);
 
-    if (newamabuf_length > MAXAMABUF) {
-	errno = EOVERFLOW;
-	return -1;
-    }
-    if ((newamabuf = realloc(mlfi->mlfi_amabuf, newamabuf_length)) == NULL) {
-	return -1;
-    }
-    mlfi->mlfi_amabuf = newamabuf;
-    mlfi->mlfi_amabuf_length = newamabuf_length;
-
-    return newamabuf_length;
+    return amabuf;
 }
 
 
@@ -111,7 +125,7 @@ amavisd_request(struct mlfiCtx *mlfi, int sd, char *name, char *value)
 	p = name;
 	while (*p != '\0') {
 	    if (b >= mlfi->mlfi_amabuf + mlfi->mlfi_amabuf_length - 5 &&
-		amavisd_grow_amabuf(mlfi) == -1)
+		amavisd_grow_amabuf(mlfi) == NULL)
 	    {
 		return -1;
 	    }
@@ -130,7 +144,7 @@ amavisd_request(struct mlfiCtx *mlfi, int sd, char *name, char *value)
 	p = value;
 	while (*p != '\0') {
 	    if (b >= mlfi->mlfi_amabuf + mlfi->mlfi_amabuf_length - 4 &&
-		amavisd_grow_amabuf(mlfi) == -1)
+		amavisd_grow_amabuf(mlfi) == NULL)
 	    {
 		return -1;
 	    }
@@ -162,7 +176,7 @@ amavisd_response(struct mlfiCtx *mlfi, int sd)
     /* Read response line */
     while (read_sock(sd, b, 1, amavisd_timeout) > 0) {
 	if (b >= mlfi->mlfi_amabuf + mlfi->mlfi_amabuf_length - 2 &&
-	    amavisd_grow_amabuf(mlfi) == -1)
+	    amavisd_grow_amabuf(mlfi) == NULL)
 	{
 	    *(b + 1) = '\0';
 	    return -1;
