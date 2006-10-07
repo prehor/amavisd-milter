@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.13 2006/10/04 19:47:27 reho Exp $
+ * $Id: mlfi.c,v 1.14 2006/10/04 20:46:55 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -149,10 +149,10 @@ struct smfiDesc smfilter =
 /*
 ** MLFI_STRDUP - Duplicate string
 */
-#define MLFI_STRDUP(mlfi, str) \
+#define MLFI_STRDUP(strnew, str) \
 { \
     if ((str) != NULL && *(str) != '\0') { \
-	if ((mlfi = strdup(str)) == NULL) { \
+	if ((strnew = strdup(str)) == NULL) { \
 	    logqiderr(mlfi, __func__, LOG_ALERT, "could not allocate memory"); \
 	    SMFI_SETREPLY_TEMPFAIL(); \
 	    return SMFIS_TEMPFAIL; \
