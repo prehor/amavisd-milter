@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.19 2006/10/07 13:56:28 reho Exp $
+ * $Id: mlfi.c,v 1.20 2006/10/07 14:38:56 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -98,13 +98,6 @@ struct smfiDesc smfilter =
 	return SMFIS_TEMPFAIL; \
     } \
 }
-
-
-/*
-** AMAVISD_RESPONSE - Read response line from amavisd
-*/
-#define AMAVISD_RESPONSE(sd) \
-    amavisd_response(mlfi, sd)
 
 
 /*
@@ -732,7 +725,7 @@ mlfi_eom(SMFICTX *ctx)
 
     /* Process response from amavisd */
     rstat = SMFIS_TEMPFAIL;
-    while (AMAVISD_RESPONSE(sd) != -1) {
+    while (amavisd_response(mlfi, sd) != -1) {
 	name = mlfi->mlfi_amabuf;
 
 	/* Last response */
