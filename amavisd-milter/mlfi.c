@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.17 2006/10/07 13:11:57 reho Exp $
+ * $Id: mlfi.c,v 1.18 2006/10/07 13:54:30 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -992,7 +992,8 @@ mlfi_close(SMFICTX *ctx)
     MLFI_CLEANUP(mlfi);
     if (smfi_setpriv(ctx, NULL) != MI_SUCCESS) {
 	/* NOTE: smfi_setpriv return MI_FAILURE when ctx is NULL */
-	/* logqiderr(mlfi, __func__, LOG_ERR, "could not release milter context"); */
+	/* logqiderr(mlfi, __func__, LOG_ERR,		*/
+	/*	"could not release milter context");	*/
     }
 
     logqidmsg(mlfi, LOG_INFO, "CLOSE");
