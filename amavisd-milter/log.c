@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id$
+ * $Id: log.c,v 1.1 2006/10/04 20:46:55 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -117,7 +117,7 @@ logqiderr(struct mlfiCtx *mlfi, const char *fname, int priority,
 
     /* Fix function name */
     if (fname == NULL) {
-	fname = __func__;
+	fname = "NOFUNC";
     }
 
     /* Print log message */
