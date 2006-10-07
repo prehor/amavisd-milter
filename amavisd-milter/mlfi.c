@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.14 2006/10/04 20:46:55 reho Exp $
+ * $Id: mlfi.c,v 1.15 2006/10/07 10:50:56 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -182,7 +182,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 {
     FTS	       *fts;
     FTSENT     *ftsent;
-    char * const wrkdir[] = { mlfi->mlfi_wrkdir, 0 };
+    char       *wrkdir[] = { NULL, NULL };
     struct	mlfiAddress *rcpt;
 
     /* Check milter private data */
@@ -214,6 +214,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 
     /* Remove work directory */
     if (mlfi->mlfi_wrkdir[0] != '\0') {
+	wrkdir[0] = mlfi->mlfi_wrkdir;
 	fts = fts_open(wrkdir, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
 	if (fts == NULL) {
 	    logqiderr(mlfi, __func__, LOG_ERR, "could not open file hierarchy "
