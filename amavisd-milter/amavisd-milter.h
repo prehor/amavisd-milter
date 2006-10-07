@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.10 2006/10/04 20:46:55 reho Exp $
+ * $Id: amavisd-milter.h,v 1.11 2006/10/07 11:21:08 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
@@ -91,12 +91,12 @@ extern int	debug_level;		/* max debug level */
 extern int	max_conns;		/* max amavisd connections */
 extern int	max_wait;		/* max wait for connection */
 extern sem_t   *max_sem;		/* amavisd connections semaphore */
-extern char    *pid_file;		/* pid file name */
-extern char    *mlfi_socket;		/* sendmail milter socket */
+extern const char *pid_file;		/* pid file name */
+extern const char *mlfi_socket;		/* sendmail milter socket */
 extern long	mlfi_timeout;		/* connection timeout */
-extern char    *amavisd_socket;		/* amavisd socket */
+extern const char *amavisd_socket;	/* amavisd socket */
 extern long	amavisd_timeout;	/* connection timeout */
-extern char    *work_dir;		/* work ditectory name */
+extern const char *work_dir;		/* work ditectory name */
 
 /* Amavisd communication */
 extern int	amavisd_init(void);

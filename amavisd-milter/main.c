@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.12 2006/10/07 11:13:26 reho Exp $
+ * $Id: main.c,v 1.13 2006/10/07 11:15:33 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -59,19 +59,19 @@
 /*
 ** GLOBAL VARIABLES
 */
-int	daemonize = 1;
-int	daemonized = 0;
-int	debug_level = LOG_WARNING;
-int	max_conns = 0;
-int	max_wait = 5 * 60;
-sem_t	max_sem_t;
-sem_t  *max_sem = NULL;
-char   *pid_file = "/var/amavis/" PACKAGE ".pid";
-char   *mlfi_socket = "/var/amavis/" PACKAGE ".sock";
-long	mlfi_timeout = 600;
-char   *amavisd_socket = "/var/amavis/amavisd.sock";
-long	amavisd_timeout = 600;
-char   *work_dir = "/var/amavis";
+int		daemonize = 1;
+int		daemonized = 0;
+int		debug_level = LOG_WARNING;
+int		max_conns = 0;
+int		max_wait = 5 * 60;
+sem_t		max_sem_t;
+sem_t	       *max_sem = NULL;
+const char     *pid_file = "/var/amavis/" PACKAGE ".pid";
+const char     *mlfi_socket = "/var/amavis/" PACKAGE ".sock";
+long		mlfi_timeout = 600;
+const char     *amavisd_socket = "/var/amavis/amavisd.sock";
+long		amavisd_timeout = 600;
+const char     *work_dir = "/var/amavis";
 
 
 /*
@@ -116,7 +116,8 @@ main(int argc, char *argv[])
     static	const char *args = "d:fhm:M:p:s:S:t:T:vw:";
 
     int		c, rstat;
-    char       *p, *progname;
+    char       *p;
+    const char *progname, *socket_name;
     FILE       *fp;
     struct	stat st;
     mode_t	save_umask;
@@ -265,19 +266,19 @@ main(int argc, char *argv[])
     }
 
     /* Configure milter */
-    p = NULL;
+    socket_name = NULL;
     if (mlfi_socket[0] == '/') {
-	p = mlfi_socket;
+	socket_name = mlfi_socket;
     }
     if (! strncmp(mlfi_socket, "unix:", 5)) {
-	p = mlfi_socket + 5;
+	socket_name = mlfi_socket + 5;
     }
     if (! strncmp(mlfi_socket, "local:", 6)) {
-	p = mlfi_socket + 6;
+	socket_name = mlfi_socket + 6;
     }
-    if (p != NULL && unlink(p) != 0 && errno != ENOENT) {
+    if (socket_name != NULL && unlink(socket_name) != 0 && errno != ENOENT) {
 	logmsg(LOG_ERR, "%s: could not unlink old milter socket %s: %s",
-	    progname, mlfi_socket, strerror(errno));
+	    progname, socket_name, strerror(errno));
 	exit(EX_SOFTWARE);
     }
     if (debug_level > LOG_DEBUG &&

@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: log.c,v 1.1 2006/10/04 20:46:55 reho Exp $
+ * $Id: log.c,v 1.2 2006/10/07 11:59:34 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -67,8 +67,8 @@ void
 logqidmsg(struct mlfiCtx *mlfi, int priority, const char *fmt, ...)
 {
     char	buf[MAXLOGBUF];
-    char       *qid;
-    char       *hostname;
+    const char *qid;
+    const char *hostname;
     va_list	ap;
 
     /* Format message */
@@ -106,8 +106,8 @@ logqiderr(struct mlfiCtx *mlfi, const char *fname, int priority,
     const char *fmt, ...)
 {
     char	buf[MAXLOGBUF];
-    char       *qid;
-    char       *hostname;
+    const char *qid;
+    const char *hostname;
     va_list	ap;
 
     /* Format message */
