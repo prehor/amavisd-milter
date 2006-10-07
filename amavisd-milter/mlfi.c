@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.16 2006/10/07 13:08:23 reho Exp $
+ * $Id: mlfi.c,v 1.17 2006/10/07 13:11:57 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -133,16 +133,6 @@ struct smfiDesc smfilter =
 	SMFI_SETREPLY_TEMPFAIL(); \
 	return SMFIS_TEMPFAIL; \
     } \
-}
-
-
-/*
-** MLFI_FREE - Free allocated memory
-*/
-#define MLFI_FREE(p) \
-{ \
-    free(p); \
-    p = NULL; \
 }
 
 
@@ -293,9 +283,10 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
     }
 
     /* Free memory */
-    MLFI_FREE(mlfi->mlfi_prev_qid);
+    free(mlfi->mlfi_prev_qid);
     mlfi->mlfi_prev_qid = mlfi->mlfi_qid;
-    MLFI_FREE(mlfi->mlfi_from);
+    free(mlfi->mlfi_from);
+    mlfi_from = NULL;
     while(mlfi->mlfi_rcpt != NULL) {
 	rcpt = mlfi->mlfi_rcpt;
 	mlfi->mlfi_rcpt = rcpt->q_next;
@@ -324,11 +315,11 @@ mlfi_cleanup(struct mlfiCtx *mlfi)
     logqidmsg(mlfi, LOG_INFO, "cleanup connection context");
 
     /* Cleanup the connection context */
-    MLFI_FREE(mlfi->mlfi_addr);
-    MLFI_FREE(mlfi->mlfi_hostname);
-    MLFI_FREE(mlfi->mlfi_helo);
-    MLFI_FREE(mlfi->mlfi_amabuf);
-    MLFI_FREE(mlfi->mlfi_prev_qid);
+    free(mlfi->mlfi_addr);
+    free(mlfi->mlfi_hostname);
+    free(mlfi->mlfi_helo);
+    free(mlfi->mlfi_amabuf);
+    free(mlfi->mlfi_prev_qid);
 
     /* Free context */
     free(mlfi);
@@ -411,7 +402,7 @@ mlfi_helo(SMFICTX *ctx, char* helohost)
 
     /* Save helo hostname */
     if (helohost != NULL && *helohost != '\0') {
-	MLFI_FREE(mlfi->mlfi_helo);
+	free(mlfi->mlfi_helo);
 	MLFI_STRDUP(mlfi->mlfi_helo, helohost);
     }
 
