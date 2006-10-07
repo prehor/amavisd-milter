@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.10 2006/01/25 21:53:27 reho Exp $
+ * $Id: main.c,v 1.11 2006/10/04 20:46:55 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -152,7 +152,7 @@ main(int argc, char *argv[])
 	    CHECK_OPTARG(optarg);
 	    debug_level = (int) strtol(optarg, &p, 10);
 	    if (p != NULL && *p != '\0') {
-		USAGEMSG("debug level isn't valid number: %s", optarg);
+		USAGEMSG("debug level is not valid number: %s", optarg);
 	    }
 	    if (debug_level < 0) {
 		USAGEMSG("negative debug level: %d", debug_level);
@@ -171,7 +171,7 @@ main(int argc, char *argv[])
 	case 'm':		/* maximum amavisd connections */
 	    max_conns = (int) strtol(optarg, &p, 10);
 	    if (p != NULL && *p != '\0') {
-		USAGEMSG("maximum amavisd connections isn't valid number: %s",
+		USAGEMSG("maximum amavisd connections is not valid number: %s",
 		    optarg);
 	    }
 	    if (max_conns < 0) {
@@ -182,7 +182,7 @@ main(int argc, char *argv[])
 	case 'M':		/* maximum wait for connection */
 	    max_wait = (int) strtol(optarg, &p, 10);
 	    if (p != NULL && *p != '\0') {
-		USAGEMSG("maximum wait for connection isn't valid number: %s",
+		USAGEMSG("maximum wait for connection is not valid number: %s",
 		    optarg);
 	    }
 	    if (max_wait < 0) {
@@ -206,7 +206,7 @@ main(int argc, char *argv[])
 	    CHECK_OPTARG(optarg);
 	    mlfi_timeout = (int) strtol(optarg, &p, 10);
 	    if (p != NULL && *p != '\0') {
-		USAGEMSG("milter connection timeout isn't valid number: %s",
+		USAGEMSG("milter connection timeout is not valid number: %s",
 		    optarg);
 	    }
 	    if (mlfi_timeout < 0) {
@@ -234,7 +234,7 @@ main(int argc, char *argv[])
 	    CHECK_OPTARG(optarg);
 	    amavisd_timeout = (int) strtol(optarg, &p, 10);
 	    if (p != NULL && *p != '\0') {
-		USAGEMSG("amavisd connection timeout isn't valid number: %s",
+		USAGEMSG("amavisd connection timeout is not valid number: %s",
 		    optarg);
 	    }
 	    if (amavisd_timeout < 0) {
