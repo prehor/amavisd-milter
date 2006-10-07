@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.18 2006/10/07 13:54:30 reho Exp $
+ * $Id: mlfi.c,v 1.19 2006/10/07 13:56:28 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -148,16 +148,6 @@ struct smfiDesc smfilter =
 	    return SMFIS_TEMPFAIL; \
 	} \
     } \
-}
-
-
-/*
-** MLFI_CLEANUP - Cleanup connection context
-*/
-#define MLFI_CLEANUP(mlfi) \
-{ \
-	mlfi_cleanup(mlfi); \
-	mlfi = NULL; \
 }
 
 
@@ -286,7 +276,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
     free(mlfi->mlfi_prev_qid);
     mlfi->mlfi_prev_qid = mlfi->mlfi_qid;
     free(mlfi->mlfi_from);
-    mlfi_from = NULL;
+    mlfi->mlfi_from = NULL;
     while(mlfi->mlfi_rcpt != NULL) {
 	rcpt = mlfi->mlfi_rcpt;
 	mlfi->mlfi_rcpt = rcpt->q_next;
@@ -367,7 +357,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	logqiderr(mlfi, __func__, LOG_ERR, "could not allocate amavisd "
 	    "communication buffer");
 	SMFI_SETREPLY_TEMPFAIL();
-	MLFI_CLEANUP(mlfi);
+	mlfi_cleanup(mlfi);
 	return SMFIS_TEMPFAIL;
     }
 
@@ -375,7 +365,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     if (smfi_setpriv(ctx, mlfi) != MI_SUCCESS) {
 	logqiderr(mlfi, __func__, LOG_ERR, "could not set milter context");
 	SMFI_SETREPLY_TEMPFAIL();
-	MLFI_CLEANUP(mlfi);
+	mlfi_cleanup(mlfi);
 	return SMFIS_TEMPFAIL;
     }
 
@@ -989,14 +979,14 @@ mlfi_close(SMFICTX *ctx)
     }
 
     /* Release private data */
-    MLFI_CLEANUP(mlfi);
+    mlfi_cleanup(mlfi);
     if (smfi_setpriv(ctx, NULL) != MI_SUCCESS) {
 	/* NOTE: smfi_setpriv return MI_FAILURE when ctx is NULL */
-	/* logqiderr(mlfi, __func__, LOG_ERR,		*/
+	/* logqiderr(NULL, __func__, LOG_ERR,		*/
 	/*	"could not release milter context");	*/
     }
 
-    logqidmsg(mlfi, LOG_INFO, "CLOSE");
+    logqidmsg(NULL, LOG_INFO, "CLOSE");
 
     /* Continue processing */
     return SMFIS_CONTINUE;
