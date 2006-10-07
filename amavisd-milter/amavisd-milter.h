@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.11 2006/10/07 11:21:08 reho Exp $
+ * $Id: amavisd-milter.h,v 1.12 2006/10/07 12:44:38 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
@@ -64,6 +64,7 @@ struct mlfiCtx {
     int		mlfi_max_sem_locked;	/* connections semaphore locked */
     char       *mlfi_amabuf;		/* amavisd communication buffer */
     size_t	mlfi_amabuf_length;	/* amavisd buffer length */
+    int		mlfi_amasd;		/* amavisd socket descriptor */
 };
 
 /* Get private data from libmilter */
@@ -100,10 +101,10 @@ extern const char *work_dir;		/* work ditectory name */
 
 /* Amavisd communication */
 extern int	amavisd_init(void);
-extern int	amavisd_connect(struct sockaddr_un *);
-extern int	amavisd_request(struct mlfiCtx *mlfi, int, char *, char *);
-extern int	amavisd_response(struct mlfiCtx *mlfi, int);
-extern int	amavisd_close(int);
+extern int	amavisd_connect(struct mlfiCtx *mlfi, struct sockaddr_un *);
+extern int	amavisd_request(struct mlfiCtx *mlfi, char *, char *);
+extern int	amavisd_response(struct mlfiCtx *mlfi);
+extern int	amavisd_close(struct mlfiCtx *mlfi);
 
 /* Log message */
 extern void	logmsg(int, const char *, ...);

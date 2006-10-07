@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.20 2006/10/07 14:38:56 reho Exp $
+ * $Id: mlfi.c,v 1.21 2006/10/07 14:50:27 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -89,12 +89,12 @@ struct smfiDesc smfilter =
     if (name != NULL) { \
 	logqidmsg(mlfi, LOG_DEBUG, "%s=%s", name, value); \
     } \
-    if (amavisd_request(mlfi, sd, name, value) == -1) {  \
+    if (amavisd_request(mlfi, name, value) == -1) {  \
 	logqiderr(mlfi, __func__, LOG_CRIT, \
 	    "could not write to socket %s: %s", amavisd_socket, \
 	    strerror(errno)); \
 	SMFI_SETREPLY_TEMPFAIL(); \
-	(void) amavisd_close(sd); \
+	(void) amavisd_close(mlfi); \
 	return SMFIS_TEMPFAIL; \
     } \
 }
@@ -109,7 +109,7 @@ struct smfiDesc smfilter =
     if ((value = strchr(value, sep)) == NULL) { \
 	logqiderr(mlfi, __func__, LOG_ERR, "malformed line: %s", name); \
 	SMFI_SETREPLY_TEMPFAIL(); \
-	(void) amavisd_close(sd); \
+	(void) amavisd_close(mlfi); \
 	return SMFIS_TEMPFAIL; \
     } \
     *value++ = '\0'; \
@@ -166,12 +166,8 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 
     logqidmsg(mlfi, LOG_INFO, "CLEANUP");
 
-    /* Unlock amavisd connections semaphore */
-    if (mlfi->mlfi_max_sem_locked != 0 && sem_post(max_sem) == -1) {
-	logqiderr(mlfi, __func__, LOG_ERR, "could not unlock amavisd "
-	    "connections semaphore: %s", strerror(errno));
-    }
-    mlfi->mlfi_max_sem_locked = 0;
+    /* Close amavisd connection */
+    (void) amavisd_close(mlfi);
 
     /* Close the message file */
     if (mlfi->mlfi_fp != NULL) {
@@ -335,7 +331,10 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
         SMFI_SETREPLY_TEMPFAIL();
         return SMFIS_TEMPFAIL;
     }
+
+    /* Initialize context */
     (void) memset(mlfi, '\0', sizeof(*mlfi));
+    mlfi->mlfi_amasd = -1;
 
     /* Save connection informations */
     MLFI_STRDUP(mlfi->mlfi_hostname, hostname);
@@ -614,7 +613,7 @@ mlfi_body(SMFICTX *ctx, unsigned char * bodyp, size_t bodylen)
 sfsistat
 mlfi_eom(SMFICTX *ctx)
 {
-    int		sd, i;
+    int		i;
     char       *idx, *header, *rcode, *xcode, *name, *value;
     sfsistat	rstat;
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
@@ -644,13 +643,14 @@ mlfi_eom(SMFICTX *ctx)
     mlfi->mlfi_fp = NULL;
     logqidmsg(mlfi, LOG_DEBUG, "close message file %s", mlfi->mlfi_fname);
 
-    /* Wait for amavisd connection */
+    /* Connect to amavisd */
     if (max_sem != NULL) {
 	wait_counter = 0;
-	while (sem_trywait(max_sem) == -1) {
+	while (amavisd_connect(mlfi, &amavisd_sock) == -1) {
 	    if (errno != EAGAIN) {
-		logqiderr(mlfi, __func__, LOG_ERR, "could not lock amavisd "
-		    "connections semaphore: %s", strerror(errno));
+		logqiderr(mlfi, __func__, LOG_CRIT,
+		    "could not connect to amavisd socket %s: %s",
+		    amavisd_socket, strerror(errno));
 		SMFI_SETREPLY_TEMPFAIL();
 		return SMFIS_TEMPFAIL;
 	    }
@@ -676,23 +676,15 @@ mlfi_eom(SMFICTX *ctx)
 	    sleep(1);
 	}
 	sem_getvalue(max_sem, &i);
-	mlfi->mlfi_max_sem_locked = 1;
 	logqidmsg(mlfi, LOG_DEBUG, "got amavisd connection %d for %d sec",
 	    max_conns - i, wait_counter);
 	if (smfi_progress(ctx) != MI_SUCCESS) {
 	    logqiderr(mlfi, __func__, LOG_ERR, "could not notify MTA that an "
 		"operation is still in progress");
 	    SMFI_SETREPLY_TEMPFAIL();
+	    (void) amavisd_close(mlfi);
 	    return SMFIS_TEMPFAIL;
 	}
-    }
-
-    /* Connect to amavisd */
-    if ((sd = amavisd_connect(&amavisd_sock)) == -1) {
-	logqiderr(mlfi, __func__, LOG_CRIT, "could not connect to amavisd "
-	    "socket %s: %s", amavisd_socket, strerror(errno));
-	SMFI_SETREPLY_TEMPFAIL();
-	return SMFIS_TEMPFAIL;
     }
 
     logqidmsg(mlfi, LOG_DEBUG, "AMAVISD REQUEST");
@@ -725,12 +717,12 @@ mlfi_eom(SMFICTX *ctx)
 
     /* Process response from amavisd */
     rstat = SMFIS_TEMPFAIL;
-    while (amavisd_response(mlfi, sd) != -1) {
+    while (amavisd_response(mlfi) != -1) {
 	name = mlfi->mlfi_amabuf;
 
 	/* Last response */
 	if (*name == '\0') {
-	    (void) amavisd_close(sd);
+	    (void) amavisd_close(mlfi);
 	    return rstat;
 	}
 
@@ -746,14 +738,14 @@ mlfi_eom(SMFICTX *ctx)
 		logqiderr(mlfi, __func__, LOG_ERR, "malformed line '%s=%s'",
 		    name, value);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 	    if (i > AMPDP_VERSION) {
 		logqiderr(mlfi, __func__, LOG_CRIT, "unknown AM.PDP protocol "
 		    "version %d", i);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 
@@ -764,7 +756,7 @@ mlfi_eom(SMFICTX *ctx)
 		logqiderr(mlfi, __func__, LOG_ERR, "could not add recipient %s",
 		    value);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 
@@ -775,7 +767,7 @@ mlfi_eom(SMFICTX *ctx)
 		logqiderr(mlfi, __func__, LOG_ERR, "could not delete recipient "
 		    "%s", value);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 
@@ -787,7 +779,7 @@ mlfi_eom(SMFICTX *ctx)
 		logqiderr(mlfi, __func__, LOG_ERR, "could not add header "
 		    "%s: %s", header, value);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 
@@ -800,7 +792,7 @@ mlfi_eom(SMFICTX *ctx)
 		logqiderr(mlfi, __func__, LOG_ERR, "malformed line '%s=%s %s'",
 		    name, idx, value);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
@@ -808,7 +800,7 @@ mlfi_eom(SMFICTX *ctx)
 		logqiderr(mlfi, __func__, LOG_ERR, "could not insert header "
 		    "%s %s: %s", idx, header, value);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 
@@ -821,7 +813,7 @@ mlfi_eom(SMFICTX *ctx)
 		logqiderr(mlfi, __func__, LOG_ERR, "malformed line '%s=%s %s'",
 		    name, idx, value);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
@@ -829,7 +821,7 @@ mlfi_eom(SMFICTX *ctx)
 		logqiderr(mlfi, __func__, LOG_ERR, "could not change header "
 		    "%s %s: %s", idx, header, value);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 
@@ -842,14 +834,14 @@ mlfi_eom(SMFICTX *ctx)
 		logqiderr(mlfi, __func__, LOG_ERR, "malformed line '%s=%s %s'",
 		    name, idx, value);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 	    if (smfi_chgheader(ctx, value, i, NULL) != MI_SUCCESS) {
 		logqiderr(mlfi, __func__, LOG_ERR, "could not delete header "
 		    "%s %s:", idx, header);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 
@@ -860,7 +852,7 @@ mlfi_eom(SMFICTX *ctx)
 		logqiderr(mlfi, __func__, LOG_ERR, "could not quarantine "
 		    "message (%s)", value);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 
@@ -881,7 +873,7 @@ mlfi_eom(SMFICTX *ctx)
 		logqiderr(mlfi, __func__, LOG_ERR, "unknown return value %s",
 		    value);
 		SMFI_SETREPLY_TEMPFAIL();
-		(void) amavisd_close(sd);
+		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 
@@ -900,7 +892,7 @@ mlfi_eom(SMFICTX *ctx)
 		    logqiderr(mlfi, __func__, LOG_ERR, "could not set reply "
 			"%s %s %s", rcode, xcode, value);
 		    SMFI_SETREPLY_TEMPFAIL();
-		    (void) amavisd_close(sd);
+		    (void) amavisd_close(mlfi);
 		    return SMFIS_TEMPFAIL;
 		}
 	    }
@@ -922,7 +914,7 @@ mlfi_eom(SMFICTX *ctx)
     logqiderr(mlfi, __func__, LOG_ERR, "could not read from amavisd socket "
 	"%s: %s", amavisd_socket, strerror(errno));
     SMFI_SETREPLY_TEMPFAIL();
-    (void) amavisd_close(sd);
+    (void) amavisd_close(mlfi);
     return SMFIS_TEMPFAIL;
 }
 

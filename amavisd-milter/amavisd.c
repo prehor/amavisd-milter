@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.6 2006/10/07 10:09:56 reho Exp $
+ * $Id: amavisd.c,v 1.7 2006/10/07 11:56:36 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -89,25 +89,36 @@ amavisd_init(void)
 ** AMAVISD_CONNECT - Connect to amavisd socket
 */
 int
-amavisd_connect(struct sockaddr_un *sock)
+amavisd_connect(struct mlfiCtx *mlfi, struct sockaddr_un *sock)
 {
-    int		sd;
+    /* Lock amavisd connection */
+    if (max_sem != NULL && mlfi->mlfi_max_sem_locked == 0) {
+	if (sem_trywait(max_sem) == -1) {
+	    if (errno != EAGAIN) {
+		logqiderr(mlfi, __func__, LOG_ERR, "could not lock amavisd "
+		    "connections semaphore: %s", strerror(errno));
+	    }
+	    return -1;
+	}
+	mlfi->mlfi_max_sem_locked = 1;
+    }
 
     /* Initialize domain socket */
     memset(sock, '\0', sizeof(*sock));
     sock->sun_family = AF_UNIX;
     (void) strlcpy(sock->sun_path, amavisd_socket, sizeof(sock->sun_path));
-    if ((sd = socket(PF_UNIX, SOCK_STREAM, 0)) == -1) {
+    if ((mlfi->mlfi_amasd = socket(PF_UNIX, SOCK_STREAM, 0)) == -1) {
 	return -1;
     }
 
     /* Connect to amavisd */
-    if (connect(sd, (struct sockaddr *)sock, sizeof(*sock)) == -1) {
+    if (connect(mlfi->mlfi_amasd, (struct sockaddr *)sock, sizeof(*sock)) == -1)
+    {
 	return -1;
     }
 
     /* Return socket */
-    return sd;
+    return mlfi->mlfi_amasd;
 }
 
 
@@ -115,7 +126,7 @@ amavisd_connect(struct sockaddr_un *sock)
 ** AMAVISD_REQUEST - Write request line to amavisd
 */
 int
-amavisd_request(struct mlfiCtx *mlfi, int sd, char *name, char *value)
+amavisd_request(struct mlfiCtx *mlfi, char *name, char *value)
 {
     char       *p;
     char       *b = mlfi->mlfi_amabuf;
@@ -159,8 +170,8 @@ amavisd_request(struct mlfiCtx *mlfi, int sd, char *name, char *value)
     *b++ = '\n';
 
     /* Write request to amavisd socket */
-    return write_sock(sd, mlfi->mlfi_amabuf, b - mlfi->mlfi_amabuf,
-	amavisd_timeout);
+    return write_sock(mlfi->mlfi_amasd, mlfi->mlfi_amabuf,
+	b - mlfi->mlfi_amabuf, amavisd_timeout);
 }
 
 
@@ -168,13 +179,13 @@ amavisd_request(struct mlfiCtx *mlfi, int sd, char *name, char *value)
 ** AMAVISD_RESPONSE - Read response line from amavisd
 */
 int
-amavisd_response(struct mlfiCtx *mlfi, int sd)
+amavisd_response(struct mlfiCtx *mlfi)
 {
     int		decode = 0;
     char       *b = mlfi->mlfi_amabuf;
 
     /* Read response line */
-    while (read_sock(sd, b, 1, amavisd_timeout) > 0) {
+    while (read_sock(mlfi->mlfi_amasd, b, 1, amavisd_timeout) > 0) {
 	if (b >= mlfi->mlfi_amabuf + mlfi->mlfi_amabuf_length - 2 &&
 	    amavisd_grow_amabuf(mlfi) == NULL)
 	{
@@ -222,7 +233,28 @@ amavisd_response(struct mlfiCtx *mlfi, int sd)
 ** AMAVISD_CLOSE - Close amavisd socket
 */
 int
-amavisd_close(int sd)
+amavisd_close(struct mlfiCtx *mlfi)
 {
-    return close(sd);
+    int ret = 0;
+
+    /* Unlock amavisd connection */
+    if (mlfi->mlfi_max_sem_locked != 0) {
+	if ((ret = sem_post(max_sem)) == -1) {
+	    logqiderr(mlfi, __func__, LOG_ERR,
+		"could not unlock amavisd connections semaphore: %s",
+		strerror(errno));
+	} else {
+	    logqidmsg(mlfi, LOG_DEBUG, "got back amavisd connection");
+	}
+	mlfi->mlfi_max_sem_locked = 0; 
+    }
+
+    /* Close amavisd connection */
+    if (mlfi->mlfi_amasd != -1) {
+	if (close(mlfi->mlfi_amasd) == -1) {
+	    ret = -1;
+	}
+	mlfi->mlfi_amasd = -1;
+    }
+    return ret;
 }
