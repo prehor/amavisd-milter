@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.22 2006/10/07 17:36:19 reho Exp $
+ * $Id: mlfi.c,v 1.23 2006/10/07 21:46:41 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -124,21 +124,6 @@ struct smfiDesc smfilter =
 	logqidmsg(mlfi, LOG_CRIT, "context is not set"); \
 	SMFI_SETREPLY_TEMPFAIL(); \
 	return SMFIS_TEMPFAIL; \
-    } \
-}
-
-
-/*
-** MLFI_STRDUP - Duplicate string
-*/
-#define MLFI_STRDUP(strnew, str) \
-{ \
-    if ((str) != NULL && *(str) != '\0') { \
-	if ((strnew = strdup(str)) == NULL) { \
-	    logqidmsg(mlfi, LOG_ALERT, "could not allocate memory"); \
-	    SMFI_SETREPLY_TEMPFAIL(); \
-	    return SMFIS_TEMPFAIL; \
-	} \
     } \
 }
 
@@ -337,10 +322,20 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     mlfi->mlfi_amasd = -1;
 
     /* Save connection informations */
-    MLFI_STRDUP(mlfi->mlfi_hostname, hostname);
+    if (hostname != NULL && *hostname != '\0') {
+	if ((mlfi->mlfi_hostname = strdup(hostname)) == NULL) {
+	    logqidmsg(mlfi, LOG_ALERT, "could not allocate memory");
+	    SMFI_SETREPLY_TEMPFAIL();
+	    return SMFIS_TEMPFAIL;
+	}
+    }
     if (hostaddr != NULL) {
 	addr = inet_ntoa(((struct sockaddr_in *)hostaddr)->sin_addr);
-	MLFI_STRDUP(mlfi->mlfi_addr, addr);
+	if ((mlfi->mlfi_addr = strdup(addr)) == NULL) {
+	    logqidmsg(mlfi, LOG_ALERT, "could not allocate memory");
+	    SMFI_SETREPLY_TEMPFAIL();
+	    return SMFIS_TEMPFAIL;
+	}
     }
 
     /* Allocate amavisd communication buffer */
@@ -385,7 +380,11 @@ mlfi_helo(SMFICTX *ctx, char* helohost)
     /* Save helo hostname */
     if (helohost != NULL && *helohost != '\0') {
 	free(mlfi->mlfi_helo);
-	MLFI_STRDUP(mlfi->mlfi_helo, helohost);
+	if ((mlfi->mlfi_helo = strdup(helohost)) == NULL) {
+	    logqidmsg(mlfi, LOG_ALERT, "could not allocate memory");
+	    SMFI_SETREPLY_TEMPFAIL();
+	    return SMFIS_TEMPFAIL;
+	}
     }
 
     /* Continue processing */
@@ -413,13 +412,23 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 
     /* Get message id */
     if ((qid = smfi_getsymval(ctx, "i")) != NULL) {
-	MLFI_STRDUP(mlfi->mlfi_qid, qid);
+	if ((mlfi->mlfi_qid = strdup(qid)) == NULL) {
+	    logqidmsg(mlfi, LOG_ALERT, "could not allocate memory");
+	    SMFI_SETREPLY_TEMPFAIL();
+	    return SMFIS_TEMPFAIL;
+	}
     }
 
     logqidmsg(mlfi, LOG_INFO, "MAIL FROM: %s", *envfrom);
 
     /* Save from mail address */
-    MLFI_STRDUP(mlfi->mlfi_from, *envfrom);
+    if (*envfrom != NULL && **envfrom != '\0') {
+	if ((mlfi->mlfi_from = strdup(*envfrom)) == NULL) {
+	    logqidmsg(mlfi, LOG_ALERT, "could not allocate memory");
+	    SMFI_SETREPLY_TEMPFAIL();
+	    return SMFIS_TEMPFAIL;
+	}
+    }
 
     /* Create work directory */
     if (mlfi->mlfi_qid != NULL) {
