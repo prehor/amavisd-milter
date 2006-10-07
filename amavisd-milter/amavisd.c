@@ -25,25 +25,12 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.4 2006/01/25 21:53:27 reho Exp $
+ * $Id: amavisd.c,v 1.5 2006/06/16 06:40:38 reho Exp $
  */
 
 #include "amavisd-milter.h"
 
 #include <ctype.h>
-
-
-/*
-** LOGQIDMSG - Log message with mail queue id
-*/
-#define LOGQIDMSG(priority, format, args...) \
-{ \
-    if (mlfi != NULL && mlfi->mlfi_qid != '\0') { \
-	logmsg(priority, "%s: " format, mlfi->mlfi_qid , ## args); \
-    } else { \
-	logmsg(priority, "NOQUEUE: " format , ## args); \
-    } \
-}
 
 
 /*
@@ -55,8 +42,8 @@ amavisd_grow_amabuf(struct mlfiCtx *mlfi)
     char       *newamabuf;
     size_t	newamabuf_length = mlfi->mlfi_amabuf_length + AMABUFCHUNK;
 
-    LOGQIDMSG(LOG_DEBUG, "amavisd communication buffer was increased to %lu",
-	(unsigned long)newamabuf_length);
+    logqidmsg(mlfi, LOG_DEBUG, "amavisd communication buffer was increased to "
+	"%lu", (unsigned long)newamabuf_length);
 
     if (newamabuf_length > MAXAMABUF) {
 	errno = EOVERFLOW;
