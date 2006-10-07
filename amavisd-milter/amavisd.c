@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.7 2006/10/07 11:56:36 reho Exp $
+ * $Id: amavisd.c,v 1.8 2006/10/07 17:36:19 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -49,7 +49,7 @@ amavisd_grow_amabuf(struct mlfiCtx *mlfi)
 	logqidmsg(mlfi, LOG_NOTICE,
 	    "maximum size of amavisd communication buffer was reached");
     } else if (buflen > MAXAMABUF) {
-	logqiderr(mlfi, __func__, LOG_ERR,
+	logqidmsg(mlfi, LOG_ERR,
 	    "amavisd communication buffer size is too big (%lu)",
 	    (unsigned long)buflen);
 	errno = EOVERFLOW;
@@ -58,7 +58,7 @@ amavisd_grow_amabuf(struct mlfiCtx *mlfi)
 
     /* Reallocate buffer */
     if ((amabuf = realloc(mlfi->mlfi_amabuf, buflen)) == NULL) {
-	logqiderr(mlfi, __func__, LOG_ALERT,
+	logqidmsg(mlfi, LOG_ALERT,
 	    "could not reallocate  amavisd communication buffer (%lu)",
 	    (unsigned long)buflen);
 	return NULL;
@@ -66,8 +66,9 @@ amavisd_grow_amabuf(struct mlfiCtx *mlfi)
     mlfi->mlfi_amabuf = amabuf;
     mlfi->mlfi_amabuf_length = buflen;
 
-    logqidmsg(mlfi, LOG_DEBUG, "amavisd communication buffer was increased to "
-	"%lu", (unsigned long)buflen);
+    logqidmsg(mlfi, LOG_DEBUG,
+	"amavisd communication buffer was increased to %lu",
+	(unsigned long)buflen);
 
     return amabuf;
 }
@@ -95,8 +96,9 @@ amavisd_connect(struct mlfiCtx *mlfi, struct sockaddr_un *sock)
     if (max_sem != NULL && mlfi->mlfi_max_sem_locked == 0) {
 	if (sem_trywait(max_sem) == -1) {
 	    if (errno != EAGAIN) {
-		logqiderr(mlfi, __func__, LOG_ERR, "could not lock amavisd "
-		    "connections semaphore: %s", strerror(errno));
+		logqidmsg(mlfi, LOG_ERR,
+		    "could not lock amavisd connections semaphore: %s",
+		    strerror(errno));
 	    }
 	    return -1;
 	}
@@ -240,8 +242,8 @@ amavisd_close(struct mlfiCtx *mlfi)
     /* Unlock amavisd connection */
     if (mlfi->mlfi_max_sem_locked != 0) {
 	if ((ret = sem_post(max_sem)) == -1) {
-	    logqiderr(mlfi, __func__, LOG_ERR,
-		"could not unlock amavisd connections semaphore: %s",
+	    logqidmsg(mlfi, LOG_ERR,
+		"%s: could not unlock amavisd connections semaphore: %s",
 		strerror(errno));
 	} else {
 	    logqidmsg(mlfi, LOG_DEBUG, "got back amavisd connection");

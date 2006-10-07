@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.12 2006/10/07 12:44:38 reho Exp $
+ * $Id: amavisd-milter.h,v 1.13 2006/10/07 17:36:19 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
@@ -108,7 +108,6 @@ extern int	amavisd_close(struct mlfiCtx *mlfi);
 
 /* Log message */
 extern void	logmsg(int, const char *, ...);
-extern void	logqidmsg(struct mlfiCtx *mlfi, int priority, const char *fmt, ...);
-extern void	logqiderr(struct mlfiCtx *mlfi, const char *fname, int priority, const char *fmt, ...);
+extern void	logqidmsg(struct mlfiCtx *, int, const char *, ...);
 
 #endif /* _AMAVISD_MILTER_H */

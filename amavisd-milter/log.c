@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: log.c,v 1.2 2006/10/07 11:59:34 reho Exp $
+ * $Id: log.c,v 1.3 2006/10/07 12:44:38 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -95,48 +95,4 @@ logqidmsg(struct mlfiCtx *mlfi, int priority, const char *fmt, ...)
 	hostname = "UNKNOWN";
     }
     logmsg(priority, "%s: %s: %s", qid, hostname, buf);
-}
-
-
-/*
-** LOGQIDERR - Log error message with mail queue id
-*/
-void
-logqiderr(struct mlfiCtx *mlfi, const char *fname, int priority,
-    const char *fmt, ...)
-{
-    char	buf[MAXLOGBUF];
-    const char *qid;
-    const char *hostname;
-    va_list	ap;
-
-    /* Format message */
-    va_start(ap, fmt);
-    (void) vsnprintf(buf, sizeof(buf), fmt, ap);
-    va_end(ap);
-
-    /* Fix function name */
-    if (fname == NULL) {
-	fname = "NOFUNC";
-    }
-
-    /* Print log message */
-    if (mlfi != NULL) {
-	if (mlfi->mlfi_qid != NULL) {
-	    qid = mlfi->mlfi_qid;
-	} else if (mlfi->mlfi_prev_qid != NULL) {
-	    qid = mlfi->mlfi_prev_qid;
-	} else {
-	    qid = "NOQUEUE";
-	}
-	if (mlfi->mlfi_hostname != NULL) {
-	    hostname = mlfi->mlfi_hostname;
-	} else {
-	    hostname = "UNKNOWN";
-	}
-    } else {
-	qid = "NOQUEUE";
-	hostname = "UNKNOWN";
-    }
-    logmsg(priority, "%s: %s: %s: %s", qid, hostname, fname, buf);
 }
