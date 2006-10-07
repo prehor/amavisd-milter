@@ -25,35 +25,13 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.13 2006/10/07 11:15:33 reho Exp $
+ * $Id: main.c,v 1.14 2006/10/07 12:44:38 reho Exp $
  */
 
 #include "amavisd-milter.h"
 
 #include <sys/socket.h>
 #include <sysexits.h>
-
-
-/*
-** USAGEMSG - Print error message, program usage and then exit
-*/
-#define USAGEMSG(format, arg) \
-{ \
-    (void) fprintf(stderr, "%s: " format "\n", progname , arg); \
-    usage(progname); \
-    exit(EX_USAGE); \
-}
-
-
-/*
-** CHECK_OPTARG - Check optarg value existence
-*/
-#define CHECK_OPTARG(optarg) \
-{ \
-    if (optarg == NULL || *optarg == '\0') { \
-	USAGEMSG("option requires an argument -- %c", (char)c); \
-    } \
-}
 
 
 /*
@@ -98,6 +76,27 @@ usage(const char *progname)
 
 
 /*
+** USAGEERR - Print error message, program usage and then exit
+*/
+static void
+usageerr(const char *progname, const char *fmt, ...)
+{
+    char	buf[MAXLOGBUF];
+    va_list	ap;
+
+    /* Format err message */
+    va_start(ap, fmt);
+    (void) vsnprintf(buf, sizeof(buf), fmt, ap);
+    va_end(ap);
+
+    /* Print error message, program usage and then exit */
+    (void) fprintf(stderr, "%s: %s\n", progname , buf);
+    usage(progname);
+    exit(EX_USAGE);
+}
+
+
+/*
 ** VERSIONINFO - Print program version info
 */
 static void
@@ -138,13 +137,17 @@ main(int argc, char *argv[])
     while ((c = getopt(argc, argv, args)) != EOF) {
 	switch (c) {
 	case 'd':		/* debug level */
-	    CHECK_OPTARG(optarg);
+	    if (optarg == NULL || *optarg == '\0') {
+		usageerr(progname, "option requires an argument -- %c",
+		    (char)c);
+	    }
 	    debug_level = (int) strtol(optarg, &p, 10);
 	    if (p != NULL && *p != '\0') {
-		USAGEMSG("debug level is not valid number: %s", optarg);
+		usageerr(progname, "debug level is not valid number: %s",
+		    optarg);
 	    }
 	    if (debug_level < 0) {
-		USAGEMSG("negative debug level: %d", debug_level);
+		usageerr(progname, "negative debug level: %d", debug_level);
 	    }
 	    debug_level += LOG_WARNING;
 	    break;
@@ -160,46 +163,58 @@ main(int argc, char *argv[])
 	case 'm':		/* maximum amavisd connections */
 	    max_conns = (int) strtol(optarg, &p, 10);
 	    if (p != NULL && *p != '\0') {
-		USAGEMSG("maximum amavisd connections is not valid number: %s",
+		usageerr(progname,
+		    "maximum amavisd connections is not valid number: %s",
 		    optarg);
 	    }
 	    if (max_conns < 0) {
-		USAGEMSG("negative maximum amavisd connections: %d",
+		usageerr(progname, "negative maximum amavisd connections: %d",
 		    max_conns);
 	    }
 	    break;
 	case 'M':		/* maximum wait for connection */
 	    max_wait = (int) strtol(optarg, &p, 10);
 	    if (p != NULL && *p != '\0') {
-		USAGEMSG("maximum wait for connection is not valid number: %s",
+		usageerr(progname,
+		    "maximum wait for connection is not valid number: %s",
 		    optarg);
 	    }
 	    if (max_wait < 0) {
-		USAGEMSG("negative maximum wait for connection: %d",
+		usageerr(progname, "negative maximum wait for connection: %d",
 		    max_wait);
 	    }
 	    break;
 	case 'p':		/* pid file name */
-	    CHECK_OPTARG(optarg);
+	    if (optarg == NULL || *optarg == '\0') {
+		usageerr(progname, "option requires an argument -- %c",
+		    (char)c);
+	    }
 	    pid_file = optarg;
 	    break;
 	case 's':		/* milter communication socket */
-	    CHECK_OPTARG(optarg);
+	    if (optarg == NULL || *optarg == '\0') {
+		usageerr(progname, "option requires an argument -- %c",
+		    (char)c);
+	    }
 	    if (strlen(optarg) >= sizeof(unix_addr.sun_path) - 1) {
-		USAGEMSG("milter communication socket name too long: %s",
-		    optarg);
+		usageerr(progname,
+		    "milter communication socket name too long: %s", optarg);
 	    }
 	    mlfi_socket = optarg;
 	    break;
 	case 't':		/* milter connection timeout */
-	    CHECK_OPTARG(optarg);
+	    if (optarg == NULL || *optarg == '\0') {
+		usageerr(progname, "option requires an argument -- %c",
+		    (char)c);
+	    }
 	    mlfi_timeout = (int) strtol(optarg, &p, 10);
 	    if (p != NULL && *p != '\0') {
-		USAGEMSG("milter connection timeout is not valid number: %s",
+		usageerr(progname,
+		    "milter connection timeout is not valid number: %s",
 		    optarg);
 	    }
 	    if (mlfi_timeout < 0) {
-		USAGEMSG("negative milter connection timeout: %ld",
+		usageerr(progname, "negative milter connection timeout: %ld",
 		    mlfi_timeout);
 	    }
 	    break;
@@ -208,31 +223,41 @@ main(int argc, char *argv[])
 	    exit(EX_OK);
 	    break;
 	case 'w':		/* work directory */
-	    CHECK_OPTARG(optarg);
+	    if (optarg == NULL || *optarg == '\0') {
+		usageerr(progname, "option requires an argument -- %c",
+		    (char)c);
+	    }
 	    work_dir = optarg;
 	    break;
 	case 'S':		/* amavisd communication socket */
-	    CHECK_OPTARG(optarg);
+	    if (optarg == NULL || *optarg == '\0') {
+		usageerr(progname, "option requires an argument -- %c",
+		    (char)c);
+	    }
 	    if (strlen(optarg) >= sizeof(unix_addr.sun_path) - 1) {
-		USAGEMSG("amavisd communication socket name too long: %s",
-		    optarg);
+		usageerr(progname,
+		    "amavisd communication socket name too long: %s", optarg);
 	    }
 	    amavisd_socket = optarg;
 	    break;
 	case 'T':		/* amavisd connection timeout */
-	    CHECK_OPTARG(optarg);
+	    if (optarg == NULL || *optarg == '\0') {
+		usageerr(progname, "option requires an argument -- %c",
+		    (char)c);
+	    }
 	    amavisd_timeout = (int) strtol(optarg, &p, 10);
 	    if (p != NULL && *p != '\0') {
-		USAGEMSG("amavisd connection timeout is not valid number: %s",
+		usageerr(progname,
+		    "amavisd connection timeout is not valid number: %s",
 		    optarg);
 	    }
 	    if (amavisd_timeout < 0) {
-		USAGEMSG("negative amavisd connection timeout: %ld",
+		usageerr(progname, "negative amavisd connection timeout: %ld",
 		    amavisd_timeout);
 	    }
 	    break;
 	default:		/* unknown option */
-	    USAGEMSG("illegal option -- %c", (char)c);
+	    usageerr(progname, "illegal option -- %c", (char)c);
 	    break;
 	}
     }
