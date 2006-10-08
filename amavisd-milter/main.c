@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.15 2006/10/07 13:32:42 reho Exp $
+ * $Id: main.c,v 1.16 2006/10/07 14:19:50 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -266,8 +266,9 @@ main(int argc, char *argv[])
     /* Create amavisd connections semaphore */
     if (max_conns > 0) {
 	if (sem_init(&max_sem_t, 0, max_conns) == -1) {
-	    logmsg(LOG_ERR, "%s: could not initialize amavisd connections "
-		"semaphore: %s", progname, strerror(errno));
+	    logmsg(LOG_ERR,
+		"could not initialize amavisd connections semaphore: %s",
+		strerror(errno));
 	    exit(EX_SOFTWARE);
 	} else {
 	    max_sem = &max_sem_t;
@@ -277,17 +278,16 @@ main(int argc, char *argv[])
     /* Check permissions on work directory */
     /* TODO: traverse work directory path */
     if (stat(work_dir, &st) != 0) {
-	logmsg(LOG_ERR, "%s: could not stat() to work directory %s: %s",
-	    progname, work_dir, strerror(errno));
+	logmsg(LOG_ERR, "could not stat() to work directory %s: %s",
+	    work_dir, strerror(errno));
 	exit(EX_SOFTWARE);
     }
     if (!S_ISDIR(st.st_mode)) {
-	logmsg(LOG_ERR, "%s: %s is not directory", progname, work_dir);
+	logmsg(LOG_ERR, "%s is not directory", work_dir);
 	exit(EX_SOFTWARE);
     }
     if ((st.st_mode & S_IRWXO) != 0) {
-	logmsg(LOG_ERR, "%s: work directory %s is world accessible", progname,
-	    work_dir);
+	logmsg(LOG_ERR, "work directory %s is world accessible", work_dir);
 	exit(EX_SOFTWARE);
     }
 
@@ -303,34 +303,34 @@ main(int argc, char *argv[])
 	socket_name = mlfi_socket + 6;
     }
     if (socket_name != NULL && unlink(socket_name) != 0 && errno != ENOENT) {
-	logmsg(LOG_ERR, "%s: could not unlink old milter socket %s: %s",
-	    progname, socket_name, strerror(errno));
+	logmsg(LOG_ERR, "could not unlink old milter socket %s: %s",
+	    socket_name, strerror(errno));
 	exit(EX_SOFTWARE);
     }
     if (debug_level > LOG_DEBUG &&
 	smfi_setdbg(debug_level - LOG_DEBUG) != MI_SUCCESS)
     {
-	logmsg(LOG_ERR, "%s: could not set milter debug level", progname);
+	logmsg(LOG_ERR, "could not set milter debug level");
 	exit(EX_SOFTWARE);
     }
     if (mlfi_timeout > 0 && smfi_settimeout(mlfi_timeout) != MI_SUCCESS) {
-	logmsg(LOG_ERR, "%s: could not set milter timeout", progname);
+	logmsg(LOG_ERR, "could not set milter timeout");
 	exit(EX_SOFTWARE);
     }
     if (smfi_setconn(mlfi_socket) != MI_SUCCESS) {
-	logmsg(LOG_ERR, "%s: could not set milter socket", progname);
+	logmsg(LOG_ERR, "could not set milter socket");
 	exit(EX_SOFTWARE);
     }
     if (smfi_register(smfilter) != MI_SUCCESS) {
-	logmsg(LOG_ERR, "%s: could not register milter", progname);
+	logmsg(LOG_ERR, "could not register milter");
 	exit(EX_SOFTWARE);
     }
 
     /* Unlink old pid file */
     if (pid_file != NULL) {
 	if (unlink(pid_file) != 0 && errno != ENOENT) {
-	    logmsg(LOG_WARNING, "%s: could not unlink old pid file %s: %s",
-		progname, pid_file, strerror(errno));
+	    logmsg(LOG_WARNING, "could not unlink old pid file %s: %s",
+		pid_file, strerror(errno));
 	}
     }
 
@@ -339,7 +339,7 @@ main(int argc, char *argv[])
 	if (daemon(1, 1) != -1) {
 	    daemonized = 1;
 	} else {
-	    logmsg(LOG_ERR, "%s: could not fork daemon process: %s", progname,
+	    logmsg(LOG_ERR, "could not fork daemon process: %s",
 		strerror(errno));
 	    exit(EX_OSERR);
 	}
@@ -360,8 +360,8 @@ main(int argc, char *argv[])
 	save_umask = umask(022);
 	fp = fopen(pid_file, "w");
 	if (fp == NULL) {
-	    logmsg(LOG_WARNING, "could not create pid file %s: %s", pid_file,
-		strerror(errno));
+	    logmsg(LOG_WARNING, "could not create pid file %s: %s",
+		pid_file, strerror(errno));
 	} else {
 	    (void) fprintf(fp, "%ld\n", (long) getpid());
 	    if (ferror(fp)) {
@@ -370,8 +370,8 @@ main(int argc, char *argv[])
 		clearerr(fp);
 		(void) fclose(fp);
 	    } else if (fclose(fp) != 0) {
-		logmsg(LOG_WARNING, "could not close pid file %s: %s", pid_file,
-		    strerror(errno));
+		logmsg(LOG_WARNING, "could not close pid file %s: %s",
+		    pid_file, strerror(errno));
 	    }
 	}
 	umask(save_umask);
@@ -379,7 +379,7 @@ main(int argc, char *argv[])
 
     /* Run milter */
     if ((rstat = smfi_main()) != MI_SUCCESS) {
-	logmsg(LOG_ALERT, "%s failed", progname);
+	logmsg(LOG_ERR, "%s failed", progname);
     } else {
 	logmsg(LOG_WARNING, "stopping %s %s on socket %s", progname, VERSION,
 	    mlfi_socket);
@@ -388,15 +388,16 @@ main(int argc, char *argv[])
     /* Unlink pid file */
     if (pid_file != NULL) {
 	if (unlink(pid_file) != 0) {
-	    logmsg(LOG_WARNING, "%s: could not unlink pid file %s: %s",
-		progname, pid_file, strerror(errno));
+	    logmsg(LOG_WARNING, "could not unlink pid file %s: %s",
+		pid_file, strerror(errno));
 	}
     }
 
     /* Destroy amavisd connections semaphore */
     if (max_sem != NULL && sem_destroy(max_sem) == -1) {
-	logmsg(LOG_WARNING, "%s: could not destroy amavisd connections "
-	    "semaphore: %s", progname, strerror(errno));
+	logmsg(errno == EBUSY ? LOG_ERR : LOG_WARNING,
+	    "%s: could not destroy amavisd connections semaphore: %s",
+	    progname, strerror(errno));
     }
 
     return rstat;

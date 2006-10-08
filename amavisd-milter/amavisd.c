@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.12 2006/10/08 11:35:59 reho Exp $
+ * $Id: amavisd.c,v 1.13 2006/10/08 11:37:33 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -45,7 +45,7 @@ amavisd_grow_amabuf(struct mlfiCtx *mlfi)
     /* Calculate new buffer size */
     buflen = mlfi->mlfi_amabuf_length + AMABUFCHUNK;
     if (mlfi->mlfi_amabuf_length < MAXAMABUF && buflen >= MAXAMABUF) {
-	logqidmsg(mlfi, LOG_NOTICE,
+	logqidmsg(mlfi, LOG_WARNING,
 	    "maximum size of amavisd communication buffer was reached");
 	buflen = MAXAMABUF;
     } else if (buflen > MAXAMABUF) {
@@ -58,7 +58,7 @@ amavisd_grow_amabuf(struct mlfiCtx *mlfi)
 
     /* Reallocate buffer */
     if ((amabuf = realloc(mlfi->mlfi_amabuf, buflen)) == NULL) {
-	logqidmsg(mlfi, LOG_ALERT,
+	logqidmsg(mlfi, LOG_ERR,
 	    "could not reallocate amavisd communication buffer (%lu)",
 	    (unsigned long)buflen);
 	return NULL;

@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.31 2006/10/08 11:35:59 reho Exp $
+ * $Id: mlfi.c,v 1.32 2006/10/08 11:37:33 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -72,14 +72,13 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
     char       *wrkdir[] = { NULL, NULL };
     struct	mlfiAddress *rcpt;
 
+    logqidmsg(mlfi, LOG_DEBUG, "CLEANUP MESSAGE CONTEXT");
+
     /* Check milter private data */
     if (mlfi == NULL) {
-	logqidmsg(mlfi, LOG_DEBUG, "CLEANUP MESSAGE CONTEXT");
 	logqidmsg(mlfi, LOG_DEBUG, "context is not set");
 	return;
     }
-
-    logqidmsg(mlfi, LOG_INFO, "CLEANUP MESSAGE CONTEXT");
 
     /* Close amavisd connection */
     amavisd_close(mlfi);
@@ -101,7 +100,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 	wrkdir[0] = mlfi->mlfi_wrkdir;
 	fts = fts_open(wrkdir, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
 	if (fts == NULL) {
-	    logqidmsg(mlfi, LOG_ERR, "could not open file hierarchy %s: %s",
+	    logqidmsg(mlfi, LOG_WARNING, "could not open file hierarchy %s: %s",
 		mlfi->mlfi_wrkdir, strerror(errno));
 	} else {
 	    while ((ftsent = fts_read(fts)) != NULL) {
@@ -112,7 +111,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 		     * field will be set to indicate what caused the
 		     * error.
 		     */
-		    logqidmsg(mlfi, LOG_ERR,
+		    logqidmsg(mlfi, LOG_WARNING,
 			"could not traverse file hierarchy %s: %s",
 			ftsent->fts_path, strerror(ftsent->fts_errno));
 		    break;
@@ -122,7 +121,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 		     * directory, it can't be removed.
 		     */
 		    if (ftsent->fts_errno != ENOENT) {
-			logqidmsg(mlfi, LOG_ERR,
+			logqidmsg(mlfi, LOG_WARNING,
 			    "could not remove directory %s: %s",
 			    ftsent->fts_path, strerror(ftsent->fts_errno));
 		    }
@@ -132,7 +131,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 		     * Assume that since fts_read() couldn't stat the
 		     * file, it can't be unlinked.
 		     */
-		    logqidmsg(mlfi, LOG_ERR, "could not unlink file %s: %s",
+		    logqidmsg(mlfi, LOG_WARNING, "could not unlink file %s: %s",
 			ftsent->fts_path, strerror(ftsent->fts_errno));
 		    break;
 		case FTS_D:
@@ -145,7 +144,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 		     * Remove post-order directory.
 		     */
 		    if (rmdir(ftsent->fts_accpath) != 0 && errno != ENOENT) {
-			logqidmsg(mlfi, LOG_ERR,
+			logqidmsg(mlfi, LOG_WARNING,
 			    "could not remove directory %s: %s",
 			    ftsent->fts_path, strerror(ftsent->fts_errno));
 		    } else {
@@ -158,7 +157,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 		     * A regular file or symbolic link.
 		     */
 		    if (unlink(ftsent->fts_accpath) != 0 && errno != ENOENT) {
-			logqidmsg(mlfi, LOG_ERR, "could not unlink file %s: %s",
+			logqidmsg(mlfi, LOG_WARNING, "could not unlink file %s: %s",
 			    ftsent->fts_path, strerror(ftsent->fts_errno));
 		    } else {
 			logqidmsg(mlfi, LOG_DEBUG, "unlink file %s",
@@ -167,7 +166,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 		}
 	    }
 	    if (fts_close(fts) != 0) {
-		logqidmsg(mlfi, LOG_ERR,
+		logqidmsg(mlfi, LOG_WARNING,
 		    "could not close file hirerachy %s: %s",
 		    mlfi->mlfi_wrkdir, strerror(errno));
 	    }
@@ -206,7 +205,7 @@ mlfi_cleanup(struct mlfiCtx *mlfi)
     /* Cleanup the message context */
     mlfi_cleanup_message(mlfi);
 
-    logqidmsg(mlfi, LOG_INFO, "CLEANUP CONNECTION CONTEXT");
+    logqidmsg(mlfi, LOG_DEBUG, "CLEANUP CONNECTION CONTEXT");
 
     /* Cleanup the connection context */
     free(mlfi->mlfi_addr);
@@ -252,12 +251,12 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     struct	mlfiCtx *mlfi = NULL;
     char       *addr;
 
-    logqidmsg(mlfi, LOG_INFO, "CONNECT: %s", hostname);
+    logqidmsg(mlfi, LOG_DEBUG, "CONNECT: %s", hostname);
 
     /* Allocate memory for private data */
     mlfi = malloc(sizeof(*mlfi));
     if (mlfi == NULL) {
-        logqidmsg(mlfi, LOG_ALERT, "could not allocate private data");
+        logqidmsg(mlfi, LOG_ERR, "could not allocate private data");
         mlfi_setreply_tempfail(ctx);
         return SMFIS_TEMPFAIL;
     }
@@ -269,7 +268,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     /* Save connection informations */
     if (hostname != NULL && *hostname != '\0') {
 	if ((mlfi->mlfi_hostname = strdup(hostname)) == NULL) {
-	    logqidmsg(mlfi, LOG_ALERT, "could not allocate memory");
+	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
@@ -277,7 +276,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     if (hostaddr != NULL) {
 	addr = inet_ntoa(((struct sockaddr_in *)hostaddr)->sin_addr);
 	if ((mlfi->mlfi_addr = strdup(addr)) == NULL) {
-	    logqidmsg(mlfi, LOG_ALERT, "could not allocate memory");
+	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
@@ -324,13 +323,13 @@ mlfi_helo(SMFICTX *ctx, char* helohost)
 	return SMFIS_TEMPFAIL;
     }
 
-    logqidmsg(mlfi, LOG_INFO, "HELO: %s", helohost);
+    logqidmsg(mlfi, LOG_DEBUG, "HELO: %s", helohost);
 
     /* Save helo hostname */
     if (helohost != NULL && *helohost != '\0') {
 	free(mlfi->mlfi_helo);
 	if ((mlfi->mlfi_helo = strdup(helohost)) == NULL) {
-	    logqidmsg(mlfi, LOG_ALERT, "could not allocate memory");
+	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
@@ -366,18 +365,18 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     /* Get message id */
     if ((qid = smfi_getsymval(ctx, "i")) != NULL) {
 	if ((mlfi->mlfi_qid = strdup(qid)) == NULL) {
-	    logqidmsg(mlfi, LOG_ALERT, "could not allocate memory");
+	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
     }
 
-    logqidmsg(mlfi, LOG_INFO, "MAIL FROM: %s", *envfrom);
+    logqidmsg(mlfi, LOG_DEBUG, "MAIL FROM: %s", *envfrom);
 
     /* Save from mail address */
     if (*envfrom != NULL && **envfrom != '\0') {
 	if ((mlfi->mlfi_from = strdup(*envfrom)) == NULL) {
-	    logqidmsg(mlfi, LOG_ALERT, "could not allocate memory");
+	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
@@ -456,12 +455,12 @@ mlfi_envrcpt(SMFICTX *ctx, char **envrcpt)
 	return SMFIS_TEMPFAIL;
     }
 
-    logqidmsg(mlfi, LOG_INFO, "RCPT TO: %s",  *envrcpt);
+    logqidmsg(mlfi, LOG_DEBUG, "RCPT TO: %s",  *envrcpt);
 
     /* Store recipient address */
     rcptlen = strlen(*envrcpt);
     if ((rcpt = malloc(sizeof(*rcpt) + rcptlen)) == NULL) {
-	logqidmsg(mlfi, LOG_ALERT, "could not allocate memory");
+	logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
     }
@@ -607,7 +606,7 @@ mlfi_eom(SMFICTX *ctx)
 	return SMFIS_TEMPFAIL;
     }
 
-    logqidmsg(mlfi, LOG_INFO, "CONTENT CHECK");
+    logqidmsg(mlfi, LOG_DEBUG, "CONTENT CHECK");
 
     /* Close the message file */
     if (mlfi->mlfi_fp == NULL) {
@@ -631,7 +630,7 @@ mlfi_eom(SMFICTX *ctx)
 	wait_counter = 0;
 	while (amavisd_connect(mlfi, &amavisd_sock) == -1) {
 	    if (errno != EAGAIN) {
-		logqidmsg(mlfi, LOG_CRIT,
+		logqidmsg(mlfi, LOG_ERR,
 		    "could not connect to amavisd socket %s: %s",
 		    amavisd_socket, strerror(errno));
 		mlfi_setreply_tempfail(ctx);
@@ -639,14 +638,14 @@ mlfi_eom(SMFICTX *ctx)
 	    }
 	    if (!(wait_counter++ < max_wait)) {
 		logqidmsg(mlfi, LOG_WARNING,
-		    "amavisd connection not available for %d sec, giving up",
+		    "amavisd connection is not available for %d sec, giving up",
 		    wait_counter);
 		mlfi_setreply_tempfail(ctx);
 		return SMFIS_TEMPFAIL;
 	    }
 	    if (!(wait_counter % 60)) {
 		logqidmsg(mlfi, LOG_DEBUG,
-		    "amavisd connection not available for %d sec, "
+		    "amavisd connection is not available for %d sec, "
 		    "triggering sendmail", wait_counter);
 		if (smfi_progress(ctx) != MI_SUCCESS) {
 		    logqidmsg(mlfi, LOG_ERR,
@@ -674,7 +673,7 @@ mlfi_eom(SMFICTX *ctx)
 	}
     } else {
 	if (amavisd_connect(mlfi, &amavisd_sock) == -1) {
-	    logqidmsg(mlfi, LOG_CRIT,
+	    logqidmsg(mlfi, LOG_ERR,
 		"could not connect to amavisd socket %s: %s",
 		amavisd_socket, strerror(errno));
 		mlfi_setreply_tempfail(ctx);
@@ -1110,7 +1109,7 @@ mlfi_abort(SMFICTX *ctx)
 {
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
 
-    logqidmsg(mlfi, LOG_NOTICE, "ABORT");
+    logqidmsg(mlfi, LOG_DEBUG, "ABORT");
 
     /* Check milter private data */
     if (mlfi == NULL) {
@@ -1136,7 +1135,7 @@ mlfi_close(SMFICTX *ctx)
 {
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
 
-    logqidmsg(mlfi, LOG_INFO, "CLOSE");
+    logqidmsg(mlfi, LOG_DEBUG, "CLOSE");
 
     /* Check milter private data */
     if (mlfi == NULL) {
