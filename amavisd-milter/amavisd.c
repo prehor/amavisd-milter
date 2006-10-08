@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.9 2006/10/07 21:46:41 reho Exp $
+ * $Id: amavisd.c,v 1.10 2006/10/07 21:55:32 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -128,9 +128,9 @@ amavisd_connect(struct mlfiCtx *mlfi, struct sockaddr_un *sock)
 ** AMAVISD_REQUEST - Write request line to amavisd
 */
 int
-amavisd_request(struct mlfiCtx *mlfi, char *name, char *value)
+amavisd_request(struct mlfiCtx *mlfi, const char *name, const char *value)
 {
-    char       *p;
+    const char *p;
     char       *b = mlfi->mlfi_amabuf;
 
     /* Encode request */

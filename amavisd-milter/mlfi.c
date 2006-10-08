@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.27 2006/10/08 09:19:33 reho Exp $
+ * $Id: mlfi.c,v 1.28 2006/10/08 10:13:10 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -56,24 +56,6 @@ struct smfiDesc smfilter =
     mlfi_abort,			/* message aborted */
     mlfi_close			/* connection cleanup */
 };
-
-
-/*
-** AMAVISD_REQUEST - Sent request line to amavisd
-*/
-#define AMAVISD_REQUEST(name, value) \
-{ \
-    if (name != NULL) { \
-	logqidmsg(mlfi, LOG_DEBUG, "%s=%s", name, value); \
-    } \
-    if (amavisd_request(mlfi, name, value) == -1) {  \
-	logqidmsg(mlfi, LOG_CRIT, "could not write to socket %s: %s", \
-	    amavisd_socket, strerror(errno)); \
-	mlfi_setreply_tempfail(ctx); \
-	(void) amavisd_close(mlfi); \
-	return SMFIS_TEMPFAIL; \
-    } \
-}
 
 
 /*
@@ -700,31 +682,136 @@ mlfi_eom(SMFICTX *ctx)
 
     logqidmsg(mlfi, LOG_DEBUG, "AMAVISD REQUEST");
 
-    /* Send email to amavisd */
-    AMAVISD_REQUEST("request", "AM.PDP");
-    if (mlfi->mlfi_qid != NULL) {
-	AMAVISD_REQUEST("queue_id", mlfi->mlfi_qid);
+    /* AM.PDP protocol prologue */
+    logqidmsg(mlfi, LOG_DEBUG, "request=AM.PDP");
+    if (amavisd_request(mlfi, "request", "AM.PDP") == -1) {
+	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+	    amavisd_socket, strerror(errno));
+	mlfi_setreply_tempfail(ctx);
+	(void) amavisd_close(mlfi);
+	return SMFIS_TEMPFAIL;
     }
-    AMAVISD_REQUEST("sender", mlfi->mlfi_from);
+
+    /* MTA queue id */
+    if (mlfi->mlfi_qid != NULL) {
+	logqidmsg(mlfi, LOG_DEBUG, "queue_id=%s", mlfi->mlfi_qid);
+	if (amavisd_request(mlfi, "queue_id", mlfi->mlfi_qid) == -1) {
+	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+		amavisd_socket, strerror(errno));
+	    mlfi_setreply_tempfail(ctx);
+	    (void) amavisd_close(mlfi);
+	    return SMFIS_TEMPFAIL;
+	}
+    }
+
+    /* Envelope sender address */
+    logqidmsg(mlfi, LOG_DEBUG, "sender=%s", mlfi->mlfi_from);
+    if (amavisd_request(mlfi, "sender", mlfi->mlfi_from) == -1) {
+	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+	    amavisd_socket, strerror(errno));
+	mlfi_setreply_tempfail(ctx);
+	(void) amavisd_close(mlfi);
+	return SMFIS_TEMPFAIL;
+    }
+
+    /* Envelope recipient addresses */
     rcpt = mlfi->mlfi_rcpt;
     while (rcpt != NULL) {
-	AMAVISD_REQUEST("recipient", rcpt->q_paddr);
+	logqidmsg(mlfi, LOG_DEBUG, "recipient=%s", rcpt->q_paddr);
+	if (amavisd_request(mlfi, "recipient", rcpt->q_paddr) == -1) {
+	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+		amavisd_socket, strerror(errno));
+	    mlfi_setreply_tempfail(ctx);
+	    (void) amavisd_close(mlfi);
+	    return SMFIS_TEMPFAIL;
+	}
 	rcpt = rcpt->q_next;
     }
-    AMAVISD_REQUEST("tempdir", mlfi->mlfi_wrkdir);
-    AMAVISD_REQUEST("tempdir_removed_by", "client");
-    AMAVISD_REQUEST("mail_file", mlfi->mlfi_fname);
-    AMAVISD_REQUEST("delivery_care_of", "client");
-    AMAVISD_REQUEST("client_address", mlfi->mlfi_addr);
-    if (mlfi->mlfi_hostname != NULL) {
-	AMAVISD_REQUEST("client_name", mlfi->mlfi_hostname);
-    }
-    if (mlfi->mlfi_helo != NULL) {
-	AMAVISD_REQUEST("helo_name", mlfi->mlfi_helo);
-    }
-    AMAVISD_REQUEST(NULL, NULL);
 
-    logqidmsg(mlfi, LOG_INFO, "AMAVISD RESPONSE");
+    /* Work directory */
+    logqidmsg(mlfi, LOG_DEBUG, "tempdir=%s", mlfi->mlfi_wrkdir);
+    if (amavisd_request(mlfi, "tempdir", mlfi->mlfi_wrkdir) == -1) {
+	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+	    amavisd_socket, strerror(errno));
+	mlfi_setreply_tempfail(ctx);
+	(void) amavisd_close(mlfi);
+	return SMFIS_TEMPFAIL;
+    }
+
+    /* Who is responsible for removing the working directory */
+    logqidmsg(mlfi, LOG_DEBUG, "tempdir_removed_by=client");
+    if (amavisd_request(mlfi, "tempdir_removed_by", "client") == -1) {
+	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+	    amavisd_socket, strerror(errno));
+	mlfi_setreply_tempfail(ctx);
+	(void) amavisd_close(mlfi);
+	return SMFIS_TEMPFAIL;
+    }
+
+    /* File containing the original mail */
+    logqidmsg(mlfi, LOG_DEBUG, "mail_file=%s", mlfi->mlfi_fname);
+    if (amavisd_request(mlfi, "mail_file", mlfi->mlfi_fname) == -1) {
+	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+	    amavisd_socket, strerror(errno));
+	mlfi_setreply_tempfail(ctx);
+	(void) amavisd_close(mlfi);
+	return SMFIS_TEMPFAIL;
+    }
+
+    /* Who is responsible for forwarding the message */
+    logqidmsg(mlfi, LOG_DEBUG, "delivery_care_of=client");
+    if (amavisd_request(mlfi, "delivery_care_of", "client") == -1) {
+	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+	    amavisd_socket, strerror(errno));
+	mlfi_setreply_tempfail(ctx);
+	(void) amavisd_close(mlfi);
+	return SMFIS_TEMPFAIL;
+    }
+
+    /* IP address of the original SMTP client */
+    logqidmsg(mlfi, LOG_DEBUG, "client_address=%s", mlfi->mlfi_addr);
+    if (amavisd_request(mlfi, "client_address", mlfi->mlfi_addr) == -1) {
+	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+	    amavisd_socket, strerror(errno));
+	mlfi_setreply_tempfail(ctx);
+	(void) amavisd_close(mlfi);
+	return SMFIS_TEMPFAIL;
+    }
+
+    /* DNS name of the original SMTP client */
+    if (mlfi->mlfi_hostname != NULL) {
+	logqidmsg(mlfi, LOG_DEBUG, "client_name=%s", mlfi->mlfi_hostname);
+	if (amavisd_request(mlfi, "client_name", mlfi->mlfi_hostname) == -1) {
+	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+		amavisd_socket, strerror(errno));
+	    mlfi_setreply_tempfail(ctx);
+	    (void) amavisd_close(mlfi);
+	    return SMFIS_TEMPFAIL;
+	}
+    }
+
+    /* The value of the HELO or EHLO specified by the original SMTP client */
+    if (mlfi->mlfi_helo != NULL) {
+	logqidmsg(mlfi, LOG_DEBUG, "helo_name=%s", mlfi->mlfi_helo);
+	if (amavisd_request(mlfi, "helo_name", mlfi->mlfi_helo) == -1) {
+	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+		amavisd_socket, strerror(errno));
+	    mlfi_setreply_tempfail(ctx);
+	    (void) amavisd_close(mlfi);
+	    return SMFIS_TEMPFAIL;
+	}
+    }
+
+    /* End of amavisd request */
+    if (amavisd_request(mlfi, NULL, NULL) == -1) {
+	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+	    amavisd_socket, strerror(errno));
+	mlfi_setreply_tempfail(ctx);
+	(void) amavisd_close(mlfi);
+	return SMFIS_TEMPFAIL;
+    }
+
+    logqidmsg(mlfi, LOG_DEBUG, "AMAVISD RESPONSE");
 
     /* Process response from amavisd */
     rstat = SMFIS_TEMPFAIL;
@@ -750,7 +837,7 @@ mlfi_eom(SMFICTX *ctx)
 	/* AM.PDP protocol version */
 	/* version_server=<value> */
 	if (strcmp(name, "version_server") == 0) {
-	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_DEBUG, "%s=%s", name, value);
 	    i = (int) strtol(value, &header, 10);
 	    if (header != NULL && *header != '\0') {
 		logqidmsg(mlfi, LOG_ERR, "malformed line %s=%s", name, value);
@@ -926,7 +1013,7 @@ mlfi_eom(SMFICTX *ctx)
 	/* Set response code */
 	/* return_value=<value> */
         } else if (strcmp(name, "return_value") == 0) {
-	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_NOTICE, "%s=%s", name, value);
 	    if (strcmp(value, "continue") == 0) {
 		rstat = SMFIS_CONTINUE;
 	    } else if (strcmp(value, "accept") == 0) {
@@ -965,8 +1052,8 @@ mlfi_eom(SMFICTX *ctx)
 		return SMFIS_TEMPFAIL;
 	    }
 	    *value++ = '\0';
+	    /* smfi_setreply accept only 4xx and 5XX codes */
 	    if (*rcode == '4' || *rcode == '5') {
-		/* smfi_setreply accept only 4xx and 5XX codes */
 		logqidmsg(mlfi, LOG_INFO, "%s=%s %s %s", name, rcode, xcode,
 		    value);
 		if (smfi_setreply(ctx, rcode, xcode, value) != MI_SUCCESS) {
@@ -977,7 +1064,6 @@ mlfi_eom(SMFICTX *ctx)
 		    return SMFIS_TEMPFAIL;
 		}
 	    } else {
-		/* ignore other return codes */
 		logqidmsg(mlfi, LOG_DEBUG, "%s=%s %s %s", name, rcode, xcode,
 		    value);
 	    }
