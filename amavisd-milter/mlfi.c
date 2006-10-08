@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.30 2006/10/08 11:17:17 reho Exp $
+ * $Id: mlfi.c,v 1.31 2006/10/08 11:35:59 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -253,12 +253,6 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     char       *addr;
 
     logqidmsg(mlfi, LOG_INFO, "CONNECT: %s", hostname);
-
-    /* Check amavisd socket */
-    if (amavisd_init() == -1) {
-	mlfi_setreply_tempfail(ctx);
-	return SMFIS_TEMPFAIL;
-    }
 
     /* Allocate memory for private data */
     mlfi = malloc(sizeof(*mlfi));

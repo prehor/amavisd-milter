@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.15 2006/10/08 11:05:57 reho Exp $
+ * $Id: amavisd-milter.h,v 1.16 2006/10/08 11:35:59 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
@@ -100,7 +100,6 @@ extern long	amavisd_timeout;	/* connection timeout */
 extern const char *work_dir;		/* work ditectory name */
 
 /* Amavisd communication */
-extern int	amavisd_init(void);
 extern int	amavisd_connect(struct mlfiCtx *, struct sockaddr_un *);
 extern int	amavisd_request(struct mlfiCtx *, const char *, const char *);
 extern int	amavisd_response(struct mlfiCtx *);

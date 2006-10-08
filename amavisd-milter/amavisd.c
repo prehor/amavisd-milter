@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.11 2006/10/08 11:05:57 reho Exp $
+ * $Id: amavisd.c,v 1.12 2006/10/08 11:35:59 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -71,18 +71,6 @@ amavisd_grow_amabuf(struct mlfiCtx *mlfi)
 	(unsigned long)buflen);
 
     return amabuf;
-}
-
-
-/*
-** AMAVISD_INIT - Check amavisd sockect
-*/
-int
-amavisd_init(void)
-{
-    /* TODO: implement amavisd check */
-    /* XXXX: error log processing must be done there */
-    return 0;
 }
 
 
