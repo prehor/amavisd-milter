@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.10 2006/10/07 21:55:32 reho Exp $
+ * $Id: amavisd.c,v 1.11 2006/10/08 11:05:57 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -234,29 +234,27 @@ amavisd_response(struct mlfiCtx *mlfi)
 /*
 ** AMAVISD_CLOSE - Close amavisd socket
 */
-int
+void
 amavisd_close(struct mlfiCtx *mlfi)
 {
-    int ret = 0;
+    /* Close amavisd connection */
+    if (mlfi->mlfi_amasd != -1) {
+	if (close(mlfi->mlfi_amasd) == -1) {
+	    logqidmsg(mlfi, LOG_ERR, "could not close amavisd socket %s: %s",
+		mlfi->mlfi_fname, strerror(errno));
+	}
+	mlfi->mlfi_amasd = -1;
+    }
 
     /* Unlock amavisd connection */
     if (mlfi->mlfi_max_sem_locked != 0) {
-	if ((ret = sem_post(max_sem)) == -1) {
+	if (sem_post(max_sem) == -1) {
 	    logqidmsg(mlfi, LOG_ERR,
 		"%s: could not unlock amavisd connections semaphore: %s",
 		strerror(errno));
-	} else {
-	    logqidmsg(mlfi, LOG_DEBUG, "got back amavisd connection");
 	}
 	mlfi->mlfi_max_sem_locked = 0; 
     }
 
-    /* Close amavisd connection */
-    if (mlfi->mlfi_amasd != -1) {
-	if (close(mlfi->mlfi_amasd) == -1) {
-	    ret = -1;
-	}
-	mlfi->mlfi_amasd = -1;
-    }
-    return ret;
+    logqidmsg(mlfi, LOG_DEBUG, "got back amavisd connection");
 }
