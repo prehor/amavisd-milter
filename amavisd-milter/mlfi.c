@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.25 2006/10/08 07:16:50 reho Exp $
+ * $Id: mlfi.c,v 1.26 2006/10/08 09:00:31 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -89,19 +89,6 @@ struct smfiDesc smfilter =
 	return SMFIS_TEMPFAIL; \
     } \
     *value++ = '\0'; \
-}
-
-
-/*
-** MLFI_CHECK_CTX - Check milter private data
-*/
-#define MLFI_CHECK_CTX() \
-{ \
-    if (mlfi == NULL) { \
-	logqidmsg(mlfi, LOG_CRIT, "context is not set"); \
-	mlfi_setreply_tempfail(ctx); \
-	return SMFIS_TEMPFAIL; \
-    } \
 }
 
 
@@ -371,9 +358,13 @@ mlfi_helo(SMFICTX *ctx, char* helohost)
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
 
     /* Check milter private data */
-    MLFI_CHECK_CTX();
+    if (mlfi == NULL) {
+	logqidmsg(mlfi, LOG_ERR, "mlfi_helo: context is not set");
+	mlfi_setreply_tempfail(ctx);
+	return SMFIS_TEMPFAIL;
+    }
 
-    logqidmsg(mlfi, LOG_DEBUG, "HELO: %s", helohost);
+    logqidmsg(mlfi, LOG_INFO, "HELO: %s", helohost);
 
     /* Save helo hostname */
     if (helohost != NULL && *helohost != '\0') {
@@ -403,7 +394,11 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     char       *qid, *wrkdir;
 
     /* Check milter private data */
-    MLFI_CHECK_CTX();
+    if (mlfi == NULL) {
+	logqidmsg(mlfi, LOG_ERR, "mlfi_envfrom: context is not set");
+	mlfi_setreply_tempfail(ctx);
+	return SMFIS_TEMPFAIL;
+    }
 
     /* Cleanup message data */
     mlfi_cleanup_message(mlfi);
@@ -495,7 +490,11 @@ mlfi_envrcpt(SMFICTX *ctx, char **envrcpt)
     int		rcptlen;
 
     /* Check milter private data */
-    MLFI_CHECK_CTX();
+    if (mlfi == NULL) {
+	logqidmsg(mlfi, LOG_ERR, "mlfi_envrcpt: context is not set");
+	mlfi_setreply_tempfail(ctx);
+	return SMFIS_TEMPFAIL;
+    }
 
     logqidmsg(mlfi, LOG_INFO, "RCPT TO: %s",  *envrcpt);
 
@@ -535,7 +534,11 @@ mlfi_header(SMFICTX *ctx, char *headerf, char *headerv)
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
 
     /* Check milter private data */
-    MLFI_CHECK_CTX();
+    if (mlfi == NULL) {
+	logqidmsg(mlfi, LOG_ERR, "mlfi_header: context is not set");
+	mlfi_setreply_tempfail(ctx);
+	return SMFIS_TEMPFAIL;
+    }
 
     logqidmsg(mlfi, LOG_DEBUG, "HEADER: %s: %s", headerf, headerv);
 
@@ -565,7 +568,11 @@ mlfi_eoh(SMFICTX *ctx)
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
 
     /* Check milter private data */
-    MLFI_CHECK_CTX();
+    if (mlfi == NULL) {
+	logqidmsg(mlfi, LOG_ERR, "mlfi_eoh: context is not set");
+	mlfi_setreply_tempfail(ctx);
+	return SMFIS_TEMPFAIL;
+    }
 
     logqidmsg(mlfi, LOG_DEBUG, "END OF HEADERS");
 
@@ -595,7 +602,11 @@ mlfi_body(SMFICTX *ctx, unsigned char * bodyp, size_t bodylen)
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
 
     /* Check milter private data */
-    MLFI_CHECK_CTX();
+    if (mlfi == NULL) {
+	logqidmsg(mlfi, LOG_ERR, "mlfi_body: context is not set");
+	mlfi_setreply_tempfail(ctx);
+	return SMFIS_TEMPFAIL;
+    }
 
     logqidmsg(mlfi, LOG_DEBUG, "body chunk: %ld", (long)bodylen);
 
@@ -630,7 +641,11 @@ mlfi_eom(SMFICTX *ctx)
     int		wait_counter;
 
     /* Check milter private data */
-    MLFI_CHECK_CTX();
+    if (mlfi == NULL) {
+	logqidmsg(mlfi, LOG_ERR, "mlfi_eom: context is not set");
+	mlfi_setreply_tempfail(ctx);
+	return SMFIS_TEMPFAIL;
+    }
 
     logqidmsg(mlfi, LOG_INFO, "CONTENT CHECK");
 
@@ -945,7 +960,7 @@ mlfi_abort(SMFICTX *ctx)
 
     /* Check milter private data */
     if (mlfi == NULL) {
-	logqidmsg(mlfi, LOG_DEBUG, "context is not set");
+	logqidmsg(mlfi, LOG_DEBUG, "mlfi_abort: context is not set");
 	return SMFIS_CONTINUE;
     }
 
@@ -971,7 +986,7 @@ mlfi_close(SMFICTX *ctx)
 
     /* Check milter private data */
     if (mlfi == NULL) {
-	logqidmsg(mlfi, LOG_DEBUG, "context is not set");
+	logqidmsg(mlfi, LOG_DEBUG, "mlfi_close: context is not set");
 	return SMFIS_CONTINUE;
     }
 
