@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.26 2006/10/08 09:00:31 reho Exp $
+ * $Id: mlfi.c,v 1.27 2006/10/08 09:19:33 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -73,22 +73,6 @@ struct smfiDesc smfilter =
 	(void) amavisd_close(mlfi); \
 	return SMFIS_TEMPFAIL; \
     } \
-}
-
-
-/*
-** AMAVISD_PARSE_RESPONSE - Parse amavisd response line
-*/
-#define AMAVISD_PARSE_RESPONSE(item, value, sep) \
-{ \
-    item = value; \
-    if ((value = strchr(value, sep)) == NULL) { \
-	logqidmsg(mlfi, LOG_ERR, "malformed line: %s", name); \
-	mlfi_setreply_tempfail(ctx); \
-	(void) amavisd_close(mlfi); \
-	return SMFIS_TEMPFAIL; \
-    } \
-    *value++ = '\0'; \
 }
 
 
@@ -740,7 +724,7 @@ mlfi_eom(SMFICTX *ctx)
     }
     AMAVISD_REQUEST(NULL, NULL);
 
-    logqidmsg(mlfi, LOG_DEBUG, "AMAVISD RESPONSE");
+    logqidmsg(mlfi, LOG_INFO, "AMAVISD RESPONSE");
 
     /* Process response from amavisd */
     rstat = SMFIS_TEMPFAIL;
@@ -754,29 +738,36 @@ mlfi_eom(SMFICTX *ctx)
 	}
 
 	/* Get name and value */
-        value = name;
-	AMAVISD_PARSE_RESPONSE(value, value, '=');
+	/* <name>=<value> */
+	if ((value = strchr(name, '=')) == NULL) {
+	    logqidmsg(mlfi, LOG_ERR, "malformed line: %s", name);
+	    mlfi_setreply_tempfail(ctx);
+	    (void) amavisd_close(mlfi);
+	    return SMFIS_TEMPFAIL;
+	}
+	*value++ = '\0';
 
 	/* AM.PDP protocol version */
+	/* version_server=<value> */
 	if (strcmp(name, "version_server") == 0) {
 	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    i = (int) strtol(value, &header, 10);
 	    if (header != NULL && *header != '\0') {
-		logqidmsg(mlfi, LOG_ERR, "malformed line %s=%s",
-		    name, value);
+		logqidmsg(mlfi, LOG_ERR, "malformed line %s=%s", name, value);
 		mlfi_setreply_tempfail(ctx);
 		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 	    if (i > AMPDP_VERSION) {
-		logqidmsg(mlfi, LOG_CRIT, "unknown AM.PDP protocol version %d",
-		    i);
+		logqidmsg(mlfi, LOG_ERR,
+		   "incompatible AM.PDP protocol version %s", value);
 		mlfi_setreply_tempfail(ctx);
 		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 
 	/* Add recipient */
+	/* addrcpt=<value> */
 	} else if (strcmp(name, "addrcpt") == 0) {
 	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    if (smfi_addrcpt(ctx, value) != MI_SUCCESS) {
@@ -787,6 +778,7 @@ mlfi_eom(SMFICTX *ctx)
 	    }
 
 	/* Delete recipient */
+	/* delrcpt=<value> */
 	} else if (strcmp(name, "delrcpt") == 0) {
 	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    if (smfi_delrcpt(ctx, value) != MI_SUCCESS) {
@@ -798,11 +790,19 @@ mlfi_eom(SMFICTX *ctx)
 	    }
 
 	/* Append header */
+	/* addheader=<header> <value> */
 	} else if (strcmp(name, "addheader") == 0) {
 	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
-	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
+	    header = value;
+	    if ((value = strchr(header, ' ')) == NULL) {
+		logqidmsg(mlfi, LOG_ERR, "malformed line: %s=%s", name, header);
+		mlfi_setreply_tempfail(ctx);
+		(void) amavisd_close(mlfi);
+		return SMFIS_TEMPFAIL;
+	    }
+	    *value++ = '\0';
 	    if (smfi_insheader(ctx, INT_MAX, header, value) != MI_SUCCESS) {
-		logqidmsg(mlfi, LOG_ERR, "could not add header %s: %s",
+		logqidmsg(mlfi, LOG_ERR, "could not append header %s: %s",
 		    header, value);
 		mlfi_setreply_tempfail(ctx);
 		(void) amavisd_close(mlfi);
@@ -810,9 +810,17 @@ mlfi_eom(SMFICTX *ctx)
 	    }
 
 	/* Insert header */
+	/* insheader=<index> <header> <value> */
 	} else if (strcmp(name, "insheader") == 0) {
 	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
-	    AMAVISD_PARSE_RESPONSE(idx, value, ' ');
+	    idx = value;
+	    if ((value = strchr(idx, ' ')) == NULL) {
+		logqidmsg(mlfi, LOG_ERR, "malformed line: %s=%s", name, idx);
+		mlfi_setreply_tempfail(ctx);
+		(void) amavisd_close(mlfi);
+		return SMFIS_TEMPFAIL;
+	    }
+	    *value++ = '\0';
 	    i = (int) strtol(idx, &header, 10);
 	    if (header != NULL && *header != '\0') {
 		logqidmsg(mlfi, LOG_ERR, "malformed line %s=%s %s",
@@ -821,7 +829,15 @@ mlfi_eom(SMFICTX *ctx)
 		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
-	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
+	    header = value;
+	    if ((value = strchr(header, ' ')) == NULL) {
+		logqidmsg(mlfi, LOG_ERR, "malformed line: %s=%s %s",
+		    name, idx, header);
+		mlfi_setreply_tempfail(ctx);
+		(void) amavisd_close(mlfi);
+		return SMFIS_TEMPFAIL;
+	    }
+	    *value++ = '\0';
 	    if (smfi_insheader(ctx, i, header, value) != MI_SUCCESS) {
 		logqidmsg(mlfi, LOG_ERR, "could not insert header %s %s: %s",
 		    idx, header, value);
@@ -831,9 +847,17 @@ mlfi_eom(SMFICTX *ctx)
 	    }
 
 	/* Change header */
+	/* chgheader=<index> <header> <value> */
 	} else if (strcmp(name, "chgheader") == 0) {
 	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
-	    AMAVISD_PARSE_RESPONSE(idx, value, ' ');
+	    idx = value;
+	    if ((value = strchr(idx, ' ')) == NULL) {
+		logqidmsg(mlfi, LOG_ERR, "malformed line: %s=%s", name, idx);
+		mlfi_setreply_tempfail(ctx);
+		(void) amavisd_close(mlfi);
+		return SMFIS_TEMPFAIL;
+	    }
+	    *value++ = '\0';
 	    i = (int) strtol(idx, &header, 10);
 	    if (header != NULL && *header != '\0') {
 		logqidmsg(mlfi, LOG_ERR, "malformed line %s=%s %s",
@@ -842,7 +866,15 @@ mlfi_eom(SMFICTX *ctx)
 		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
-	    AMAVISD_PARSE_RESPONSE(header, value, ' ');
+	    header = value;
+	    if ((value = strchr(header, ' ')) == NULL) {
+		logqidmsg(mlfi, LOG_ERR, "malformed line: %s=%s %s",
+		    name, idx, header);
+		mlfi_setreply_tempfail(ctx);
+		(void) amavisd_close(mlfi);
+		return SMFIS_TEMPFAIL;
+	    }
+	    *value++ = '\0';
 	    if (smfi_chgheader(ctx, header, i, value) != MI_SUCCESS) {
 		logqidmsg(mlfi, LOG_ERR, "could not change header %s %s: %s",
 		    idx, header, value);
@@ -852,9 +884,17 @@ mlfi_eom(SMFICTX *ctx)
 	    }
 
 	/* Delete header */
+	/* delheader=<index> <header> */
         } else if (strcmp(name, "delheader") == 0) {
 	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
-	    AMAVISD_PARSE_RESPONSE(idx, value, ' ');
+	    idx = value;
+	    if ((value = strchr(idx, ' ')) == NULL) {
+		logqidmsg(mlfi, LOG_ERR, "malformed line: %s=%s", name, idx);
+		mlfi_setreply_tempfail(ctx);
+		(void) amavisd_close(mlfi);
+		return SMFIS_TEMPFAIL;
+	    }
+	    *value++ = '\0';
 	    i = (int) strtol(idx, &header, 10);
 	    if (header != NULL && *header != '\0') {
 		logqidmsg(mlfi, LOG_ERR, "malformed line %s=%s %s",
@@ -865,13 +905,14 @@ mlfi_eom(SMFICTX *ctx)
 	    }
 	    if (smfi_chgheader(ctx, value, i, NULL) != MI_SUCCESS) {
 		logqidmsg(mlfi, LOG_ERR, "could not delete header %s %s:",
-		    idx, header);
+		    idx, value);
 		mlfi_setreply_tempfail(ctx);
 		(void) amavisd_close(mlfi);
 		return SMFIS_TEMPFAIL;
 	    }
 
 	/* Quarantine message */
+	/* quarantine=<reason> */
 	} else if (strcmp(name, "quarantine") == 0) {
 	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    if (smfi_quarantine(ctx, value) != MI_SUCCESS) {
@@ -883,6 +924,7 @@ mlfi_eom(SMFICTX *ctx)
 	    }
 
 	/* Set response code */
+	/* return_value=<value> */
         } else if (strcmp(name, "return_value") == 0) {
 	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    if (strcmp(value, "continue") == 0) {
@@ -903,15 +945,29 @@ mlfi_eom(SMFICTX *ctx)
 	    }
 
 	/* Set SMTP reply */
+	/* setreply=<rcode> <xcode> <value> */
         } else if (strcmp(name, "setreply") == 0) {
-	    AMAVISD_PARSE_RESPONSE(rcode, value, ' ');
-	    AMAVISD_PARSE_RESPONSE(xcode, value, ' ');
-	    if (*rcode != '4' && *rcode != '5') {
+	    rcode = value;
+	    if ((value = strchr(rcode, ' ')) == NULL) {
+		logqidmsg(mlfi, LOG_ERR, "malformed line: %s=%s",
+		    name, rcode);
+		mlfi_setreply_tempfail(ctx);
+		(void) amavisd_close(mlfi);
+		return SMFIS_TEMPFAIL;
+	    }
+	    *value++ = '\0';
+	    xcode = value;
+	    if ((value = strchr(xcode, ' ')) == NULL) {
+		logqidmsg(mlfi, LOG_ERR, "malformed line: %s=%s %s",
+		    name, rcode, xcode);
+		mlfi_setreply_tempfail(ctx);
+		(void) amavisd_close(mlfi);
+		return SMFIS_TEMPFAIL;
+	    }
+	    *value++ = '\0';
+	    if (*rcode == '4' || *rcode == '5') {
 		/* smfi_setreply accept only 4xx and 5XX codes */
-		logqidmsg(mlfi, LOG_DEBUG, "%s=%s %s %s", name, rcode, xcode,
-		    value);
-	    } else {
-		logqidmsg(mlfi, LOG_NOTICE, "%s=%s %s %s", name, rcode, xcode,
+		logqidmsg(mlfi, LOG_INFO, "%s=%s %s %s", name, rcode, xcode,
 		    value);
 		if (smfi_setreply(ctx, rcode, xcode, value) != MI_SUCCESS) {
 		    logqidmsg(mlfi, LOG_ERR, "could not set reply %s %s %s",
@@ -920,17 +976,25 @@ mlfi_eom(SMFICTX *ctx)
 		    (void) amavisd_close(mlfi);
 		    return SMFIS_TEMPFAIL;
 		}
+	    } else {
+		/* ignore other return codes */
+		logqidmsg(mlfi, LOG_DEBUG, "%s=%s %s %s", name, rcode, xcode,
+		    value);
 	    }
 
 	/* Exit code */
+	/* exit_code=<value> */
         } else if (strcmp(name, "exit_code") == 0) {
-	    /* Ignore legacy exit_code */
+	    /* ignore legacy exit_code */
 	    logqidmsg(mlfi, LOG_DEBUG, "%s=%s", name, value);
 
 	/* Unknown response */
         } else {
-	    logqidmsg(mlfi, LOG_WARNING, "ignore unknown amavisd response "
-		"%s=%s", name, value);
+	    logqidmsg(mlfi, LOG_ERR, "unknown amavisd response %s=%s",
+		name, value);
+	    mlfi_setreply_tempfail(ctx);
+	    (void) amavisd_close(mlfi);
+	    return SMFIS_TEMPFAIL;
 	}
     }
 
