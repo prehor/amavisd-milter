@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.13 2006/10/08 11:37:33 reho Exp $
+ * $Id: amavisd.c,v 1.14 2006/10/08 12:38:01 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -108,6 +108,7 @@ amavisd_connect(struct mlfiCtx *mlfi, struct sockaddr_un *sock)
     }
 
     /* Return socket */
+    logqidmsg(mlfi, LOG_DEBUG, "open amavisd communication socket");
     return mlfi->mlfi_amasd;
 }
 
@@ -232,6 +233,7 @@ amavisd_close(struct mlfiCtx *mlfi)
 		mlfi->mlfi_fname, strerror(errno));
 	}
 	mlfi->mlfi_amasd = -1;
+	logqidmsg(mlfi, LOG_DEBUG, "close amavisd communication socket");
     }
 
     /* Unlock amavisd connection */
@@ -242,7 +244,6 @@ amavisd_close(struct mlfiCtx *mlfi)
 		strerror(errno));
 	}
 	mlfi->mlfi_max_sem_locked = 0; 
+	logqidmsg(mlfi, LOG_DEBUG, "got back amavisd connection");
     }
-
-    logqidmsg(mlfi, LOG_DEBUG, "got back amavisd connection");
 }

@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: log.c,v 1.3 2006/10/07 12:44:38 reho Exp $
+ * $Id: log.c,v 1.4 2006/10/07 21:46:41 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -67,8 +67,7 @@ void
 logqidmsg(struct mlfiCtx *mlfi, int priority, const char *fmt, ...)
 {
     char	buf[MAXLOGBUF];
-    const char *qid;
-    const char *hostname;
+    const char *p;
     va_list	ap;
 
     /* Format message */
@@ -79,20 +78,16 @@ logqidmsg(struct mlfiCtx *mlfi, int priority, const char *fmt, ...)
     /* Print log message */
     if (mlfi != NULL) {
 	if (mlfi->mlfi_qid != NULL) {
-	    qid = mlfi->mlfi_qid;
+	    p = mlfi->mlfi_qid;
 	} else if (mlfi->mlfi_prev_qid != NULL) {
-	    qid = mlfi->mlfi_prev_qid;
+	    p = mlfi->mlfi_prev_qid;
+	} else if (mlfi->mlfi_hostname != NULL) {
+	    p = mlfi->mlfi_hostname;
 	} else {
-	    qid = "NOQUEUE";
-	}
-	if (mlfi->mlfi_hostname != NULL) {
-	    hostname = mlfi->mlfi_hostname;
-	} else {
-	    hostname = "UNKNOWN";
+	    p = "UNKNOWN";
 	}
     } else {
-	qid = "NOQUEUE";
-	hostname = "UNKNOWN";
+	p = "NOQUEUE";
     }
-    logmsg(priority, "%s: %s: %s", qid, hostname, buf);
+    logmsg(priority, "%s: %s", p, buf);
 }

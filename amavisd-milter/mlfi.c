@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.32 2006/10/08 11:37:33 reho Exp $
+ * $Id: mlfi.c,v 1.33 2006/10/08 12:38:01 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -76,7 +76,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 
     /* Check milter private data */
     if (mlfi == NULL) {
-	logqidmsg(mlfi, LOG_DEBUG, "context is not set");
+	logqidmsg(mlfi, LOG_DEBUG, "mlfi_cleanup_message: context is not set");
 	return;
     }
 
@@ -177,6 +177,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
     /* Free memory */
     free(mlfi->mlfi_prev_qid);
     mlfi->mlfi_prev_qid = mlfi->mlfi_qid;
+    mlfi->mlfi_qid = NULL;
     free(mlfi->mlfi_from);
     mlfi->mlfi_from = NULL;
     while(mlfi->mlfi_rcpt != NULL) {
@@ -198,7 +199,7 @@ mlfi_cleanup(struct mlfiCtx *mlfi)
     /* Check milter private data */
     if (mlfi == NULL) {
 	logqidmsg(mlfi, LOG_DEBUG, "CLEANUP CONNECTION CONTEXT");
-	logqidmsg(mlfi, LOG_DEBUG, "context is not set");
+	logqidmsg(mlfi, LOG_DEBUG, "mlfi_cleanup: context is not set");
 	return;
     }
 
@@ -251,7 +252,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     struct	mlfiCtx *mlfi = NULL;
     char       *addr;
 
-    logqidmsg(mlfi, LOG_DEBUG, "CONNECT: %s", hostname);
+    logmsg(mlfi, LOG_DEBUG, "%s: CONNECT", hostname);
 
     /* Allocate memory for private data */
     mlfi = malloc(sizeof(*mlfi));
@@ -533,7 +534,7 @@ mlfi_eoh(SMFICTX *ctx)
 	return SMFIS_TEMPFAIL;
     }
 
-    logqidmsg(mlfi, LOG_DEBUG, "END OF HEADERS");
+    logqidmsg(mlfi, LOG_DEBUG, "MESSAGE BODY");
 
     /* Write the blank line between the header and the body */
     /* XXX: amavisd_new require \n instead of \r\n at the end of line */
