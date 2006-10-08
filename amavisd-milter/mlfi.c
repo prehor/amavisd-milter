@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.28 2006/10/08 10:13:10 reho Exp $
+ * $Id: mlfi.c,v 1.29 2006/10/08 11:05:57 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -677,6 +677,16 @@ mlfi_eom(SMFICTX *ctx)
 	    mlfi_setreply_tempfail(ctx);
 	    (void) amavisd_close(mlfi);
 	    return SMFIS_TEMPFAIL;
+	}
+    } else {
+	if (amavisd_connect(mlfi, &amavisd_sock) == -1) {
+	    logqidmsg(mlfi, LOG_CRIT,
+		"could not connect to amavisd socket %s: %s",
+		amavisd_socket, strerror(errno));
+		mlfi_setreply_tempfail(ctx);
+		return SMFIS_TEMPFAIL;
+        } else {
+	    logqidmsg(mlfi, LOG_DEBUG, "got amavisd connection");
 	}
     }
 
