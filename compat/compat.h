@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: compat.h,v 1.6 2006/05/14 20:27:56 reho Exp $
+ * $Id: compat.h,v 1.7 2006/06/16 07:00:51 reho Exp $
  */
 
 #ifndef _AMAVISD_COMPAT_H
@@ -105,6 +105,17 @@ extern int     daemon(int, int);
 # include <fts.h>
 #else
 # include "fts_compat.h"
+#endif
+
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
 #endif
 
 #if ! HAVE_MKDTEMP

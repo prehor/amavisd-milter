@@ -25,13 +25,12 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id$
+ * $Id: write_sock.c,v 1.1 2005/05/10 21:37:59 reho Exp $
  */
 
 #include "compat.h"
 
 #include <errno.h>
-#include <sys/time.h>
 
 
 /*
