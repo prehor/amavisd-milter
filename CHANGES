@@ -1,5 +1,8 @@
 This is the CHANGELOG for amavisd-milter.
 
+20061017:
+	Implemented AM.PDP request attribute protocol_name.
+
 20061008:
 	amavisd-milter-1.2.0
 
@@ -168,4 +171,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.35 2006/10/07 10:08:12 reho Exp $
+$Id: CHANGES,v 1.36 2006/10/08 17:55:44 reho Exp $

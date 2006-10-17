@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.34 2006/10/08 13:31:29 reho Exp $
+ * $Id: mlfi.c,v 1.35 2006/10/08 13:33:42 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -212,6 +212,7 @@ mlfi_cleanup(struct mlfiCtx *mlfi)
     free(mlfi->mlfi_addr);
     free(mlfi->mlfi_hostname);
     free(mlfi->mlfi_helo);
+    free(mlfi->mlfi_protocol);
     free(mlfi->mlfi_amabuf);
     free(mlfi->mlfi_prev_qid);
 
@@ -316,6 +317,7 @@ sfsistat
 mlfi_helo(SMFICTX *ctx, char* helohost)
 {
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
+    const char *protocol;
 
     /* Check milter private data */
     if (mlfi == NULL) {
@@ -333,6 +335,17 @@ mlfi_helo(SMFICTX *ctx, char* helohost)
 	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
+	}
+    }
+
+    /* Get communication protocol name */
+    if ((protocol = smfi_getsymval(ctx, "r")) != NULL) {
+	if ((mlfi->mlfi_protocol = strdup(protocol)) == NULL) {
+	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
+	    mlfi_setreply_tempfail(ctx);
+	    return SMFIS_TEMPFAIL;
+	} else {
+	    logqidmsg(mlfi, LOG_DEBUG, "protocol: %s", protocol);
 	}
     }
 
@@ -700,6 +713,18 @@ mlfi_eom(SMFICTX *ctx)
     if (mlfi->mlfi_qid != NULL) {
 	logqidmsg(mlfi, LOG_DEBUG, "queue_id=%s", mlfi->mlfi_qid);
 	if (amavisd_request(mlfi, "queue_id", mlfi->mlfi_qid) == -1) {
+	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+		amavisd_socket, strerror(errno));
+	    amavisd_close(mlfi);
+	    mlfi_setreply_tempfail(ctx);
+	    return SMFIS_TEMPFAIL;
+	}
+    }
+
+    /* Communication protocol */
+    if (mlfi->mlfi_protocol != NULL) {
+	logqidmsg(mlfi, LOG_DEBUG, "protocol_name=%s", mlfi->mlfi_protocol);
+	if (amavisd_request(mlfi, "protocol_name", mlfi->mlfi_protocol) == -1) {
 	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 		amavisd_socket, strerror(errno));
 	    amavisd_close(mlfi);
