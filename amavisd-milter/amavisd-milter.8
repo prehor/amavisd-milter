@@ -1,5 +1,5 @@
 .\"
-.\" $Id: amavisd-milter.8,v 1.11 2006/10/17 15:43:40 reho Exp $
+.\" $Id: amavisd-milter.8,v 1.12 2006/10/17 16:28:46 reho Exp $
 .\"
 .Dd Januar 23, 2006
 .Dt amavisd-milter 8
@@ -155,7 +155,7 @@ Then (re)start amavisd daemon.
 To the sendmail.mc file add the following entries:
 .Bd -literal -offset indent
 define(`confMILTER_MACROS_ENVFROM',
-	confMILTER_MACROS_ENVFROM`, r')
+	confMILTER_MACROS_ENVFROM`, r, b')
 INPUT_MAIL_FILTER(`amavisd-milter',
 	`S=local:/var/amavis/amavisd-milter.sock,
 	F=T, T=S:10m;R:10m;E:10m')

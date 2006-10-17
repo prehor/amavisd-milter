@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.36 2006/10/17 15:18:12 reho Exp $
+ * $Id: mlfi.c,v 1.37 2006/10/17 16:26:19 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -209,8 +209,9 @@ mlfi_cleanup(struct mlfiCtx *mlfi)
     logqidmsg(mlfi, LOG_DEBUG, "CLEANUP CONNECTION CONTEXT");
 
     /* Cleanup the connection context */
-    free(mlfi->mlfi_addr);
     free(mlfi->mlfi_hostname);
+    free(mlfi->mlfi_client_addr);
+    free(mlfi->mlfi_client_host);
     free(mlfi->mlfi_helo);
     free(mlfi->mlfi_protocol);
     free(mlfi->mlfi_amabuf);
@@ -269,7 +270,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
 
     /* Save connection informations */
     if (hostname != NULL && *hostname != '\0') {
-	if ((mlfi->mlfi_hostname = strdup(hostname)) == NULL) {
+	if ((mlfi->mlfi_client_host = strdup(hostname)) == NULL) {
 	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
@@ -277,7 +278,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     }
     if (hostaddr != NULL) {
 	addr = inet_ntoa(((struct sockaddr_in *)hostaddr)->sin_addr);
-	if ((mlfi->mlfi_addr = strdup(addr)) == NULL) {
+	if ((mlfi->mlfi_client_addr = strdup(addr)) == NULL) {
 	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
@@ -300,6 +301,15 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	mlfi_setreply_tempfail(ctx);
 	mlfi_cleanup(mlfi);
 	return SMFIS_TEMPFAIL;
+    }
+
+    /* Save hostname */
+    if ((hostname = smfi_getsymval(ctx, "j")) != NULL) {
+	if ((mlfi->mlfi_hostname = strdup(hostname)) == NULL) {
+	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
+	    mlfi_setreply_tempfail(ctx);
+	    return SMFIS_TEMPFAIL;
+	}
     }
 
     /* Continue processing */
@@ -352,8 +362,11 @@ sfsistat
 mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 {
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
-    const char *qid, *wrkdir;
+    char	buf[64];
+    const char *date, *p, *qid, *wrkdir;
     const char *protocol = NULL;
+    size_t	l;
+    time_t	t;
 
     /* Check milter private data */
     if (mlfi == NULL) {
@@ -378,7 +391,7 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     /* Cleanup message data */
     mlfi_cleanup_message(mlfi);
 
-    /* Get message id */
+    /* Save queue id */
     if ((qid = smfi_getsymval(ctx, "i")) != NULL) {
 	if ((mlfi->mlfi_qid = strdup(qid)) == NULL) {
 	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
@@ -445,6 +458,80 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 	return SMFIS_TEMPFAIL;
     }
     logqidmsg(mlfi, LOG_DEBUG, "create message file %s", mlfi->mlfi_fname);
+
+    /* Get transaction date */
+    if ((date = smfi_getsymval(ctx, "b")) == NULL) {
+	(void) time(&t);
+	if (strftime(buf, sizeof(buf), "%a, %e %b %Y %H:%M:%S %z",
+	    localtime(&t)) > 0)
+	{
+	    date = buf;
+	}
+    }
+
+    /* Write synthesized received header to the file as the first header */
+    /* XXX: amavisd_new require \n instead of \r\n at the end of header */
+    if ((l = snprintf(mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	"Received: from %s (%s [%s])\n\tby %s (amavisd-milter)",
+	mlfi->mlfi_helo != NULL && *mlfi->mlfi_helo != '\0'
+	    ? mlfi->mlfi_helo
+	    : "unknown",
+	mlfi->mlfi_client_host != NULL && *mlfi->mlfi_client_host != '\0'
+	    ? mlfi->mlfi_client_host
+	    : mlfi->mlfi_client_addr != NULL && *mlfi->mlfi_client_addr != '\0'
+	    ? mlfi->mlfi_client_addr
+	    : "unknown",
+	mlfi->mlfi_client_addr != NULL && *mlfi->mlfi_client_addr != '\0'
+	    ? mlfi->mlfi_client_addr
+	    : "unknown",
+	mlfi->mlfi_hostname != NULL && *mlfi->mlfi_hostname != '\0'
+	    ? mlfi->mlfi_hostname
+	    : "localhost")) >= mlfi->mlfi_amabuf_length)
+    {
+	l = mlfi->mlfi_amabuf_length - 1;
+    }
+    if (mlfi->mlfi_protocol != NULL && *mlfi->mlfi_protocol != '\0') {
+	if ((l += snprintf(mlfi->mlfi_amabuf + l, mlfi->mlfi_amabuf_length - l,
+	    " with %s", mlfi->mlfi_protocol)) >= mlfi->mlfi_amabuf_length)
+	{
+	    l = mlfi->mlfi_amabuf_length - 1;
+	}
+    }
+    if (mlfi->mlfi_qid != NULL && *mlfi->mlfi_qid != '\0') {
+	if ((l += snprintf(mlfi->mlfi_amabuf + l, mlfi->mlfi_amabuf_length - l,
+	    " id %s", mlfi->mlfi_qid)) >= mlfi->mlfi_amabuf_length)
+	{
+	    l = mlfi->mlfi_amabuf_length - 1;
+	}
+    }
+    if ((l += snprintf(mlfi->mlfi_amabuf + l, mlfi->mlfi_amabuf_length - l,
+	";\n\t")) >= mlfi->mlfi_amabuf_length)
+    {
+	l = mlfi->mlfi_amabuf_length - 1;
+    }
+    if (date != NULL && *date != '\0') {
+	if ((l += snprintf(mlfi->mlfi_amabuf + l, mlfi->mlfi_amabuf_length - l,
+	    "%s\n\t", date)) >= mlfi->mlfi_amabuf_length)
+	{
+	    l = mlfi->mlfi_amabuf_length - 1;
+	}
+    }
+    if ((l += snprintf(mlfi->mlfi_amabuf + l, mlfi->mlfi_amabuf_length - l,
+	"(envelope-from %s)\n",
+	mlfi->mlfi_from != NULL && *mlfi->mlfi_from != '\0'
+	    ? mlfi->mlfi_from
+	    : "<>")) >= mlfi->mlfi_amabuf_length)
+    {
+	l = mlfi->mlfi_amabuf_length - 1;
+    }
+    logqidmsg(mlfi, LOG_DEBUG, "ADDHDR: %s", mlfi->mlfi_amabuf);
+    (void) fputs(mlfi->mlfi_amabuf, mlfi->mlfi_fp);
+    if (ferror(mlfi->mlfi_fp)) {
+	logqidmsg(mlfi, LOG_ERR, "could not write to message file %s: %s",
+	    mlfi->mlfi_fname, strerror(errno));
+	mlfi_setreply_tempfail(ctx);
+	return SMFIS_TEMPFAIL;
+    }
 
     /* Continue processing */
     return SMFIS_CONTINUE;
@@ -800,8 +887,8 @@ mlfi_eom(SMFICTX *ctx)
     }
 
     /* IP address of the original SMTP client */
-    logqidmsg(mlfi, LOG_DEBUG, "client_address=%s", mlfi->mlfi_addr);
-    if (amavisd_request(mlfi, "client_address", mlfi->mlfi_addr) == -1) {
+    logqidmsg(mlfi, LOG_DEBUG, "client_address=%s", mlfi->mlfi_client_addr);
+    if (amavisd_request(mlfi, "client_address", mlfi->mlfi_client_addr) == -1) {
 	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 	    amavisd_socket, strerror(errno));
 	amavisd_close(mlfi);
@@ -810,9 +897,9 @@ mlfi_eom(SMFICTX *ctx)
     }
 
     /* DNS name of the original SMTP client */
-    if (mlfi->mlfi_hostname != NULL) {
-	logqidmsg(mlfi, LOG_DEBUG, "client_name=%s", mlfi->mlfi_hostname);
-	if (amavisd_request(mlfi, "client_name", mlfi->mlfi_hostname) == -1) {
+    if (mlfi->mlfi_client_host != NULL) {
+	logqidmsg(mlfi, LOG_DEBUG, "client_name=%s", mlfi->mlfi_client_host);
+	if (amavisd_request(mlfi, "client_name", mlfi->mlfi_client_host) == -1) {
 	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 		amavisd_socket, strerror(errno));
 	    amavisd_close(mlfi);

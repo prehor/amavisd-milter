@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.17 2006/10/08 11:37:33 reho Exp $
+ * $Id: amavisd-milter.h,v 1.18 2006/10/17 15:18:12 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
@@ -51,12 +51,13 @@ struct mlfiAddress {
 
 /* Milter private data structure */
 struct mlfiCtx {
-    char       *mlfi_addr;		/* remote host address */
-    char       *mlfi_hostname;		/* remote host name */
+    char       *mlfi_hostname;		/* sendmail hostname */
+    char       *mlfi_client_addr;	/* remote host address */
+    char       *mlfi_client_host;	/* remote host name */
     char       *mlfi_helo;		/* remote host helo */
     char       *mlfi_protocol;		/* communication protocol */
-    char       *mlfi_qid;		/* mail id */
-    char       *mlfi_prev_qid;		/* previous mail id */
+    char       *mlfi_qid;		/* queue id */
+    char       *mlfi_prev_qid;		/* previous queue id */
     char       *mlfi_from;		/* mail sender */
     struct	mlfiAddress *mlfi_rcpt;	/* mail recipients */
     char	mlfi_wrkdir[MAXPATHLEN];/* work directory */
