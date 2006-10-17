@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.35 2006/10/08 13:33:42 reho Exp $
+ * $Id: mlfi.c,v 1.36 2006/10/17 15:18:12 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -317,7 +317,6 @@ sfsistat
 mlfi_helo(SMFICTX *ctx, char* helohost)
 {
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
-    const char *protocol;
 
     /* Check milter private data */
     if (mlfi == NULL) {
@@ -338,17 +337,6 @@ mlfi_helo(SMFICTX *ctx, char* helohost)
 	}
     }
 
-    /* Get communication protocol name */
-    if ((protocol = smfi_getsymval(ctx, "r")) != NULL) {
-	if ((mlfi->mlfi_protocol = strdup(protocol)) == NULL) {
-	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
-	    mlfi_setreply_tempfail(ctx);
-	    return SMFIS_TEMPFAIL;
-	} else {
-	    logqidmsg(mlfi, LOG_DEBUG, "protocol: %s", protocol);
-	}
-    }
-
     /* Continue processing */
     return SMFIS_CONTINUE;
 }
@@ -364,13 +352,27 @@ sfsistat
 mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 {
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
-    char       *qid, *wrkdir;
+    const char *qid, *wrkdir;
+    const char *protocol = NULL;
 
     /* Check milter private data */
     if (mlfi == NULL) {
 	logqidmsg(mlfi, LOG_ERR, "mlfi_envfrom: context is not set");
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
+    }
+
+    /* Save communication protocol name */
+    /* XXX: sendmail's macro $r is not available in mlfi_helo stage */
+    if (mlfi->mlfi_protocol == NULL &&
+	(protocol = smfi_getsymval(ctx, "r")) != NULL)
+    {
+	logqidmsg(mlfi, LOG_DEBUG, "protocol: %s", protocol);
+	if ((mlfi->mlfi_protocol = strdup(protocol)) == NULL) {
+	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
+	    mlfi_setreply_tempfail(ctx);
+	    return SMFIS_TEMPFAIL;
+	}
     }
 
     /* Cleanup message data */
