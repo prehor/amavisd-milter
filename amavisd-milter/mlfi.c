@@ -25,13 +25,14 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.37 2006/10/17 16:26:19 reho Exp $
+ * $Id: mlfi.c,v 1.38 2006/10/17 21:10:54 reho Exp $
  */
 
 #include "amavisd-milter.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <stdarg.h>
 
 
 /*
@@ -56,6 +57,55 @@ struct smfiDesc smfilter =
     mlfi_abort,			/* message aborted */
     mlfi_close			/* connection cleanup */
 };
+
+
+/*
+** Dates and months abbreviations
+*/
+static const char *days[] =
+{
+    "Sun",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat"
+};
+
+static const char *months[] =
+{
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+};
+
+
+/*
+** SNPRINTFCAT - Append formatted string
+*/
+static size_t
+snprintfcat(size_t length, char *buf, size_t size, const char *fmt, ...)
+{
+    va_list	ap;
+
+    va_start(ap, fmt);
+    if ((length += vsnprintf(buf + length, size - length, fmt, ap)) >= size) {
+	length = size -1;
+    }
+    va_end(ap);
+
+    return length;
+}
 
 
 /*
@@ -259,9 +309,9 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     /* Allocate memory for private data */
     mlfi = malloc(sizeof(*mlfi));
     if (mlfi == NULL) {
-        logqidmsg(mlfi, LOG_ERR, "could not allocate private data");
-        mlfi_setreply_tempfail(ctx);
-        return SMFIS_TEMPFAIL;
+	logqidmsg(mlfi, LOG_ERR, "could not allocate private data");
+	mlfi_setreply_tempfail(ctx);
+	return SMFIS_TEMPFAIL;
     }
 
     /* Initialize context */
@@ -363,10 +413,12 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 {
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
     char	buf[64];
-    const char *date, *p, *qid, *wrkdir;
+    const char *date, *qid, *wrkdir;
     const char *protocol = NULL;
     size_t	l;
     time_t	t;
+    struct	tm *gt, *lt;
+    int		gmtoff;
 
     /* Check milter private data */
     if (mlfi == NULL) {
@@ -429,8 +481,8 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 	    logqidmsg(mlfi, LOG_ERR, "could not create work directory: %s",
 		strerror(errno));
 	    mlfi->mlfi_wrkdir[0] = '\0';
-            mlfi_setreply_tempfail(ctx);
-            return SMFIS_TEMPFAIL;
+	    mlfi_setreply_tempfail(ctx);
+	    return SMFIS_TEMPFAIL;
 	}
 	if (chmod(mlfi->mlfi_wrkdir, S_IRWXU|S_IRGRP|S_IXGRP) == -1) {
 	    logqidmsg(mlfi, LOG_ERR,
@@ -462,68 +514,89 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     /* Get transaction date */
     if ((date = smfi_getsymval(ctx, "b")) == NULL) {
 	(void) time(&t);
-	if (strftime(buf, sizeof(buf), "%a, %e %b %Y %H:%M:%S %z",
-	    localtime(&t)) > 0)
+	gt = gmtime(&t);
+	lt = localtime(&t);
+	gmtoff = (lt->tm_hour - gt->tm_hour) * 60 + lt->tm_min - gt->tm_min;
+	if (lt->tm_year < gt->tm_year) {
+	    gmtoff -= 24 * 60;
+	} else if (lt->tm_year > gt->tm_year) {
+	    gmtoff += 24 * 60;
+	} else if (lt->tm_yday < gt->tm_yday) {
+	    gmtoff -= 24 * 60;
+	} else if (lt->tm_yday > gt->tm_yday) {
+	    gmtoff += 24 * 60;
+	}
+	if (lt->tm_sec <= gt->tm_sec - 60) {
+	    gmtoff -= 1;
+	} else if (lt->tm_sec >= gt->tm_sec + 60) {
+	    gmtoff += 1;
+	}
+	if (snprintf(buf, sizeof(buf),
+#ifdef HAVE_STRUCT_TM_TM_ZONE
+	    "%s, %d %s %d %02d:%02d:%02d %+03d%02d (%s)",
+#else
+	    "%s, %d %s %d %02d:%02d:%02d %+03d%02d",
+#endif
+	    days[lt->tm_wday], lt->tm_mday, months[lt->tm_mon],
+	    lt->tm_year + 1900, lt->tm_hour, lt->tm_min, lt->tm_sec,
+	    (int) gmtoff / 60, (int) abs(gmtoff) % 60
+#ifdef HAVE_STRUCT_TM_TM_ZONE
+	    , lt->tm_zone
+#endif
+	    ) < sizeof(buf))
 	{
 	    date = buf;
 	}
     }
 
     /* Write synthesized received header to the file as the first header */
-    /* XXX: amavisd_new require \n instead of \r\n at the end of header */
-    if ((l = snprintf(mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
-	"Received: from %s (%s [%s])\n\tby %s (amavisd-milter)",
-	mlfi->mlfi_helo != NULL && *mlfi->mlfi_helo != '\0'
-	    ? mlfi->mlfi_helo
-	    : "unknown",
-	mlfi->mlfi_client_host != NULL && *mlfi->mlfi_client_host != '\0'
-	    ? mlfi->mlfi_client_host
-	    : mlfi->mlfi_client_addr != NULL && *mlfi->mlfi_client_addr != '\0'
-	    ? mlfi->mlfi_client_addr
-	    : "unknown",
-	mlfi->mlfi_client_addr != NULL && *mlfi->mlfi_client_addr != '\0'
-	    ? mlfi->mlfi_client_addr
-	    : "unknown",
-	mlfi->mlfi_hostname != NULL && *mlfi->mlfi_hostname != '\0'
-	    ? mlfi->mlfi_hostname
-	    : "localhost")) >= mlfi->mlfi_amabuf_length)
+    /* XXX: amavisd_new require \n instead of \r\n at the end of headers */
+    /* RFC2821 say about Received header:				 */
+    /*	Received: from <hello> (<rdns> [<ip>])			 	 */
+    /*		by <hostname> (<rdns> [<ip>])				 */
+    /*		with <protocol> id <qid>				 */
+    /*		for <recipient>; <date>					 */
+    /* Spamassassin needs addition:					 */
+    /*		(envelope-from <sender>)				 */
+    l = snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	"Received: from %s", mlfi->mlfi_helo != NULL && *mlfi->mlfi_helo != '\0'
+	    ? mlfi->mlfi_helo : "unknown");
+    if ((mlfi->mlfi_client_host != NULL && *mlfi->mlfi_client_host != '\0')
+	|| (mlfi->mlfi_client_addr != NULL && *mlfi->mlfi_client_addr != '\0'))
     {
-	l = mlfi->mlfi_amabuf_length - 1;
-    }
-    if (mlfi->mlfi_protocol != NULL && *mlfi->mlfi_protocol != '\0') {
-	if ((l += snprintf(mlfi->mlfi_amabuf + l, mlfi->mlfi_amabuf_length - l,
-	    " with %s", mlfi->mlfi_protocol)) >= mlfi->mlfi_amabuf_length)
-	{
-	    l = mlfi->mlfi_amabuf_length - 1;
+	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, " (");
+	if (mlfi->mlfi_client_host != NULL && *mlfi->mlfi_client_host != '\0') {
+	    l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+		"%s", mlfi->mlfi_client_host);
 	}
+	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, " ");
+	if (mlfi->mlfi_client_addr != NULL && *mlfi->mlfi_client_addr != '\0') {
+	    l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+		"[%s]", mlfi->mlfi_client_addr);
+	}
+	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, ")");
+    }
+    l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	"\n\tby %s (" PACKAGE ")",
+	mlfi->mlfi_hostname != NULL && *mlfi->mlfi_hostname != '\0'
+	    ? mlfi->mlfi_hostname : "localhost");
+    if (mlfi->mlfi_protocol != NULL && *mlfi->mlfi_protocol != '\0') {
+	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	    " with %s", mlfi->mlfi_protocol);
     }
     if (mlfi->mlfi_qid != NULL && *mlfi->mlfi_qid != '\0') {
-	if ((l += snprintf(mlfi->mlfi_amabuf + l, mlfi->mlfi_amabuf_length - l,
-	    " id %s", mlfi->mlfi_qid)) >= mlfi->mlfi_amabuf_length)
-	{
-	    l = mlfi->mlfi_amabuf_length - 1;
-	}
+	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	    " id %s", mlfi->mlfi_qid);
     }
-    if ((l += snprintf(mlfi->mlfi_amabuf + l, mlfi->mlfi_amabuf_length - l,
-	";\n\t")) >= mlfi->mlfi_amabuf_length)
-    {
-	l = mlfi->mlfi_amabuf_length - 1;
-    }
+    l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, ";\n\t");
     if (date != NULL && *date != '\0') {
-	if ((l += snprintf(mlfi->mlfi_amabuf + l, mlfi->mlfi_amabuf_length - l,
-	    "%s\n\t", date)) >= mlfi->mlfi_amabuf_length)
-	{
-	    l = mlfi->mlfi_amabuf_length - 1;
-	}
+	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	    "%s\n\t", date);
     }
-    if ((l += snprintf(mlfi->mlfi_amabuf + l, mlfi->mlfi_amabuf_length - l,
+    l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
 	"(envelope-from %s)\n",
 	mlfi->mlfi_from != NULL && *mlfi->mlfi_from != '\0'
-	    ? mlfi->mlfi_from
-	    : "<>")) >= mlfi->mlfi_amabuf_length)
-    {
-	l = mlfi->mlfi_amabuf_length - 1;
-    }
+	    ? mlfi->mlfi_from : "<>");
     logqidmsg(mlfi, LOG_DEBUG, "ADDHDR: %s", mlfi->mlfi_amabuf);
     (void) fputs(mlfi->mlfi_amabuf, mlfi->mlfi_fp);
     if (ferror(mlfi->mlfi_fp)) {
@@ -781,7 +854,7 @@ mlfi_eom(SMFICTX *ctx)
 		amavisd_socket, strerror(errno));
 		mlfi_setreply_tempfail(ctx);
 		return SMFIS_TEMPFAIL;
-        } else {
+	} else {
 	    logqidmsg(mlfi, LOG_DEBUG, "got amavisd connection");
 	}
     }
@@ -1090,7 +1163,7 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Delete header */
 	/* delheader=<index> <header> */
-        } else if (strcmp(name, "delheader") == 0) {
+	} else if (strcmp(name, "delheader") == 0) {
 	    logqidmsg(mlfi, LOG_INFO, "%s=%s", name, value);
 	    idx = value;
 	    if ((value = strchr(idx, ' ')) == NULL) {
@@ -1130,7 +1203,7 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Set response code */
 	/* return_value=<value> */
-        } else if (strcmp(name, "return_value") == 0) {
+	} else if (strcmp(name, "return_value") == 0) {
 	    logqidmsg(mlfi, LOG_NOTICE, "%s=%s", name, value);
 	    if (strcmp(value, "continue") == 0) {
 		rstat = SMFIS_CONTINUE;
@@ -1151,7 +1224,7 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Set SMTP reply */
 	/* setreply=<rcode> <xcode> <value> */
-        } else if (strcmp(name, "setreply") == 0) {
+	} else if (strcmp(name, "setreply") == 0) {
 	    rcode = value;
 	    if ((value = strchr(rcode, ' ')) == NULL) {
 		logqidmsg(mlfi, LOG_ERR, "malformed line: %s=%s",
@@ -1188,12 +1261,12 @@ mlfi_eom(SMFICTX *ctx)
 
 	/* Exit code */
 	/* exit_code=<value> */
-        } else if (strcmp(name, "exit_code") == 0) {
+	} else if (strcmp(name, "exit_code") == 0) {
 	    /* ignore legacy exit_code */
 	    logqidmsg(mlfi, LOG_DEBUG, "%s=%s", name, value);
 
 	/* Unknown response */
-        } else {
+	} else {
 	    logqidmsg(mlfi, LOG_ERR, "unknown amavisd response %s=%s",
 		name, value);
 	    amavisd_close(mlfi);

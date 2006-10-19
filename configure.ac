@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.27 2006/10/08 17:55:44 reho Exp $
+dnl $Id: configure.ac,v 1.28 2006/10/17 20:35:02 reho Exp $
 
 AC_INIT(amavisd-milter, 1.2.0)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
@@ -22,6 +22,7 @@ AC_CHECK_DIRENT_D_NAMLEN
 AC_HEADER_STDC
 AC_HEADER_STDBOOL
 AC_HEADER_TIME
+AC_STRUCT_TIMEZONE
 AC_CHECK_HEADERS([arpa/inet.h ctype.h errno.h fcntl.h limits.h \
   netinet/in.h stdarg.h stdio.h stdlib.h string.h sys/param.h sys/time.h \
   sys/types.h sys/socket.h sys/stat.h sys/un.h syslog.h sysexits.h unistd.h],[],
