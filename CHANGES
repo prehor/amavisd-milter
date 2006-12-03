@@ -1,5 +1,15 @@
 This is the CHANGELOG for amavisd-milter.
 
+20061203:
+	Added info about user authentication to synthesized received header.
+	Format of synthesized received header is now:
+
+	Received: from <hello> (<rdns> [<ip>]) (authenticated bits=<bits>)
+		by <hostname> (<rdns> [<ip>])
+		with <protocol> (authenticated as <user>) id <qid>;
+		<date>
+		(envelope-from <sender>)
+
 20061113:
 	Limited support for legacy sendmail 8.12:
 	- amavisd-milter don't call smfi_progress when wait for amavisd-new
@@ -191,4 +201,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.38 2006/10/17 21:10:53 reho Exp $
+$Id: CHANGES,v 1.39 2006/12/03 18:39:02 reho Exp $

@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.39 2006/10/19 20:52:57 reho Exp $
+ * $Id: mlfi.c,v 1.40 2006/12/03 18:39:02 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -413,6 +413,7 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 {
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
     char	buf[64];
+    const char *auth_type, *auth_authen, *auth_ssf;
     const char *date, *qid, *wrkdir;
     const char *protocol = NULL;
     size_t	l;
@@ -549,15 +550,13 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 	}
     }
 
-    /* Write synthesized received header to the file as the first header */
-    /* XXX: amavisd_new require \n instead of \r\n at the end of headers */
-    /* RFC2821 say about Received header:				 */
-    /*	Received: from <hello> (<rdns> [<ip>])			 	 */
+    /* Write synthesized received header to the file as the first header:*/
+    /* Received: from <hello> (<rdns> [<ip>]) (authenticated bits=<bits>)*/
     /*		by <hostname> (<rdns> [<ip>])				 */
-    /*		with <protocol> id <qid>				 */
-    /*		for <recipient>; <date>					 */
-    /* Spamassassin needs addition:					 */
+    /*		with <protocol> (authenticated as <user>) id <qid>;	 */
+    /*		<date>							 */
     /*		(envelope-from <sender>)				 */
+    /* XXX: amavisd_new require \n instead of \r\n at the end of headers */
     l = snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
 	"Received: from %s", mlfi->mlfi_helo != NULL && *mlfi->mlfi_helo != '\0'
 	    ? mlfi->mlfi_helo : "unknown");
@@ -576,6 +575,16 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 	}
 	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, ")");
     }
+    if ((auth_type = smfi_getsymval(ctx, "{auth_type}")) != NULL) {
+	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	    " (authenticated");
+	auth_ssf = smfi_getsymval(ctx, "{auth_ssf}");
+	if (auth_ssf != NULL && *auth_ssf != '\0') {
+	    l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+		" bits=%s", auth_ssf);
+	}
+	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, ")");
+    }
     l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
 	"\n\tby %s (" PACKAGE ")",
 	mlfi->mlfi_hostname != NULL && *mlfi->mlfi_hostname != '\0'
@@ -584,17 +593,22 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
 	    " with %s", mlfi->mlfi_protocol);
     }
+    auth_authen = smfi_getsymval(ctx, "{auth_authen}");
+    if (auth_type != NULL && auth_authen != NULL && *auth_authen != '\0' ) {
+	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	    " (authenticated as %s)", auth_authen);
+    }
     if (mlfi->mlfi_qid != NULL && *mlfi->mlfi_qid != '\0') {
 	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
 	    " id %s", mlfi->mlfi_qid);
     }
-    l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, ";\n\t");
+    l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, ";\n");
     if (date != NULL && *date != '\0') {
 	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
-	    "%s\n\t", date);
+	    "\t%s\n", date);
     }
     l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
-	"(envelope-from %s)\n",
+	"\t(envelope-from %s)\n",
 	mlfi->mlfi_from != NULL && *mlfi->mlfi_from != '\0'
 	    ? mlfi->mlfi_from : "<>");
     logqidmsg(mlfi, LOG_DEBUG, "ADDHDR: %s", mlfi->mlfi_amabuf);
