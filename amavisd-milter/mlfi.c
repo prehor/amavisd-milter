@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.38 2006/10/17 21:10:54 reho Exp $
+ * $Id: mlfi.c,v 1.39 2006/10/19 20:52:57 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -819,6 +819,7 @@ mlfi_eom(SMFICTX *ctx)
 		mlfi_setreply_tempfail(ctx);
 		return SMFIS_TEMPFAIL;
 	    }
+#ifdef HAVE_SMFI_PROGRESS
 	    if (!(wait_counter % 60)) {
 		logqidmsg(mlfi, LOG_DEBUG,
 		    "amavisd connection is not available for %d sec, "
@@ -831,15 +832,19 @@ mlfi_eom(SMFICTX *ctx)
 		    return SMFIS_TEMPFAIL;
 		}
 	    } else {
+#endif
 		logqidmsg(mlfi, LOG_DEBUG,
 		    "amavisd connection not available for %d sec, sleeping",
 		    wait_counter);
+#ifdef HAVE_SMFI_PROGRESS
 	    }
+#endif
 	    sleep(1);
 	}
 	sem_getvalue(max_sem, &i);
 	logqidmsg(mlfi, LOG_DEBUG, "got amavisd connection %d for %d sec",
 	    max_conns - i, wait_counter);
+#ifdef HAVE_SMFI_PROGRESS
 	if (smfi_progress(ctx) != MI_SUCCESS) {
 	    logqidmsg(mlfi, LOG_ERR,
 		"could not notify MTA that an operation is still in progress");
@@ -847,6 +852,7 @@ mlfi_eom(SMFICTX *ctx)
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
+#endif
     } else {
 	if (amavisd_connect(mlfi, &amavisd_sock) == -1) {
 	    logqidmsg(mlfi, LOG_ERR,
@@ -1079,7 +1085,11 @@ mlfi_eom(SMFICTX *ctx)
 		return SMFIS_TEMPFAIL;
 	    }
 	    *value++ = '\0';
+#ifdef HAVE_SMFI_INSHEADER
 	    if (smfi_insheader(ctx, INT_MAX, header, value) != MI_SUCCESS) {
+#else
+	    if (smfi_addheader(ctx, header, value) != MI_SUCCESS) {
+#endif
 		logqidmsg(mlfi, LOG_ERR, "could not append header %s: %s",
 		    header, value);
 		amavisd_close(mlfi);
@@ -1116,7 +1126,11 @@ mlfi_eom(SMFICTX *ctx)
 		return SMFIS_TEMPFAIL;
 	    }
 	    *value++ = '\0';
+#ifdef HAVE_SMFI_INSHEADER
 	    if (smfi_insheader(ctx, i, header, value) != MI_SUCCESS) {
+#else
+	    if (smfi_addheader(ctx, header, value) != MI_SUCCESS) {
+#endif
 		logqidmsg(mlfi, LOG_ERR, "could not insert header %s %s: %s",
 		    idx, header, value);
 		amavisd_close(mlfi);

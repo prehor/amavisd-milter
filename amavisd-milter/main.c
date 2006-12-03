@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.16 2006/10/07 14:19:50 reho Exp $
+ * $Id: main.c,v 1.17 2006/10/08 12:38:01 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -346,10 +346,12 @@ main(int argc, char *argv[])
     }
 
     /* Connect to milter socket */
+#ifdef HAVE_SMFI_OPENSOCKET
     if (smfi_opensocket(false) != MI_SUCCESS) {
 	logmsg(LOG_ERR, "could not open milter socket %s", mlfi_socket);
         exit(EX_SOFTWARE);
     }
+#endif
 
     /* Greetings message */
     logmsg(LOG_WARNING, "starting %s %s on socket %s", progname, VERSION,

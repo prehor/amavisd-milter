@@ -1,5 +1,14 @@
 This is the CHANGELOG for amavisd-milter.
 
+20061113:
+	Limited support for legacy sendmail 8.12:
+	- amavisd-milter don't call smfi_progress when wait for amavisd-new
+	  communication socket.
+	- amavisd-milter use smfi_addheader insted of smfi_insheader for
+	  insheader and addheader AM.PDP response commands. This work well
+	  with amavisd-new 2.4.3 or newer. Older versions are affected with
+	  bug fixed on 20060714.
+
 20061017:
 	Implemented AM.PDP request attribute protocol_name.
 
@@ -182,4 +191,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.37 2006/10/17 15:18:11 reho Exp $
+$Id: CHANGES,v 1.38 2006/10/17 21:10:53 reho Exp $
