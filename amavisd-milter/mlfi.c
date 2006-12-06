@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.40 2006/12/03 18:39:02 reho Exp $
+ * $Id: mlfi.c,v 1.41 2006/12/03 21:19:48 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -1217,6 +1217,7 @@ mlfi_eom(SMFICTX *ctx)
 		return SMFIS_TEMPFAIL;
 	    }
 
+#ifdef HAVE_SMFI_QUARANTINE
 	/* Quarantine message */
 	/* quarantine=<reason> */
 	} else if (strcmp(name, "quarantine") == 0) {
@@ -1228,6 +1229,7 @@ mlfi_eom(SMFICTX *ctx)
 		mlfi_setreply_tempfail(ctx);
 		return SMFIS_TEMPFAIL;
 	    }
+#endif
 
 	/* Set response code */
 	/* return_value=<value> */
