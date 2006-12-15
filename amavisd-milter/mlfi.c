@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.41 2006/12/03 21:19:48 reho Exp $
+ * $Id: mlfi.c,v 1.42 2006/12/06 00:24:57 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -309,7 +309,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     /* Allocate memory for private data */
     mlfi = malloc(sizeof(*mlfi));
     if (mlfi == NULL) {
-	logqidmsg(mlfi, LOG_ERR, "could not allocate private data");
+	logmsg(LOG_ERR, "%s: could not allocate private data", hostname);
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
     }
