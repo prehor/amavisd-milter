@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.42 2006/12/06 00:24:57 reho Exp $
+ * $Id: mlfi.c,v 1.43 2006/12/15 18:20:46 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -302,7 +302,8 @@ sfsistat
 mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
 {
     struct	mlfiCtx *mlfi = NULL;
-    char       *addr;
+    const void *addr;
+    int		len;
 
     logmsg(LOG_DEBUG, "%s: CONNECT", hostname);
 
@@ -326,12 +327,41 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	    return SMFIS_TEMPFAIL;
 	}
     }
+    addr = NULL;
     if (hostaddr != NULL) {
-	addr = inet_ntoa(((struct sockaddr_in *)hostaddr)->sin_addr);
-	if ((mlfi->mlfi_client_addr = strdup(addr)) == NULL) {
+	switch(hostaddr->sa_family) {
+	case AF_INET:
+	    addr = &((struct sockaddr_in *)hostaddr)->sin_addr;
+	    len = INET_ADDRSTRLEN;
+	    break;
+#ifdef HAVE_NETINET6
+	case AF_INET6:
+	    addr = &((struct sockaddr_in6 *)hostaddr)->sin6_addr;
+	    len = INET6_ADDRSTRLEN;
+	    break;
+#endif
+	default:
+	    logqidmsg(mlfi, LOG_WARNING, "unrecognized address family %d for "
+		"host %s", hostaddr->sa_family, hostname);
+	    break;
+	}
+    }
+    if (addr != NULL) {
+	if ((mlfi->mlfi_client_addr = malloc(len)) == NULL) {
 	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
+	}
+	if (inet_ntop(hostaddr->sa_family, addr, mlfi->mlfi_client_addr, len)
+	    == NULL)
+	{
+	    free(mlfi->mlfi_client_addr);
+	    mlfi->mlfi_client_addr = NULL;
+	    logqidmsg(mlfi, LOG_WARNING, "could not convert host address to "
+		"string for host %s", hostname);
+	} else {
+	    logqidmsg(mlfi, LOG_DEBUG, "host address: %s",
+		mlfi->mlfi_client_addr);
 	}
     }
 

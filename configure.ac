@@ -1,6 +1,6 @@
-dnl $Id: configure.ac,v 1.30 2006/12/03 18:39:02 reho Exp $
+dnl $Id: configure.ac,v 1.31 2006/12/06 00:24:56 reho Exp $
 
-AC_INIT(amavisd-milter, 1.2.0)
+AC_INIT(amavisd-milter, 1.2.1-beta4)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
 AC_CONFIG_AUX_DIR(aclocal)
 AC_CONFIG_MACRO_DIR(aclocal)
@@ -35,6 +35,8 @@ AC_CHECK_HEADERS([fts.h])
 AC_CHECK_FUNCS([arc4random])
 AC_REPLACE_FUNCS([daemon fts_open mkdtemp strlcpy])
 
+AC_CHECK_FUNC(inet_ntop, [], [AC_SEARCH_LIBS(inet_ntop, [nsl])])
+
 AX_PATH_MILTER([8.12], [LIBS="$MILTER_LIBS $LIBS"
   LDFLAGS="$MILTER_LDFLAGS $LDFLAGS" CPPFLAGS="$CPPFLAGS $MILTER_CPPFLAGS"],
   AC_MSG_ERROR([required milter library and header not found]))
@@ -42,6 +44,26 @@ AC_CHECK_FUNCS([smfi_insheader smfi_opensocket smfi_progress smfi_quarantine])
 
 AC_EILSEQ
 gl_EOVERFLOW
+
+AC_MSG_CHECKING([for IPv6])
+AC_PREPROC_IFELSE(
+  [ AC_LANG_PROGRAM([[
+      #include <sys/types.h>
+      #include <sys/socket.h>
+    ]],[[
+      main() {
+        if (socket(AF_INET6, SOCK_STREAM, 0) < 0)
+          exit(1);
+        else
+          exit(0);
+      }
+    ]])
+  ],
+  [ AC_MSG_RESULT(yes) AC_DEFINE(NETINET6, 1,
+    [Define to 1 if you have NETINET6 libraries and header files.])
+  ],
+  [ AC_MSG_RESULT(no) ]
+)
 
 AC_CONFIG_FILES([Makefile amavisd-milter/Makefile compat/Makefile])
 AC_CONFIG_FILES([autoconf], [chmod +x autoconf])
