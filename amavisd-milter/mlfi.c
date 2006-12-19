@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.44 2006/12/17 23:20:15 reho Exp $
+ * $Id: mlfi.c,v 1.45 2006/12/19 18:17:26 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -322,7 +322,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     /* Save connection informations */
     if (hostname != NULL && *hostname != '\0') {
 	if ((mlfi->mlfi_client_host = strdup(hostname)) == NULL) {
-	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
+	    logmsg(LOG_ERR, "%s: could not allocate memory", hostname);
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
