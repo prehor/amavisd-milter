@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.45 2006/12/19 18:17:26 reho Exp $
+ * $Id: mlfi.c,v 1.46 2006/12/19 18:33:40 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -303,7 +303,8 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
 {
     struct	mlfiCtx *mlfi = NULL;
     const void *addr;
-    int		len;
+    const char *prefix;
+    int		len, plen;
 
     logmsg(LOG_DEBUG, "%s: CONNECT", hostname);
 
@@ -333,11 +334,15 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	case AF_INET:
 	    addr = &((struct sockaddr_in *)hostaddr)->sin_addr;
 	    len = INET_ADDRSTRLEN;
+	    prefix = NULL;
+	    plen = 0;		/* prefix length */
 	    break;
 #if HAVE_DECL_AF_INET6 && HAVE_DECL_INET6_ADDRSTRLEN && HAVE_STRUCT_SOCKADDR_IN6
 	case AF_INET6:
 	    addr = &((struct sockaddr_in6 *)hostaddr)->sin6_addr;
 	    len = INET6_ADDRSTRLEN;
+	    prefix = "IPv6:";
+	    plen = 5;		/* prefix length */
 	    break;
 #endif
 	default:
@@ -347,13 +352,16 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	}
     }
     if (addr != NULL) {
-	if ((mlfi->mlfi_client_addr = malloc(len)) == NULL) {
+	if ((mlfi->mlfi_client_addr = malloc(len + plen)) == NULL) {
 	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
-	if (inet_ntop(hostaddr->sa_family, addr, mlfi->mlfi_client_addr, len)
-	    == NULL)
+	if (prefix != NULL) {
+	    (void) strlcpy(mlfi->mlfi_client_addr, prefix, len + plen);
+	}
+	if (inet_ntop(hostaddr->sa_family, addr, mlfi->mlfi_client_addr + plen,
+	    len) == NULL)
 	{
 	    free(mlfi->mlfi_client_addr);
 	    mlfi->mlfi_client_addr = NULL;
