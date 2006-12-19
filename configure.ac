@@ -1,6 +1,6 @@
-dnl $Id: configure.ac,v 1.31 2006/12/06 00:24:56 reho Exp $
+dnl $Id: configure.ac,v 1.32 2006/12/17 23:20:14 reho Exp $
 
-AC_INIT(amavisd-milter, 1.2.1-beta4)
+AC_INIT(amavisd-milter, 1.2.1-beta5)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
 AC_CONFIG_AUX_DIR(aclocal)
 AC_CONFIG_MACRO_DIR(aclocal)
@@ -45,25 +45,9 @@ AC_CHECK_FUNCS([smfi_insheader smfi_opensocket smfi_progress smfi_quarantine])
 AC_EILSEQ
 gl_EOVERFLOW
 
-AC_MSG_CHECKING([for IPv6])
-AC_PREPROC_IFELSE(
-  [ AC_LANG_PROGRAM([[
-      #include <sys/types.h>
-      #include <sys/socket.h>
-    ]],[[
-      main() {
-        if (socket(AF_INET6, SOCK_STREAM, 0) < 0)
-          exit(1);
-        else
-          exit(0);
-      }
-    ]])
-  ],
-  [ AC_MSG_RESULT(yes) AC_DEFINE(NETINET6, 1,
-    [Define to 1 if you have NETINET6 libraries and header files.])
-  ],
-  [ AC_MSG_RESULT(no) ]
-)
+AC_CHECK_AF_INET6
+AC_CHECK_INET6_ADDRSTRLEN
+AC_CHECK_STRUCT_SOCKADDR_IN6
 
 AC_CONFIG_FILES([Makefile amavisd-milter/Makefile compat/Makefile])
 AC_CONFIG_FILES([autoconf], [chmod +x autoconf])

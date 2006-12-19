@@ -1,4 +1,4 @@
-dnl $Id: acinclude.m4,v 1.3 2006/01/23 15:15:49 reho Exp $
+dnl $Id: acinclude.m4,v 1.4 2006/01/25 21:53:27 reho Exp $
 
 dnl Checks for C compiler
 AC_DEFUN([AC_CHECK_C_COMPILER],
@@ -82,3 +82,31 @@ AC_DEFUN([AC_CHECK_DIRENT_D_NAMLEN],
   )
 ])
 
+dnl Checks for AF_INET6
+AC_DEFUN([AC_CHECK_AF_INET6],
+[
+  AC_CHECK_DECLS([AF_INET6],[],[],[
+    #include <sys/types.h>
+    #include <sys/socket.h>
+  ])
+])
+
+dnl Checks for INET6_ADDRSTRLEN
+AC_DEFUN([AC_CHECK_INET6_ADDRSTRLEN],
+[
+  AC_CHECK_DECLS([INET6_ADDRSTRLEN],[],[],[
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+  ])
+])
+
+dnl Checks for struct sockaddr_in6
+AC_DEFUN([AC_CHECK_STRUCT_SOCKADDR_IN6],
+[
+  AC_CHECK_TYPES([struct sockaddr_in6],[],[],[
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+  ])
+])
