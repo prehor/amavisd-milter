@@ -1,5 +1,5 @@
 .\"
-.\" $Id: amavisd-milter.8,v 1.12 2006/10/17 16:28:46 reho Exp $
+.\" $Id: amavisd-milter.8,v 1.13 2006/10/17 21:10:54 reho Exp $
 .\"
 .Dd Januar 23, 2006
 .Dt amavisd-milter 8
@@ -24,9 +24,9 @@ The
 .Nm
 is a sendmail milter (mail filter) for
 .Sy amavisd-new
-2.2.0 and above and
+2.4.3 and above and
 .Sy sendmail
-8.13.0 and above.
+8.13 and above (limited support for 8.12 is provided).
 .Pp
 Instead of older
 .Sy amavis-milter
@@ -124,6 +124,31 @@ connection timeout.
 Report the version number and exit.
 .It Fl w Ar directory
 Set working directory (default /var/amavis).
+.El
+.Ss Limited support for sendmail 8.12
+.Bl -bullet -compact
+.It
+.Fn smfi_addheader
+is used instead of
+.Fn smfi_insheader
+for
+.Li insheader
+and
+.Li addheader
+AM.PDP responses. This works well with
+.Sy amavisd-new
+2.4.3 or newer.
+.It
+.Fn smfi_progress
+isn't called when
+.Sy amavisd-milter
+wait for
+.Sy amavisd-new
+communication socket.
+.It
+AM.PDP response
+.Li quarantine
+isn't implemented.
 .El
 .Pp
 .Sh FILES

@@ -1,5 +1,26 @@
 This is the CHANGELOG for amavisd-milter.
 
+20061219:
+	amavisd-milter-1.2.1
+
+	New features:
+	- Implemented AM.PDP request attribute 'protocol_name'.
+	  Add folowing line to your sendmail.mc:
+
+	  define(`confMILTER_MACROS_ENVFROM', confMILTER_MACROS_ENVFROM`, r, b')
+
+	Limited support for sendmail 8.12:
+	- smfi_addheader() is used instead of smfi_insheader() for insheader
+          and addheader AM.PDP responses. This works well with amavisd-new
+          2.4.3 or newer.
+	- smfi_progress() isn't called when amavisd-milter wait for amavisd-new
+	  communication socket.
+	- AM.PDP response quarantine isn't implemented.
+
+	Bug fixies:
+	- add synthesized Received header for Spamassassin.
+	- properly handle IPv6 client address.
+
 20061217:
 	Added support for IPv6 addresses.
 	Thanks to: Mark Martinec <Mark.Martinec@ijs.si>
@@ -25,7 +46,7 @@ This is the CHANGELOG for amavisd-milter.
 	Limited support for legacy sendmail 8.12:
 	- amavisd-milter don't call smfi_progress when wait for amavisd-new
 	  communication socket.
-	- amavisd-milter use smfi_addheader insted of smfi_insheader for
+	- amavisd-milter use smfi_addheader instead of smfi_insheader for
 	  insheader and addheader AM.PDP response attributes. This work well
 	  with amavisd-new 2.4.3 or newer. Older versions are affected with
 	  bug fixed on 20060714.
@@ -212,4 +233,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.42 2006/12/17 23:20:14 reho Exp $
+$Id: CHANGES,v 1.43 2006/12/17 23:28:06 reho Exp $
