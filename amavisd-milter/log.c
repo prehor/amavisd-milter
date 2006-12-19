@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: log.c,v 1.4 2006/10/07 21:46:41 reho Exp $
+ * $Id: log.c,v 1.5 2006/10/08 13:31:29 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -81,8 +81,8 @@ logqidmsg(struct mlfiCtx *mlfi, int priority, const char *fmt, ...)
 	    p = mlfi->mlfi_qid;
 	} else if (mlfi->mlfi_prev_qid != NULL) {
 	    p = mlfi->mlfi_prev_qid;
-	} else if (mlfi->mlfi_hostname != NULL) {
-	    p = mlfi->mlfi_hostname;
+	} else if (mlfi->mlfi_client_host != NULL) {
+	    p = mlfi->mlfi_client_host;
 	} else {
 	    p = "UNKNOWN";
 	}
