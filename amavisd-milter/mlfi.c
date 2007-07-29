@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.46 2006/12/19 18:33:40 reho Exp $
+ * $Id: mlfi.c,v 1.47 2006/12/19 22:34:08 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -821,6 +821,7 @@ mlfi_eom(SMFICTX *ctx)
 {
     int		i;
     char       *idx, *header, *rcode, *xcode, *name, *value;
+    const char *qid;
     sfsistat	rstat;
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
     struct	mlfiAddress *rcpt;
@@ -927,6 +928,18 @@ mlfi_eom(SMFICTX *ctx)
 	amavisd_close(mlfi);
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
+    }
+
+    /* Get queue id (Postfix does give information about */
+    /* the queue-number only after the RCPT-TO-phase */
+    if (mlfi->mlfi_qid == NULL) {
+	if ((qid = smfi_getsymval(ctx, "i")) != NULL) {
+	    if ((mlfi->mlfi_qid = strdup(qid)) == NULL) {
+		logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
+		mlfi_setreply_tempfail(ctx);
+		return SMFIS_TEMPFAIL;
+	    }
+	}
     }
 
     /* MTA queue id */
