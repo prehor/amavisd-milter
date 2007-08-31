@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.47 2006/12/19 22:34:08 reho Exp $
+ * $Id: mlfi.c,v 1.48 2007/07/29 11:41:10 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -1021,8 +1021,8 @@ mlfi_eom(SMFICTX *ctx)
     }
 
     /* Who is responsible for forwarding the message */
-    logqidmsg(mlfi, LOG_DEBUG, "delivery_care_of=client");
-    if (amavisd_request(mlfi, "delivery_care_of", "client") == -1) {
+    logqidmsg(mlfi, LOG_DEBUG, "delivery_care_of=%s", delivery_care_of);
+    if (amavisd_request(mlfi, "delivery_care_of", delivery_care_of) == -1) {
 	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 	    amavisd_socket, strerror(errno));
 	amavisd_close(mlfi);

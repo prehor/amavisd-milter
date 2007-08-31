@@ -1,5 +1,5 @@
 .\"
-.\" $Id: amavisd-milter.8,v 1.13 2006/10/17 21:10:54 reho Exp $
+.\" $Id: amavisd-milter.8,v 1.14 2006/12/19 20:25:00 reho Exp $
 .\"
 .Dd Januar 23, 2006
 .Dt amavisd-milter 8
@@ -11,6 +11,7 @@
 .Nm
 .Op Fl fhv
 .Op Fl d Ar debug-level
+.Op Fl D Ar delivery-care-of
 .Op Fl m Ar max-conns
 .Op Fl M Ar max-wait
 .Op Fl p Ar pidfile
@@ -51,10 +52,21 @@ The options are as follows:
 .Bl -tag -width indent
 .It Fl d Ar debug-level
 Set the debug level to 
-.Em debug-level Ns
+.Sy debug-level Ns
 \&.
 Debugging traces become more verbose as the debug level increases.
 Maximum is 9.
+.It Fl D Ar delivery-care-of
+Set AM.PDP request attribute delivery_care_of to
+.Sy client
+(default) or
+.Sy server Ns
+\&. When
+.Sy server
+method is used then $forward_method in amavisd.conf must point to
+some place willing to accept mail without further checking in
+.Sy amavisd-new Ns
+\&.
 .It Fl f              
 Run
 .Nm

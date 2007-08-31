@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.17 2006/10/08 12:38:01 reho Exp $
+ * $Id: main.c,v 1.18 2006/12/03 18:39:02 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -51,6 +51,7 @@ long		mlfi_timeout = 600;
 const char     *amavisd_socket = "/var/amavis/amavisd.sock";
 long		amavisd_timeout = 600;
 const char     *work_dir = "/var/amavis";
+const char     *delivery_care_of = "client";
 
 
 /*
@@ -62,6 +63,7 @@ usage(const char *progname)
     (void) fprintf(stdout, "\nUsage: %s [OPTIONS]\n", progname);
     (void) fprintf(stdout, "Options are:\n\
 	-d debug-level		Set debug level\n\
+	-D delivery		Delivery care of server or client\n\
 	-f			Run in the foreground\n\
 	-h			Print this page\n\
 	-m max-conns		Maximum amavisd connections \n\
@@ -151,6 +153,16 @@ main(int argc, char *argv[])
 		usageerr(progname, "negative debug level: %d", debug_level);
 	    }
 	    debug_level += LOG_WARNING;
+	    break;
+	case 'D':		/* delivery mechanism */
+	    if (optarg == NULL || *optarg == '\0') {
+		usageerr(progname, "option requires an argument -- %c",
+		    (char)c);
+	    }
+	    if (! strcmp(optarg, "client") || ! strcmp(optarg, "server")) {
+		usageerr(progname, "unknown delivery mechanism '%s'", optarg);
+	    }
+	    delivery_care_of = optarg;
 	    break;
 	case 'f':		/* run in foreground */
 	    daemonize = 0;
