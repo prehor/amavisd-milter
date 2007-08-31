@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.14 2006/10/08 12:38:01 reho Exp $
+ * $Id: amavisd.c,v 1.15 2006/10/08 13:31:29 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -37,10 +37,17 @@
 ** AMAVISD_GROW_AMABUF - Reallocate amavisd communication buffer
 */
 static void *
-amavisd_grow_amabuf(struct mlfiCtx *mlfi)
+amavisd_grow_amabuf(struct mlfiCtx *mlfi, char *b)
 {
     char       *amabuf;
-    size_t	buflen;
+    size_t	buflen, bufpos;
+
+    /* Calculate buffer pointer position */
+    if (b == NULL) {
+	bufpos = 0;
+    } else {
+	bufpos = b - mlfi->mlfi_amabuf;
+    }
 
     /* Calculate new buffer size */
     buflen = mlfi->mlfi_amabuf_length + AMABUFCHUNK;
@@ -70,7 +77,7 @@ amavisd_grow_amabuf(struct mlfiCtx *mlfi)
 	"amavisd communication buffer was increased to %lu",
 	(unsigned long)buflen);
 
-    return amabuf;
+    return amabuf + bufpos;
 }
 
 
@@ -127,7 +134,7 @@ amavisd_request(struct mlfiCtx *mlfi, const char *name, const char *value)
 	p = name;
 	while (*p != '\0') {
 	    if (b >= mlfi->mlfi_amabuf + mlfi->mlfi_amabuf_length - 5 &&
-		amavisd_grow_amabuf(mlfi) == NULL)
+		(b = amavisd_grow_amabuf(mlfi, b)) == NULL)
 	    {
 		return -1;
 	    }
@@ -146,7 +153,7 @@ amavisd_request(struct mlfiCtx *mlfi, const char *name, const char *value)
 	p = value;
 	while (*p != '\0') {
 	    if (b >= mlfi->mlfi_amabuf + mlfi->mlfi_amabuf_length - 4 &&
-		amavisd_grow_amabuf(mlfi) == NULL)
+		(b = amavisd_grow_amabuf(mlfi, b)) == NULL)
 	    {
 		return -1;
 	    }
@@ -174,14 +181,17 @@ amavisd_response(struct mlfiCtx *mlfi)
 {
     int		decode = 0;
     char       *b = mlfi->mlfi_amabuf;
+    char       *b2;
 
     /* Read response line */
     while (read_sock(mlfi->mlfi_amasd, b, 1, amavisd_timeout) > 0) {
-	if (b >= mlfi->mlfi_amabuf + mlfi->mlfi_amabuf_length - 2 &&
-	    amavisd_grow_amabuf(mlfi) == NULL)
-	{
-	    *(b + 1) = '\0';
-	    return -1;
+	if (b >= mlfi->mlfi_amabuf + mlfi->mlfi_amabuf_length - 2) {
+	    if ((b2 = amavisd_grow_amabuf(mlfi, b)) == NULL) {
+		*(b + 1) = '\0';
+		return -1;
+	    } else {
+		b = b2;
+	    }
 	}
 	if (*b == '\n') {
 	    *b = '\0';
