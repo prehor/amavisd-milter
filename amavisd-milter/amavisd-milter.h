@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.19 2006/10/17 21:10:54 reho Exp $
+ * $Id: amavisd-milter.h,v 1.20 2007/08/31 21:59:28 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
@@ -40,6 +40,9 @@
 #define MAXLOGBUF	1024	/* syslog message buffer */
 #define MAXAMABUF	65536	/* amavisd communication buffer */
 #define AMABUFCHUNK	2048	/* amavisd buffer reallocation step */
+
+/* Timeouts */
+#define SMFI_PROGRESS_TRIGGER	60	/* smfi_progress trigger */
 
 struct mlfiCtx;
 
@@ -103,7 +106,8 @@ extern const char *work_dir;		/* work ditectory name */
 extern const char *delivery_care_of;	/* delivery mechanism */
 
 /* Amavisd communication */
-extern int	amavisd_connect(struct mlfiCtx *, struct sockaddr_un *);
+extern int	amavisd_connect(struct mlfiCtx *, struct sockaddr_un *,
+		    time_t timeout);
 extern int	amavisd_request(struct mlfiCtx *, const char *, const char *);
 extern int	amavisd_response(struct mlfiCtx *);
 extern void	amavisd_close(struct mlfiCtx *);
@@ -111,5 +115,15 @@ extern void	amavisd_close(struct mlfiCtx *);
 /* Log message */
 extern void	logmsg(int, const char *, ...);
 extern void	logqidmsg(struct mlfiCtx *, int, const char *, ...);
+
+/* Macros */
+
+#ifndef MAX
+#define MAX(a,b) (((a)>(b))?(a):(b))
+#endif
+
+#ifndef MIN
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#endif
 
 #endif /* _AMAVISD_MILTER_H */

@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.48 2007/07/29 11:41:10 reho Exp $
+ * $Id: mlfi.c,v 1.49 2007/08/31 21:59:28 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -826,6 +826,7 @@ mlfi_eom(SMFICTX *ctx)
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
     struct	mlfiAddress *rcpt;
     struct	sockaddr_un amavisd_sock;
+    time_t	start_counter;
     int		wait_counter;
 
     /* Check milter private data */
@@ -856,16 +857,16 @@ mlfi_eom(SMFICTX *ctx)
 
     /* Connect to amavisd */
     if (max_sem != NULL) {
-	wait_counter = 0;
-	while (amavisd_connect(mlfi, &amavisd_sock) == -1) {
-	    if (errno != EAGAIN) {
-		logqidmsg(mlfi, LOG_ERR,
-		    "could not connect to amavisd socket %s: %s",
-		    amavisd_socket, strerror(errno));
+	start_counter = time(NULL);
+	wait_counter = MIN(SMFI_PROGRESS_TRIGGER, max_wait);
+	while (amavisd_connect(mlfi, &amavisd_sock,
+	    start_counter + wait_counter) == -1)
+	{
+	    if (errno != ETIMEDOUT) {
 		mlfi_setreply_tempfail(ctx);
 		return SMFIS_TEMPFAIL;
 	    }
-	    if (!(wait_counter++ < max_wait)) {
+	    if (wait_counter >= max_wait) {
 		logqidmsg(mlfi, LOG_WARNING,
 		    "amavisd connection is not available for %d sec, giving up",
 		    wait_counter);
@@ -873,30 +874,25 @@ mlfi_eom(SMFICTX *ctx)
 		return SMFIS_TEMPFAIL;
 	    }
 #ifdef HAVE_SMFI_PROGRESS
-	    if (!(wait_counter % 60)) {
-		logqidmsg(mlfi, LOG_DEBUG,
-		    "amavisd connection is not available for %d sec, "
-		    "triggering sendmail", wait_counter);
-		if (smfi_progress(ctx) != MI_SUCCESS) {
-		    logqidmsg(mlfi, LOG_ERR,
-			"could not notify MTA that an operation is still in "
-			"progress");
-		    mlfi_setreply_tempfail(ctx);
-		    return SMFIS_TEMPFAIL;
-		}
-	    } else {
-#endif
-		logqidmsg(mlfi, LOG_DEBUG,
-		    "amavisd connection not available for %d sec, sleeping",
-		    wait_counter);
-#ifdef HAVE_SMFI_PROGRESS
+	    logqidmsg(mlfi, LOG_DEBUG,
+		"amavisd connection is not available for %d sec, "
+		"triggering sendmail", wait_counter);
+	    if (smfi_progress(ctx) != MI_SUCCESS) {
+		logqidmsg(mlfi, LOG_ERR,
+		   "could not notify MTA that an operation is still in "
+		   "progress");
+		mlfi_setreply_tempfail(ctx);
+		return SMFIS_TEMPFAIL;
 	    }
+#else
+	    logqidmsg(mlfi, LOG_DEBUG,
+		"amavisd connection not available for %d sec, waiting",
+		wait_counter);
 #endif
-	    sleep(1);
+	    wait_counter += MIN(SMFI_PROGRESS_TRIGGER, max_wait - wait_counter);
 	}
-	sem_getvalue(max_sem, &i);
-	logqidmsg(mlfi, LOG_DEBUG, "got amavisd connection %d for %d sec",
-	    max_conns - i, wait_counter);
+	logqidmsg(mlfi, LOG_DEBUG, "got amavisd connection for %d sec",
+	    (int)(time(NULL) - start_counter));
 #ifdef HAVE_SMFI_PROGRESS
 	if (smfi_progress(ctx) != MI_SUCCESS) {
 	    logqidmsg(mlfi, LOG_ERR,
@@ -907,14 +903,12 @@ mlfi_eom(SMFICTX *ctx)
 	}
 #endif
     } else {
-	if (amavisd_connect(mlfi, &amavisd_sock) == -1) {
+	if (amavisd_connect(mlfi, &amavisd_sock, 0) == -1) {
 	    logqidmsg(mlfi, LOG_ERR,
 		"could not connect to amavisd socket %s: %s",
 		amavisd_socket, strerror(errno));
 		mlfi_setreply_tempfail(ctx);
 		return SMFIS_TEMPFAIL;
-	} else {
-	    logqidmsg(mlfi, LOG_DEBUG, "got amavisd connection");
 	}
     }
 
@@ -936,6 +930,7 @@ mlfi_eom(SMFICTX *ctx)
 	if ((qid = smfi_getsymval(ctx, "i")) != NULL) {
 	    if ((mlfi->mlfi_qid = strdup(qid)) == NULL) {
 		logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
+		amavisd_close(mlfi);
 		mlfi_setreply_tempfail(ctx);
 		return SMFIS_TEMPFAIL;
 	    }

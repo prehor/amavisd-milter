@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.15 2006/10/08 13:31:29 reho Exp $
+ * $Id: amavisd.c,v 1.16 2007/08/31 21:08:14 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -85,12 +85,22 @@ amavisd_grow_amabuf(struct mlfiCtx *mlfi, char *b)
 ** AMAVISD_CONNECT - Connect to amavisd socket
 */
 int
-amavisd_connect(struct mlfiCtx *mlfi, struct sockaddr_un *sock)
+amavisd_connect(struct mlfiCtx *mlfi, struct sockaddr_un *sock, time_t timeout)
 {
+    int		i;
+    struct	timespec max_timeout;
+
     /* Lock amavisd connection */
     if (max_sem != NULL && mlfi->mlfi_max_sem_locked == 0) {
-	if (sem_trywait(max_sem) == -1) {
-	    if (errno != EAGAIN) {
+	max_timeout.tv_sec = timeout;
+	max_timeout.tv_nsec = 0;
+	while ((i = sem_timedwait(max_sem, &max_timeout)) != 0 &&
+	    errno == EINTR)
+	{
+	    continue;
+	}
+	if (i == -1) {
+	    if (errno != ETIMEDOUT) {
 		logqidmsg(mlfi, LOG_ERR,
 		    "could not lock amavisd connections semaphore: %s",
 		    strerror(errno));
@@ -98,6 +108,8 @@ amavisd_connect(struct mlfiCtx *mlfi, struct sockaddr_un *sock)
 	    return -1;
 	}
 	mlfi->mlfi_max_sem_locked = 1;
+	sem_getvalue(max_sem, &i);
+	logqidmsg(mlfi, LOG_DEBUG, "grab amavisd connection %d", i);
     }
 
     /* Initialize domain socket */
@@ -105,17 +117,22 @@ amavisd_connect(struct mlfiCtx *mlfi, struct sockaddr_un *sock)
     sock->sun_family = AF_UNIX;
     (void) strlcpy(sock->sun_path, amavisd_socket, sizeof(sock->sun_path));
     if ((mlfi->mlfi_amasd = socket(PF_UNIX, SOCK_STREAM, 0)) == -1) {
+	logqidmsg(mlfi, LOG_ERR, "could not create amavisd socket %s: %s",
+	    amavisd_socket, strerror(errno));
 	return -1;
     }
 
     /* Connect to amavisd */
     if (connect(mlfi->mlfi_amasd, (struct sockaddr *)sock, sizeof(*sock)) == -1)
     {
+	logqidmsg(mlfi, LOG_ERR, "could not connect to amavisd socket %s: %s",
+	    amavisd_socket, strerror(errno));
 	return -1;
     }
 
     /* Return socket */
-    logqidmsg(mlfi, LOG_DEBUG, "open amavisd communication socket");
+    logqidmsg(mlfi, LOG_DEBUG, "open amavisd communication socket %s",
+	amavisd_socket);
     return mlfi->mlfi_amasd;
 }
 
