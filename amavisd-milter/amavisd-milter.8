@@ -1,5 +1,5 @@
 .\"
-.\" $Id: amavisd-milter.8,v 1.14 2006/12/19 20:25:00 reho Exp $
+.\" $Id: amavisd-milter.8,v 1.15 2007/08/31 21:59:28 reho Exp $
 .\"
 .Dd Januar 23, 2006
 .Dt amavisd-milter 8
@@ -177,6 +177,23 @@ Th default
 communication socket.
 .It Em /var/amavis
 The default working directory.
+.El
+.Sh POLICY BANK
+When remote client is authenticated,
+.Sy amavisd-milter
+forward this information to
+.Sy amavisd-new
+through AM.PDP request attribute
+.Sy policy_bank Ns
+:
+.Bl -tag -width indent
+.It Sy SMTP_AUTH
+Indicate that the remote client is authenticated.
+.It Sy SMTP_AUTH_<MECH>
+Remote client authentication mechanism.
+.It Sy SMTP_AUTH_<MECH>_<BITS>
+The number of bits used for the key of the symmetric cipher when
+authentication mechanism use it.
 .El
 .Sh EXAMPLES
 .Ss Configuring amavisd-new

@@ -1,5 +1,11 @@
 This is the CHANGELOG for amavisd-milter.
 
+20070902:
+	Implemented AM.PDP request attribute policy_bank (amavisd-new
+	2.5.0 or higher is required).  Currently SMTP_AUTH, SMTP_AUTH_<MECH>
+	and SMTP_AUTH<MECH>_<BITS> policy bank names are send when the remote
+	client is authenticated.
+
 20070901:
 	Performance optimization: use sem_timedwait instead of
 	sem_trywait+sleep(1) for amavisd connection lock.
@@ -251,4 +257,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.47 2007/08/31 21:59:28 reho Exp $
+$Id: CHANGES,v 1.48 2007/09/01 16:27:53 reho Exp $

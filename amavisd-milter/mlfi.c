@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.49 2007/08/31 21:59:28 reho Exp $
+ * $Id: mlfi.c,v 1.50 2007/09/01 16:27:53 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -230,6 +230,8 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
     mlfi->mlfi_qid = NULL;
     free(mlfi->mlfi_from);
     mlfi->mlfi_from = NULL;
+    free(mlfi->mlfi_policy_bank);
+    mlfi->mlfi_policy_bank = NULL;
     while(mlfi->mlfi_rcpt != NULL) {
 	rcpt = mlfi->mlfi_rcpt;
 	mlfi->mlfi_rcpt = rcpt->q_next;
@@ -595,6 +597,7 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     /*		<date>							 */
     /*		(envelope-from <sender>)				 */
     /* XXX: amavisd_new require \n instead of \r\n at the end of headers */
+    *mlfi->mlfi_amabuf = '\0';
     l = snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
 	"Received: from %s", mlfi->mlfi_helo != NULL && *mlfi->mlfi_helo != '\0'
 	    ? mlfi->mlfi_helo : "unknown");
@@ -656,6 +659,22 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 	    mlfi->mlfi_fname, strerror(errno));
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
+    }
+
+    /* Policy bank names */
+    if (auth_type != NULL) {
+	*mlfi->mlfi_amabuf = '\0';
+	l = snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	    "SMTP_AUTH,SMTP_AUTH_%s", auth_type);
+	if (auth_ssf != NULL && *auth_ssf != '\0') {
+	    l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+		",SMTP_AUTH_%s_%s", auth_type, auth_ssf);
+	}
+	if ((mlfi->mlfi_policy_bank = strdup(mlfi->mlfi_amabuf)) == NULL) {
+	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
+	    mlfi_setreply_tempfail(ctx);
+	    return SMFIS_TEMPFAIL;
+	}
     }
 
     /* Continue processing */
@@ -1051,6 +1070,19 @@ mlfi_eom(SMFICTX *ctx)
     if (mlfi->mlfi_helo != NULL) {
 	logqidmsg(mlfi, LOG_DEBUG, "helo_name=%s", mlfi->mlfi_helo);
 	if (amavisd_request(mlfi, "helo_name", mlfi->mlfi_helo) == -1) {
+	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
+		amavisd_socket, strerror(errno));
+	    amavisd_close(mlfi);
+	    mlfi_setreply_tempfail(ctx);
+	    return SMFIS_TEMPFAIL;
+	}
+    }
+
+    /* Policy bank names */
+    if (mlfi->mlfi_policy_bank != NULL) {
+	logqidmsg(mlfi, LOG_DEBUG, "policy_bank=%s", mlfi->mlfi_policy_bank);
+	if (amavisd_request(mlfi, "policy_bank", mlfi->mlfi_policy_bank) == -1)
+	{
 	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 		amavisd_socket, strerror(errno));
 	    amavisd_close(mlfi);
