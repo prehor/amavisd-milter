@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.50 2007/09/01 16:27:53 reho Exp $
+ * $Id: mlfi.c,v 1.51 2007/09/02 12:22:17 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -458,7 +458,7 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     const char *protocol = NULL;
     size_t	l;
     time_t	t;
-    struct	tm *gt, *lt;
+    struct	tm gt, lt;
     int		gmtoff;
 
     /* Check milter private data */
@@ -555,21 +555,21 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     /* Get transaction date */
     if ((date = smfi_getsymval(ctx, "b")) == NULL) {
 	(void) time(&t);
-	gt = gmtime(&t);
-	lt = localtime(&t);
-	gmtoff = (lt->tm_hour - gt->tm_hour) * 60 + lt->tm_min - gt->tm_min;
-	if (lt->tm_year < gt->tm_year) {
+	gt = *gmtime(&t);
+	lt = *localtime(&t);
+	gmtoff = (lt.tm_hour - gt.tm_hour) * 60 + lt.tm_min - gt.tm_min;
+	if (lt.tm_year < gt.tm_year) {
 	    gmtoff -= 24 * 60;
-	} else if (lt->tm_year > gt->tm_year) {
+	} else if (lt.tm_year > gt.tm_year) {
 	    gmtoff += 24 * 60;
-	} else if (lt->tm_yday < gt->tm_yday) {
+	} else if (lt.tm_yday < gt.tm_yday) {
 	    gmtoff -= 24 * 60;
-	} else if (lt->tm_yday > gt->tm_yday) {
+	} else if (lt.tm_yday > gt.tm_yday) {
 	    gmtoff += 24 * 60;
 	}
-	if (lt->tm_sec <= gt->tm_sec - 60) {
+	if (lt.tm_sec <= gt.tm_sec - 60) {
 	    gmtoff -= 1;
-	} else if (lt->tm_sec >= gt->tm_sec + 60) {
+	} else if (lt.tm_sec >= gt.tm_sec + 60) {
 	    gmtoff += 1;
 	}
 	if (snprintf(buf, sizeof(buf),
@@ -578,11 +578,11 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 #else
 	    "%s, %d %s %d %02d:%02d:%02d %+03d%02d",
 #endif
-	    days[lt->tm_wday], lt->tm_mday, months[lt->tm_mon],
-	    lt->tm_year + 1900, lt->tm_hour, lt->tm_min, lt->tm_sec,
+	    days[lt.tm_wday], lt.tm_mday, months[lt.tm_mon],
+	    lt.tm_year + 1900, lt.tm_hour, lt.tm_min, lt.tm_sec,
 	    (int) gmtoff / 60, (int) abs(gmtoff) % 60
 #ifdef HAVE_STRUCT_TM_TM_ZONE
-	    , lt->tm_zone
+	    , lt.tm_zone
 #endif
 	    ) < sizeof(buf))
 	{
