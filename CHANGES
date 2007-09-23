@@ -1,6 +1,14 @@
 This is the CHANGELOG for amavisd-milter.
 
 20070923:
+	amavisd-milter-1.3.1
+
+	Bug fixies:
+	- Properly calculate timezone offset for synthesized Received header
+	  on platforms where gmtime() and localtime() returns the pointer to
+	  the same static struct.
+
+20070923:
 	Better explained -D option.
 
 20070915:
@@ -280,4 +288,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.51 2007/09/15 18:55:58 reho Exp $
+$Id: CHANGES,v 1.52 2007/09/23 17:29:05 reho Exp $
