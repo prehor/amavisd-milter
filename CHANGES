@@ -1,5 +1,8 @@
 This is the CHANGELOG for amavisd-milter.
 
+20070923:
+	Better explained -D option.
+
 20070915:
 	In mlfi.c:mlfi_envfrom() the gmtime() and localtime() call returns the
 	pointer to the same static struct.  Thus pointers gt and lt are
@@ -277,4 +280,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.50 2007/09/02 12:42:50 reho Exp $
+$Id: CHANGES,v 1.51 2007/09/15 18:55:58 reho Exp $

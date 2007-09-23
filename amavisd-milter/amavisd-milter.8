@@ -1,5 +1,5 @@
 .\"
-.\" $Id: amavisd-milter.8,v 1.15 2007/08/31 21:59:28 reho Exp $
+.\" $Id: amavisd-milter.8,v 1.16 2007/09/02 12:22:17 reho Exp $
 .\"
 .Dd Januar 23, 2006
 .Dt amavisd-milter 8
@@ -61,10 +61,21 @@ Set AM.PDP request attribute delivery_care_of to
 .Sy client
 (default) or
 .Sy server Ns
-\&. When
+\&.  When
+.Sy client
+method is used then
+.Sy amavisd-milter
+is responsible to forward the message to recipients. This method doesn't
+allow personalized header or body modification.
+.Pp
+When
 .Sy server
-method is used then $forward_method in amavisd.conf must point to
-some place willing to accept mail without further checking in
+method is used then
+.Sy amavisd-new
+is responsible to forward the message to recipients and can provide
+personalized header and body modification.
+$forward_method in amavisd.conf must point to some place willing to accept
+mail without further checking in
 .Sy amavisd-new Ns
 \&.
 .It Fl f              
