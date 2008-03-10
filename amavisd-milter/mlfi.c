@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.51 2007/09/02 12:22:17 reho Exp $
+ * $Id: mlfi.c,v 1.52 2007/09/15 18:55:59 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -223,6 +223,9 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 	}
 	mlfi->mlfi_wrkdir[0] = '\0';
     }
+
+    /* Reset CRLF detection flag */
+    mlfi->mlfi_cr_flag = 0;
 
     /* Free memory */
     free(mlfi->mlfi_prev_qid);
@@ -596,7 +599,6 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     /*		with <protocol> (authenticated as <user>) id <qid>;	 */
     /*		<date>							 */
     /*		(envelope-from <sender>)				 */
-    /* XXX: amavisd_new require \n instead of \r\n at the end of headers */
     *mlfi->mlfi_amabuf = '\0';
     l = snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
 	"Received: from %s", mlfi->mlfi_helo != NULL && *mlfi->mlfi_helo != '\0'
@@ -749,7 +751,6 @@ mlfi_header(SMFICTX *ctx, char *headerf, char *headerv)
     logqidmsg(mlfi, LOG_DEBUG, "HEADER: %s: %s", headerf, headerv);
 
     /* Write the header to the message file */
-    /* amavisd_new require \n instead of \r\n at the end of header */
     (void) fprintf(mlfi->mlfi_fp, "%s: %s\n", headerf, headerv);
     if (ferror(mlfi->mlfi_fp)) {
 	logqidmsg(mlfi, LOG_ERR, "could not write to message file %s: %s",
@@ -783,7 +784,6 @@ mlfi_eoh(SMFICTX *ctx)
     logqidmsg(mlfi, LOG_DEBUG, "MESSAGE BODY");
 
     /* Write the blank line between the header and the body */
-    /* XXX: amavisd_new require \n instead of \r\n at the end of line */
     (void) fprintf(mlfi->mlfi_fp, "\n");
     if (ferror(mlfi->mlfi_fp)) {
 	logqidmsg(mlfi, LOG_ERR, "could not write to message file %s: %s",
@@ -806,6 +806,7 @@ sfsistat
 mlfi_body(SMFICTX *ctx, unsigned char * bodyp, size_t bodylen)
 {
     struct	mlfiCtx *mlfi = MLFICTX(ctx);
+    unsigned char *b, *c;
 
     /* Check milter private data */
     if (mlfi == NULL) {
@@ -815,6 +816,41 @@ mlfi_body(SMFICTX *ctx, unsigned char * bodyp, size_t bodylen)
     }
 
     logqidmsg(mlfi, LOG_DEBUG, "body chunk: %ld", (long)bodylen);
+
+    /* Check if previous chunk ends with CR */
+    if (mlfi->mlfi_cr_flag != 0) {
+	mlfi->mlfi_cr_flag = 0;
+	if (*bodyp != '\n') {
+	    (void) fprintf(mlfi->mlfi_fp, "\r");
+	    if (ferror(mlfi->mlfi_fp)) {
+		logqidmsg(mlfi, LOG_ERR, "could not write to message file "
+		    "%s: %s", mlfi->mlfi_fname, strerror(errno));
+		mlfi_setreply_tempfail(ctx);
+		return SMFIS_TEMPFAIL;
+	    }
+	}
+    }
+
+    /* Convert CRLF to LF */
+    b = c = bodyp;
+    while (c < bodyp + bodylen) {
+	if (mlfi->mlfi_cr_flag != 0) {
+	    mlfi->mlfi_cr_flag = 0;
+	    if (*c != '\n') {
+		*b++ = '\r';
+	    }
+	    *b++ = *c++;
+	} else if (*c == '\r') {
+	    mlfi->mlfi_cr_flag = 1;
+	    c++;
+	} else {
+	    *b++ = *c++;
+	}
+    }
+
+    bodylen = b - bodyp;
+    logqidmsg(mlfi, LOG_DEBUG, "after CRLF to LF conversion: %ld)",
+	(long)(bodylen));
 
     /* Write the body chunk to the message file */
     if (fwrite(bodyp, bodylen, 1, mlfi->mlfi_fp) < 1) {

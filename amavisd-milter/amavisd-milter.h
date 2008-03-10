@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.21 2007/09/01 16:27:53 reho Exp $
+ * $Id: amavisd-milter.h,v 1.22 2007/09/02 12:22:17 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
@@ -71,6 +71,7 @@ struct mlfiCtx {
     size_t	mlfi_amabuf_length;	/* amavisd buffer length */
     int		mlfi_amasd;		/* amavisd socket descriptor */
     char       *mlfi_policy_bank;	/* policy bank names */
+    int		mlfi_cr_flag;		/* CR at the end of the body chunk */
 };
 
 /* Get private data from libmilter */
