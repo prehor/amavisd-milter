@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: autoconf.in,v 1.1 2005/05/10 21:37:57 reho Exp $
+# $Id: autoconf.in,v 1.2 2008/07/01 16:59:28 reho Exp $
 #
 
 aclocal -I aclocal &&

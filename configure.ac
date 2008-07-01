@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.35 2007/09/02 12:42:50 reho Exp $
+dnl $Id: configure.ac,v 1.36 2007/09/23 18:56:09 reho Exp $
 
 AC_INIT(amavisd-milter, 1.3.1)
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
@@ -50,6 +50,6 @@ AC_CHECK_INET6_ADDRSTRLEN
 AC_CHECK_STRUCT_SOCKADDR_IN6
 
 AC_CONFIG_FILES([Makefile amavisd-milter/Makefile compat/Makefile])
-AC_CONFIG_FILES([autoconf], [chmod +x autoconf])
+AC_CONFIG_FILES([autoconf.sh], [chmod +x autoconf.sh])
 
 AC_OUTPUT
