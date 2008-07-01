@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.18 2006/12/03 18:39:02 reho Exp $
+ * $Id: main.c,v 1.19 2007/08/31 21:59:28 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -115,7 +115,7 @@ versioninfo(const char *progname)
 int
 main(int argc, char *argv[])
 {
-    static	const char *args = "d:fhm:M:p:s:S:t:T:vw:";
+    static	const char *args = "d:D:fhm:M:p:s:S:t:T:vw:";
 
     int		c, rstat;
     char       *p;
@@ -159,7 +159,9 @@ main(int argc, char *argv[])
 		usageerr(progname, "option requires an argument -- %c",
 		    (char)c);
 	    }
-	    if (! strcmp(optarg, "client") || ! strcmp(optarg, "server")) {
+	    if (strcmp(optarg, "client") != 0 &&
+		strcmp(optarg, "server") != 0)
+	    {
 		usageerr(progname, "unknown delivery mechanism '%s'", optarg);
 	    }
 	    delivery_care_of = optarg;
