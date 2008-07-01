@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.19 2007/08/31 21:59:28 reho Exp $
+ * $Id: main.c,v 1.20 2008/07/01 16:51:42 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -61,20 +61,20 @@ static void
 usage(const char *progname)
 {
     (void) fprintf(stdout, "\nUsage: %s [OPTIONS]\n", progname);
-    (void) fprintf(stdout, "Options are:\n\
-	-d debug-level		Set debug level\n\
-	-D delivery		Delivery care of server or client\n\
-	-f			Run in the foreground\n\
-	-h			Print this page\n\
-	-m max-conns		Maximum amavisd connections \n\
-	-M max-wait		Maximum wait for connection in seconds\n\
-	-p pidfile		Use this pid file\n\
-	-s socket		Milter communication socket\n\
-	-S socket		Amavisd communication socket\n\
-	-t timeout		Milter connection timeout in seconds\n\
-	-T timeout		Amavisd connection timeout in seconds\n\
-	-v			Report the version and exit\n\
-	-w directory		Set the working directory\n\n");
+    (void) fprintf(stdout, "Options are:\n");
+    (void) fprintf(stdout, "	-d debug-level		Set debug level\n");
+    (void) fprintf(stdout, "	-D delivery		Delivery care of server or client\n");
+    (void) fprintf(stdout, "	-f			Run in the foreground\n");
+    (void) fprintf(stdout, "	-h			Print this page\n");
+    (void) fprintf(stdout, "	-m max-conns		Maximum amavisd connections \n");
+    (void) fprintf(stdout, "	-M max-wait		Maximum wait for connection in seconds\n");
+    (void) fprintf(stdout, "	-p pidfile		Use this pid file\n");
+    (void) fprintf(stdout, "	-s socket		Milter communication socket\n");
+    (void) fprintf(stdout, "	-S socket		Amavisd communication socket\n");
+    (void) fprintf(stdout, "	-t timeout		Milter connection timeout in seconds\n");
+    (void) fprintf(stdout, "	-T timeout		Amavisd connection timeout in seconds\n");
+    (void) fprintf(stdout, "	-v			Report the version and exit\n");
+    (void) fprintf(stdout, "	-w directory		Set the working directory\n\n");
 }
 
 
