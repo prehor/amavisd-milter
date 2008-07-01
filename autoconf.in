@@ -1,12 +1,9 @@
 #!/bin/sh
 #
-# $Id$
+# $Id: autoconf.in,v 1.1 2005/05/10 21:37:57 reho Exp $
 #
 
-AUTOMAKE_VER="19"
-AUTOCONF_VER="259"
-
-aclocal${AUTOMAKE_VER} -I aclocal &&
-autoheader${AUTOCONF_VER} &&
-autoconf${AUTOCONF_VER} &&
-automake${AUTOMAKE_VER} --add-missing --copy
+aclocal -I aclocal &&
+autoheader &&
+autoconf &&
+automake --add-missing --copy
