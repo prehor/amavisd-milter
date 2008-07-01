@@ -1,6 +1,10 @@
 This is the CHANGELOG for amavisd-milter.
 
 20080701:
+	Sync fts_open.c with the NetBSD libc (upstream) fts.c, which brought
+	in a few fixes, including one that looked like a potential memory leak.
+	Thanks to: Luke Mewburn <luke@mewburn.net>
+
 	Properly check -D option parameters.
 	Thanks to: Henrik K <hege@hege.li>
 
@@ -300,4 +304,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.55 2008/07/01 16:51:42 reho Exp $
+$Id: CHANGES,v 1.56 2008/07/01 16:57:14 reho Exp $

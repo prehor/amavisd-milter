@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: compat.h,v 1.7 2006/06/16 07:00:51 reho Exp $
+ * $Id: compat.h,v 1.8 2006/10/17 20:35:03 reho Exp $
  */
 
 #ifndef _AMAVISD_COMPAT_H
@@ -80,10 +80,6 @@ typedef unsigned char _Bool;
 # if HAVE_NDIR_H
 #  include <ndir.h>
 # endif
-#endif
-
-#if ! HAVE_D_NAMLEN
-# define DIRENT_MISSING_D_NAMLEN
 #endif
 
 #if ! defined(MIN)

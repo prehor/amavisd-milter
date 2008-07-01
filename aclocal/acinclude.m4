@@ -1,4 +1,4 @@
-dnl $Id: acinclude.m4,v 1.4 2006/01/25 21:53:27 reho Exp $
+dnl $Id: acinclude.m4,v 1.5 2006/12/19 18:17:26 reho Exp $
 
 dnl Checks for C compiler
 AC_DEFUN([AC_CHECK_C_COMPILER],
@@ -55,7 +55,7 @@ AC_DEFUN([AC_CHECK_POSIX_SEMAPHORES],
 ])
 
 dnl Checks for d_namlen in struct dirent
-AC_DEFUN([AC_CHECK_DIRENT_D_NAMLEN],
+AC_DEFUN([AC_STRUCT_DIRENT_D_NAMLEN],
 [
   AC_MSG_CHECKING(for d_namlen in struct dirent)
   AC_TRY_COMPILE([
@@ -77,8 +77,10 @@ AC_DEFUN([AC_CHECK_DIRENT_D_NAMLEN],
   struct dirent dp;
   int X = dp.d_namlen;
   ],
-    AC_DEFINE(HAVE_D_NAMLEN, 1,
+    AC_DEFINE([HAVE_STRUCT_DIRENT_D_NAMLEN], 1,
       [Define to 1 if `struct direct' has a d_namlen element])
+    AC_MSG_RESULT(yes),
+    AC_MSG_RESULT(no)
   )
 ])
 
