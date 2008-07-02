@@ -1,9 +1,9 @@
-# $Id#
+# $Id$
 #
 # http://savannah.gnu.org/cgi-bin/viewcvs/gnulib/gnulib/m4/eoverflow.m4
 
-# eoverflow.m4 serial 1
-dnl Copyright (C) 2004 Free Software Foundation, Inc.
+# eoverflow.m4 serial 2
+dnl Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -44,7 +44,7 @@ yes
       if test -n "$have_eoverflow"; then
         dnl EOVERFLOW exists but is hidden.
         dnl Define it to the same value.
-        _AC_COMPUTE_INT([EOVERFLOW], ac_cv_decl_EOVERFLOW, [
+        AC_COMPUTE_INT([EOVERFLOW], ac_cv_decl_EOVERFLOW, [
 #define _XOPEN_SOURCE_EXTENDED 1
 #include <errno.h>
 /* The following two lines are a workaround against an autoconf-2.52 bug.  */
