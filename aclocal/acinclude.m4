@@ -1,7 +1,7 @@
-dnl $Id: acinclude.m4,v 1.5 2006/12/19 18:17:26 reho Exp $
+dnl $Id: acinclude.m4,v 1.6 2008/07/01 17:25:49 reho Exp $
 
-dnl Checks for C compiler
-AC_DEFUN([AC_CHECK_C_COMPILER],
+dnl Enables debug output and debug symbols
+AC_DEFUN([ACX_ENABLE_DEBUG],
 [
   dnl Configure --enable-debug option
   AC_ARG_ENABLE(debug,[  --enable-debug          enables debug output and debug symbols @<:@default=no@:>@],
@@ -20,14 +20,17 @@ AC_DEFUN([AC_CHECK_C_COMPILER],
   dnl This prevents stupid AC_PROG_CC to add "-g" to the default CFLAGS
   CFLAGS=" $CFLAGS"
 
-  AC_PROG_CC
+  AC_REQUIRE([AC_PROG_CC])
 
   if test "$GCC" = "yes";
     then
       if test "$enable_debug" = "yes"
         then
           CFLAGS="-g -O2 $CFLAGS"
-          CFLAGS="-ansi -pedantic -W -Wall -Wshadow -Wpointer-arith -Wmissing-prototypes -Wmissing-declarations -Wwrite-strings $CFLAGS"
+          CFLAGS="-W -Wall -ansi -pedantic -Wbad-function-cast -Wcast-align $CFLAGS"
+          CFLAGS="-Wcast-qual -Wchar-subscripts -Winline -Wmissing-prototypes $CFLAGS"
+          CFLAGS="-Wmissing-declarations -Wnested-externs -Wpointer-arith $CFLAGS"
+          CFLAGS="-Wredundant-decls -Wshadow -Wstrict-prototypes -Wwrite-strings $CFLAGS"
         else
           CFLAGS="-O2 -DNDEBUG $CFLAGS"
       fi
