@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: compat.h,v 1.8 2006/10/17 20:35:03 reho Exp $
+ * $Id: compat.h,v 1.9 2008/07/01 17:25:49 reho Exp $
  */
 
 #ifndef _AMAVISD_COMPAT_H
@@ -79,6 +79,18 @@ typedef unsigned char _Bool;
 # endif
 # if HAVE_NDIR_H
 #  include <ndir.h>
+# endif
+#endif
+
+#if !defined(HAVE_DIRFD) && !defined(HAVE_DIRFD_AS_MACRO)
+# if defined(HAVE_DIR_D_FD)
+#  define dirfd(_d) ((_d)->d_fd)
+# elif defined(HAVE_DIR_DD_FD)
+#  define dirfd(_d) ((_d)->dd_fd)
+# elif defined(HAVE_DIR___DD_FD)
+#  define dirfd(_d) ((_d)->__dd_fd)
+# else
+#  error cannot figure out how to turn a DIR * into a fd
 # endif
 #endif
 

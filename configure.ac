@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.38 2008/07/01 17:25:49 reho Exp $
+dnl $Id: configure.ac,v 1.39 2008/07/02 23:16:51 reho Exp $
 
 AC_INIT(amavisd-milter, 1.3.1)
 AC_PREREQ(2.62)
@@ -50,6 +50,8 @@ AC_CHECK_FUNCS([arc4random])
 AC_REPLACE_FUNCS([daemon fts_open mkdtemp strlcpy])
 
 AC_CHECK_FUNC(inet_ntop, [], [AC_SEARCH_LIBS(inet_ntop, [nsl])])
+
+AC_CHECK_DIRFD
 
 AX_PATH_MILTER([8.12], [LIBS="$MILTER_LIBS $LIBS"
   LDFLAGS="$MILTER_LDFLAGS $LDFLAGS" CPPFLAGS="$CPPFLAGS $MILTER_CPPFLAGS"],

@@ -1,5 +1,10 @@
 This is the CHANGELOG for amavisd-milter.
 
+20081028:
+	Compatibility fix - Solaris doesn't have dirfd().
+
+	Thanks to: Henrik Krohns <hege@hege.li>
+
 20080701:
 	Sync fts_open.c with the NetBSD libc (upstream) fts.c, which brought
 	in a few fixes, including one that looked like a potential memory leak.
@@ -304,4 +309,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.56 2008/07/01 16:57:14 reho Exp $
+$Id: CHANGES,v 1.57 2008/07/01 17:25:49 reho Exp $
