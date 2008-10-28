@@ -1,4 +1,4 @@
-/* $Id: fts_open.c,v 1.1 2006/01/25 21:53:27 reho Exp $ */
+/* $Id: fts_open.c,v 1.2 2008/07/01 17:25:49 reho Exp $ */
 /* TNFTPD ORIGINAL: libnetbsd/fts_open.c */
 
 /* $TNFTPD: fts_open.c,v 1.7 2008/03/09 20:54:13 lukem Exp $ */
@@ -37,6 +37,7 @@
 
 static FTSENT	*fts_alloc(FTS *, const char *, size_t);
 static FTSENT	*fts_build(FTS *, int);
+static void	 fts_free(FTSENT *);
 static void	 fts_lfree(FTSENT *);
 static void	 fts_load(FTS *, FTSENT *);
 static size_t	 fts_maxarglen(char * const *);
@@ -171,12 +172,12 @@ fts_open(char * const *argv, int options,
 	}
 
 	if (nitems == 0)
-		free(parent);
+		fts_free(parent);
 
 	return (sp);
 
 mem3:	fts_lfree(root);
-	free(parent);
+	fts_free(parent);
 mem2:	free(sp->fts_path);
 mem1:	free(sp);
 	return (NULL);
@@ -223,9 +224,9 @@ fts_close(FTS *sp)
 		for (p = sp->fts_cur; p->fts_level >= FTS_ROOTLEVEL;) {
 			freep = p;
 			p = p->fts_link ? p->fts_link : p->fts_parent;
-			free(freep);
+			fts_free(freep);
 		}
-		free(p);
+		fts_free(p);
 	}
 
 	/* Free up child linked list, sort array, path buffer. */
@@ -380,7 +381,7 @@ fts_read(FTS *sp)
 	/* Move to the next node on this level. */
 next:	tmp = p;
 	if ((p = p->fts_link) != NULL) {
-		free(tmp);
+		fts_free(tmp);
 
 		/*
 		 * If reached the top, return to the original directory, and
@@ -427,14 +428,14 @@ name:		t = sp->fts_path + NAPPEND(p->fts_parent);
 
 	/* Move up to the parent node. */
 	p = tmp->fts_parent;
-	free(tmp);
+	fts_free(tmp);
 
 	if (p->fts_level == FTS_ROOTPARENTLEVEL) {
 		/*
 		 * Done; free everything up and set errno to 0 so the user
 		 * can distinguish between error and EOF.
 		 */
-		free(p);
+		fts_free(p);
 		errno = 0;
 		return (sp->fts_cur = NULL);
 	}
@@ -705,7 +706,7 @@ fts_build(FTS *sp, int type)
 				 */
 mem1:				saved_errno = errno;
 				if (p)
-					free(p);
+					fts_free(p);
 				fts_lfree(head);
 				(void)closedir(dirp);
 				errno = saved_errno;
@@ -730,7 +731,7 @@ mem1:				saved_errno = errno;
 			 * the current structure and the structures already
 			 * allocated, then error out with ENAMETOOLONG.
 			 */
-			free(p);
+			fts_free(p);
 			fts_lfree(head);
 			(void)closedir(dirp);
 			cur->fts_info = FTS_ERR;
@@ -999,6 +1000,16 @@ fts_alloc(FTS *sp, const char *name, size_t namelen)
 }
 
 static void
+fts_free(FTSENT *p)
+{
+#if !defined(ALIGNBYTES) || !defined(ALIGN)
+	if (p->fts_statp)
+		free(p->fts_statp);
+#endif
+	free(p);
+}
+
+static void
 fts_lfree(FTSENT *head)
 {
 	FTSENT *p;
@@ -1008,12 +1019,7 @@ fts_lfree(FTSENT *head)
 	/* Free a linked list of structures. */
 	while ((p = head) != NULL) {
 		head = head->fts_link;
-
-#if !defined(ALIGNBYTES) || !defined(ALIGN)
-		if (p->fts_statp)
-			free(p->fts_statp);
-#endif
-		free(p);
+		fts_free(p);
 	}
 }
 
