@@ -1,8 +1,8 @@
-/* $Id: fts_open.c,v 1.2 2008/07/01 17:25:49 reho Exp $ */
+/* $Id: fts_open.c,v 1.3 2008/10/28 23:45:29 reho Exp $ */
 /* TNFTPD ORIGINAL: libnetbsd/fts_open.c */
 
-/* $TNFTPD: fts_open.c,v 1.7 2008/03/09 20:54:13 lukem Exp $ */
-/*	from NetBSD: fts.c,v 1.31 2006/03/30 01:23:50 christos Exp */
+/* $NetBSD: fts_open.c,v 1.10 2008/09/27 15:14:29 lukem Exp $ */
+/*      from NetBSD: fts.c,v 1.34 2008/09/27 15:12:00 lukem Exp */
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -48,6 +48,12 @@ static FTSENT	*fts_sort(FTS *, FTSENT *, size_t);
 static unsigned short	 fts_stat(FTS *, FTSENT *, int);
 static int	 fts_safe_changedir(const FTS *, const FTSENT *, int,
 		    const char *);
+
+#if defined(ALIGNBYTES) && defined(ALIGN)
+#define	FTS_ALLOC_ALIGNED	1
+#else
+#undef	FTS_ALLOC_ALIGNED
+#endif
 
 #define	ISDOT(a)	(a[0] == '.' && (!a[1] || (a[1] == '.' && !a[2])))
 
@@ -689,7 +695,7 @@ fts_build(FTS *sp, int type)
 		if (!ISSET(FTS_SEEDOT) && ISDOT(dp->d_name))
 			continue;
 
-#if HAVE_STRUCT_DIRENT_D_NAMLEN
+#if defined(HAVE_STRUCT_DIRENT_D_NAMLEN)
 		dnamlen = dp->d_namlen;
 #else
 		dnamlen = strlen(dp->d_name);
@@ -726,10 +732,11 @@ mem1:				saved_errno = errno;
 #if defined(__FTS_COMPAT_LENGTH)
 		if (len + dnamlen >= USHRT_MAX) {
 			/*
-			 * In an FTSENT, fts_pathlen is a u_short so it is
-			 * possible to wraparound here.  If we do, free up
-			 * the current structure and the structures already
-			 * allocated, then error out with ENAMETOOLONG.
+			 * In an FTSENT, fts_pathlen is an unsigned short
+			 * so it is possible to wraparound here.
+			 * If we do, free up the current structure and the
+			 * structures already allocated, then error out
+			 * with ENAMETOOLONG.
 			 */
 			fts_free(p);
 			fts_lfree(head);
@@ -955,9 +962,11 @@ static FTSENT *
 fts_alloc(FTS *sp, const char *name, size_t namelen)
 {
 	FTSENT *p;
+#if defined(FTS_ALLOC_ALIGNED)
 	size_t len;
+#endif
 
-#if defined(ALIGNBYTES) && defined(ALIGN)
+#if defined(FTS_ALLOC_ALIGNED)
 	/*
 	 * The file name is a variable length array and no stat structure is
 	 * necessary if the user has set the nostat bit.  Allocate the FTSENT
@@ -973,8 +982,8 @@ fts_alloc(FTS *sp, const char *name, size_t namelen)
 		return (NULL);
 
 	if (!ISSET(FTS_NOSTAT))
-		p->fts_statp =
-		    (__fts_stat_t *)ALIGN((u_long)(p->fts_name + namelen + 2));
+		p->fts_statp = (__fts_stat_t *)ALIGN(
+		    (unsigned long)(p->fts_name + namelen + 2));
 #else
 	if ((p = malloc(sizeof(FTSENT) + namelen)) == NULL)
 		return (NULL);
@@ -1002,7 +1011,7 @@ fts_alloc(FTS *sp, const char *name, size_t namelen)
 static void
 fts_free(FTSENT *p)
 {
-#if !defined(ALIGNBYTES) || !defined(ALIGN)
+#if !defined(FTS_ALLOC_ALIGNED)
 	if (p->fts_statp)
 		free(p->fts_statp);
 #endif
