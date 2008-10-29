@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd.c,v 1.16 2007/08/31 21:08:14 reho Exp $
+ * $Id: amavisd.c,v 1.17 2007/09/01 16:27:53 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -88,10 +88,13 @@ int
 amavisd_connect(struct mlfiCtx *mlfi, struct sockaddr_un *sock, time_t timeout)
 {
     int		i;
+#ifdef HAVE_SEM_TIMEDWAIT
     struct	timespec max_timeout;
+#endif
 
     /* Lock amavisd connection */
     if (max_sem != NULL && mlfi->mlfi_max_sem_locked == 0) {
+#ifdef HAVE_SEM_TIMEDWAIT
 	max_timeout.tv_sec = timeout;
 	max_timeout.tv_nsec = 0;
 	while ((i = sem_timedwait(max_sem, &max_timeout)) != 0 &&
@@ -99,8 +102,15 @@ amavisd_connect(struct mlfiCtx *mlfi, struct sockaddr_un *sock, time_t timeout)
 	{
 	    continue;
 	}
+#else
+	while ((i = sem_trywait(max_sem)) != 0 &&
+	    errno == EAGAIN && time(NULL) < timeout)
+	{
+	    sleep(1);
+	}
+#endif
 	if (i == -1) {
-	    if (errno != ETIMEDOUT) {
+	    if (errno != AMAVISD_CONNECT_TIMEDOUT_ERRNO) {
 		logqidmsg(mlfi, LOG_ERR,
 		    "could not lock amavisd connections semaphore: %s",
 		    strerror(errno));

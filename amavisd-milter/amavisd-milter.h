@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.22 2007/09/02 12:22:17 reho Exp $
+ * $Id: amavisd-milter.h,v 1.23 2008/03/10 17:07:28 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
@@ -113,6 +113,13 @@ extern int	amavisd_connect(struct mlfiCtx *, struct sockaddr_un *,
 extern int	amavisd_request(struct mlfiCtx *, const char *, const char *);
 extern int	amavisd_response(struct mlfiCtx *);
 extern void	amavisd_close(struct mlfiCtx *);
+
+/* errno value if amavisd_connect() timed out. */
+#ifdef HAVE_SEM_TIMEDWAIT
+# define AMAVISD_CONNECT_TIMEDOUT_ERRNO	ETIMEDOUT
+#else
+# define AMAVISD_CONNECT_TIMEDOUT_ERRNO	EAGAIN
+#endif
 
 /* Log message */
 extern void	logmsg(int, const char *, ...);

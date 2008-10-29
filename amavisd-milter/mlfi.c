@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.52 2007/09/15 18:55:59 reho Exp $
+ * $Id: mlfi.c,v 1.53 2008/03/10 17:07:28 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -917,7 +917,7 @@ mlfi_eom(SMFICTX *ctx)
 	while (amavisd_connect(mlfi, &amavisd_sock,
 	    start_counter + wait_counter) == -1)
 	{
-	    if (errno != ETIMEDOUT) {
+	    if (errno != AMAVISD_CONNECT_TIMEDOUT_ERRNO) {
 		mlfi_setreply_tempfail(ctx);
 		return SMFIS_TEMPFAIL;
 	    }
