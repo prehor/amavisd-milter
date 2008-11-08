@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.20 2008/07/01 16:51:42 reho Exp $
+ * $Id: main.c,v 1.21 2008/07/01 22:21:32 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -47,6 +47,9 @@ sem_t		max_sem_t;
 sem_t	       *max_sem = NULL;
 const char     *pid_file = "/var/amavis/" PACKAGE ".pid";
 const char     *mlfi_socket = "/var/amavis/" PACKAGE ".sock";
+#ifdef HAVE_SMFI_SETBACKLOG
+int		mlfi_socket_backlog = 0;
+#endif
 long		mlfi_timeout = 600;
 const char     *amavisd_socket = "/var/amavis/amavisd.sock";
 long		amavisd_timeout = 600;
@@ -69,6 +72,9 @@ usage(const char *progname)
     (void) fprintf(stdout, "	-m max-conns		Maximum amavisd connections \n");
     (void) fprintf(stdout, "	-M max-wait		Maximum wait for connection in seconds\n");
     (void) fprintf(stdout, "	-p pidfile		Use this pid file\n");
+#ifdef HAVE_SMFI_SETBACKLOG
+    (void) fprintf(stdout, "	-q backlog		Milter communication socket backlog\n");
+#endif
     (void) fprintf(stdout, "	-s socket		Milter communication socket\n");
     (void) fprintf(stdout, "	-S socket		Amavisd communication socket\n");
     (void) fprintf(stdout, "	-t timeout		Milter connection timeout in seconds\n");
@@ -115,7 +121,7 @@ versioninfo(const char *progname)
 int
 main(int argc, char *argv[])
 {
-    static	const char *args = "d:D:fhm:M:p:s:S:t:T:vw:";
+    static	const char *args = "d:D:fhm:M:p:q:s:S:t:T:vw:";
 
     int		c, rstat;
     char       *p;
@@ -206,6 +212,21 @@ main(int argc, char *argv[])
 	    }
 	    pid_file = optarg;
 	    break;
+#ifdef HAVE_SMFI_SETBACKLOG
+	case 'q':		/* milter communication socket backlog */
+	    mlfi_socket_backlog = (int) strtol(optarg, &p, 10);
+	    if (p != NULL && *p != '\0') {
+		usageerr(progname,
+		    "milter communication socket backlog is not valid number: "
+		    "%s", optarg);
+	    }
+	    if (mlfi_socket_backlog < 0) {
+		usageerr(progname,
+		    "negative milter communication socket backlog: %d",
+		    mlfi_socket_backlog);
+	    }
+	    break;
+#endif
 	case 's':		/* milter communication socket */
 	    if (optarg == NULL || *optarg == '\0') {
 		usageerr(progname, "option requires an argument -- %c",
@@ -360,6 +381,14 @@ main(int argc, char *argv[])
     }
 
     /* Connect to milter socket */
+#ifdef HAVE_SMFI_SETBACKLOG
+    if (mlfi_socket_backlog > 0) {
+	if (smfi_setbacklog(mlfi_socket_backlog) != MI_SUCCESS) {
+	    logmsg(LOG_WARNING, "could not set milter socket backlog to %d",
+		mlfi_socket_backlog);
+	}
+    }
+#endif
 #ifdef HAVE_SMFI_OPENSOCKET
     if (smfi_opensocket(false) != MI_SUCCESS) {
 	logmsg(LOG_ERR, "could not open milter socket %s", mlfi_socket);

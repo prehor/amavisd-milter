@@ -1,5 +1,9 @@
 This is the CHANGELOG for amavisd-milter.
 
+20081108:
+	Added new amavisd-milter option -q which sets milter socket backlog
+	used by listen(2).
+
 20081029:
 	Compatibility fix - Solaris 9 and older doesn't have sem_timedwait.
 	Use sem_trywait if sem_timedwait isn't available.
@@ -328,4 +332,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.59 2008/10/28 23:45:29 reho Exp $
+$Id: CHANGES,v 1.60 2008/10/29 01:24:25 reho Exp $

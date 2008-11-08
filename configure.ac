@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.40 2008/10/28 23:27:28 reho Exp $
+dnl $Id: configure.ac,v 1.41 2008/11/08 19:25:28 reho Exp $
 
 AC_INIT(amavisd-milter, 1.3.1)
 AC_PREREQ(2.62)
@@ -57,7 +57,8 @@ AC_CHECK_DIRFD
 AX_PATH_MILTER([8.12], [LIBS="$MILTER_LIBS $LIBS"
   LDFLAGS="$MILTER_LDFLAGS $LDFLAGS" CPPFLAGS="$CPPFLAGS $MILTER_CPPFLAGS"],
   AC_MSG_ERROR([required milter library and header not found]))
-AC_CHECK_FUNCS([smfi_insheader smfi_opensocket smfi_progress smfi_quarantine])
+AC_CHECK_FUNCS([smfi_insheader smfi_opensocket smfi_progress smfi_quarantine \
+  smfi_setbacklog])
 
 AC_EILSEQ
 gl_EOVERFLOW
