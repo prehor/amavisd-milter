@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.39 2008/07/02 23:16:51 reho Exp $
+dnl $Id: configure.ac,v 1.40 2008/10/28 23:27:28 reho Exp $
 
 AC_INIT(amavisd-milter, 1.3.1)
 AC_PREREQ(2.62)
@@ -28,6 +28,7 @@ ACX_ENABLE_DEBUG
 ACX_PTHREAD([LIBS="$PTHREAD_LIBS $LIBS" CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
   CC="$PTHREAD_CC"] AC_DEFINE(HAVE_PTHREAD, 1),
   AC_MSG_ERROR([no usable pthreads library found]))
+AC_CHECK_FUNCS([sem_timedwait])
 
 AC_TYPE_MODE_T
 AC_TYPE_SIZE_T
@@ -49,7 +50,7 @@ AC_CHECK_HEADERS([fts.h])
 AC_CHECK_FUNCS([arc4random])
 AC_REPLACE_FUNCS([daemon fts_open mkdtemp strlcpy])
 
-AC_CHECK_FUNC(inet_ntop, [], [AC_SEARCH_LIBS(inet_ntop, [nsl])])
+AC_CHECK_FUNC([inet_ntop], [], [AC_SEARCH_LIBS(inet_ntop, [nsl])])
 
 AC_CHECK_DIRFD
 
