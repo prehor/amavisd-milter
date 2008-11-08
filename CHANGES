@@ -11,7 +11,7 @@ This is the CHANGELOG for amavisd-milter.
 	Thans to: Henrik Krohns <hege@hege.li>
 
 20081029:
-	Memory leak fron fts_alloc() on Solaris fixed.
+	Memory leak in fts_alloc() on Solaris fixed.
 
 	Luke Mewburn wrote:
 	  In examining the code, it appears that the implementation of
@@ -332,4 +332,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.60 2008/10/29 01:24:25 reho Exp $
+$Id: CHANGES,v 1.61 2008/11/08 20:11:36 reho Exp $
