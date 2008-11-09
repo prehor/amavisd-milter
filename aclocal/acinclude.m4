@@ -1,4 +1,4 @@
-dnl $Id: acinclude.m4,v 1.6 2008/07/01 17:25:49 reho Exp $
+dnl $Id: acinclude.m4,v 1.7 2008/07/02 23:16:52 reho Exp $
 
 dnl Enables debug output and debug symbols
 AC_DEFUN([ACX_ENABLE_DEBUG],
@@ -37,6 +37,29 @@ AC_DEFUN([ACX_ENABLE_DEBUG],
   fi
 
   AC_LANG_C
+])
+
+dnl Set local state directory
+AC_DEFUN([AC_LOCAL_STATE_DIR],
+[
+  if test "$localstatedir" = '${prefix}/var';
+    then
+      AC_SUBST([localstatedir], ['/var/amavis'])
+  fi
+
+  test "x$prefix" = xNONE && prefix_NONE=yes && prefix="$ac_default_prefix"
+  test "x$exec_prefix" = xNONE && exec_prefix_NONE=yes && exec_prefix="${prefix}"
+
+  eval LOCALSTATEDIR=\""$localstatedir"\"
+  dnl In Autoconf 2.60, ${datadir} refers to ${datarootdir}, which in turn
+  dnl refers to ${prefix}.  Thus we have to use `eval' twice.
+  eval LOCALSTATEDIR=\""$LOCALSTATEDIR"\"
+
+  AH_TEMPLATE([LOCAL_STATE_DIR], [Default location to store state files.])
+  AC_DEFINE_UNQUOTED([LOCAL_STATE_DIR], ["$LOCALSTATEDIR"])
+
+  test "$prefix_NONE" && prefix=NONE
+  test "$exec_prefix_NONE" && exec_prefix=NONE
 ])
 
 dnl Checks for working POSIX semaphores

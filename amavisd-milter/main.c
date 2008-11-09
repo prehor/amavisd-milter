@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.21 2008/07/01 22:21:32 reho Exp $
+ * $Id: main.c,v 1.22 2008/11/08 20:11:38 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -45,15 +45,15 @@ int		max_conns = 0;
 int		max_wait = 5 * 60;
 sem_t		max_sem_t;
 sem_t	       *max_sem = NULL;
-const char     *pid_file = "/var/amavis/" PACKAGE ".pid";
-const char     *mlfi_socket = "/var/amavis/" PACKAGE ".sock";
+const char     *pid_file = LOCAL_STATE_DIR "/" PACKAGE ".pid";
+const char     *mlfi_socket = LOCAL_STATE_DIR "/" PACKAGE ".sock";
 #ifdef HAVE_SMFI_SETBACKLOG
 int		mlfi_socket_backlog = 0;
 #endif
 long		mlfi_timeout = 600;
-const char     *amavisd_socket = "/var/amavis/amavisd.sock";
+const char     *amavisd_socket = LOCAL_STATE_DIR "/amavisd.sock";
 long		amavisd_timeout = 600;
-const char     *work_dir = "/var/amavis";
+const char     *work_dir = LOCAL_STATE_DIR;
 const char     *delivery_care_of = "client";
 
 
