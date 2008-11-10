@@ -1,4 +1,4 @@
-dnl $Id: configure.ac,v 1.42 2008/11/08 20:11:36 reho Exp $
+dnl $Id: configure.ac,v 1.43 2008/11/09 22:47:45 reho Exp $
 
 AC_INIT(amavisd-milter, 1.3.1)
 AC_PREREQ(2.62)
@@ -71,5 +71,6 @@ AC_CONFIG_FILES([Makefile amavisd-milter/Makefile compat/Makefile])
 AC_CONFIG_FILES([autoconf.sh], [chmod +x autoconf.sh])
 
 AC_LOCAL_STATE_DIR
+AC_WORKING_DIR
 
 AC_OUTPUT

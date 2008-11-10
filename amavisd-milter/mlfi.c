@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.53 2008/03/10 17:07:28 reho Exp $
+ * $Id: mlfi.c,v 1.54 2008/10/29 01:24:26 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -111,7 +111,7 @@ snprintfcat(size_t length, char *buf, size_t size, const char *fmt, ...)
 /*
 ** MLFI_CLEANUP_MESSAGE - Cleanup message context
 **
-** mlfi_cleanup_message() close message file if open, unlink work directory
+** mlfi_cleanup_message() close message file if open, unlink working directory
 ** and release message context
 */
 static void
@@ -145,7 +145,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 	mlfi->mlfi_fp = NULL;
     }
 
-    /* Remove work directory */
+    /* Remove working directory */
     if (mlfi->mlfi_wrkdir[0] != '\0') {
 	wrkdir[0] = mlfi->mlfi_wrkdir;
 	fts = fts_open(wrkdir, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
@@ -507,22 +507,22 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 	}
     }
 
-    /* Create work directory */
+    /* Create working directory */
     if (mlfi->mlfi_qid != NULL) {
 	(void) snprintf(mlfi->mlfi_wrkdir, sizeof(mlfi->mlfi_wrkdir) - 1,
-	    "%s/af%s", work_dir, mlfi->mlfi_qid);
+	    "%s/af%s", working_dir, mlfi->mlfi_qid);
 	if (mkdir(mlfi->mlfi_wrkdir, S_IRWXU|S_IRGRP|S_IXGRP) != 0) {
 	    mlfi->mlfi_wrkdir[0] = '\0';
 	}
     }
     if (mlfi->mlfi_wrkdir[0] == '\0') {
 	(void) snprintf(mlfi->mlfi_wrkdir, sizeof(mlfi->mlfi_wrkdir) - 1,
-	    "%s/afXXXXXXXXXX", work_dir);
+	    "%s/afXXXXXXXXXX", working_dir);
 	if ((wrkdir = mkdtemp(mlfi->mlfi_wrkdir)) != NULL) {
 	    (void) strlcpy(mlfi->mlfi_wrkdir, wrkdir,
 		sizeof(mlfi->mlfi_wrkdir));
 	} else {
-	    logqidmsg(mlfi, LOG_ERR, "could not create work directory: %s",
+	    logqidmsg(mlfi, LOG_ERR, "could not create working directory: %s",
 		strerror(errno));
 	    mlfi->mlfi_wrkdir[0] = '\0';
 	    mlfi_setreply_tempfail(ctx);
@@ -536,7 +536,7 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 	    return SMFIS_TEMPFAIL;
 	}
     }
-    logqidmsg(mlfi, LOG_DEBUG, "create work directory %s", mlfi->mlfi_wrkdir);
+    logqidmsg(mlfi, LOG_DEBUG, "create working directory %s", mlfi->mlfi_wrkdir);
 
     /* Open file to store this message */
     (void) snprintf(mlfi->mlfi_fname, sizeof(mlfi->mlfi_fname) - 1,
@@ -1040,7 +1040,7 @@ mlfi_eom(SMFICTX *ctx)
 	rcpt = rcpt->q_next;
     }
 
-    /* Work directory */
+    /* Working directory */
     logqidmsg(mlfi, LOG_DEBUG, "tempdir=%s", mlfi->mlfi_wrkdir);
     if (amavisd_request(mlfi, "tempdir", mlfi->mlfi_wrkdir) == -1) {
 	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",

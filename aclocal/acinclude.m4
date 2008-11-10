@@ -1,4 +1,4 @@
-dnl $Id: acinclude.m4,v 1.7 2008/07/02 23:16:52 reho Exp $
+dnl $Id: acinclude.m4,v 1.8 2008/11/09 22:47:46 reho Exp $
 
 dnl Enables debug output and debug symbols
 AC_DEFUN([ACX_ENABLE_DEBUG],
@@ -60,6 +60,26 @@ AC_DEFUN([AC_LOCAL_STATE_DIR],
 
   test "$prefix_NONE" && prefix=NONE
   test "$exec_prefix_NONE" && exec_prefix=NONE
+])
+
+dnl Set working dir
+AC_DEFUN([AC_WORKING_DIR],
+[
+  AH_TEMPLATE([WORKING_DIR], [Default location of working directory.])
+  AC_ARG_WITH([working-dir],
+    [  --with-working-dir@<:@=<DIR>@:>@  set working directory (default tmp)
+                              SUBDIR    subdirectry of local state dirertory
+                              /DIR      absolute path to working directory],
+    [
+      case "$with_working_dir" in
+        no)  AC_DEFINE_UNQUOTED([WORKING_DIR], [LOCAL_STATE_DIR]);;
+        yes) AC_DEFINE_UNQUOTED([WORKING_DIR], [LOCAL_STATE_DIR] "/tmp");;
+        /*)  AC_DEFINE_UNQUOTED([WORKING_DIR], ["$with_working_dir"]);;
+        *)   AC_DEFINE_UNQUOTED([WORKING_DIR], [LOCAL_STATE_DIR "/$with_working_dir"]);;
+       esac
+    ],
+    [AC_DEFINE_UNQUOTED([WORKING_DIR], [LOCAL_STATE_DIR])
+  ])
 ])
 
 dnl Checks for working POSIX semaphores

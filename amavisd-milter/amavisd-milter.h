@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.24 2008/10/29 01:24:26 reho Exp $
+ * $Id: amavisd-milter.h,v 1.25 2008/11/08 20:11:38 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
@@ -63,7 +63,7 @@ struct mlfiCtx {
     char       *mlfi_prev_qid;		/* previous queue id */
     char       *mlfi_from;		/* mail sender */
     struct	mlfiAddress *mlfi_rcpt;	/* mail recipients */
-    char	mlfi_wrkdir[MAXPATHLEN];/* work directory */
+    char	mlfi_wrkdir[MAXPATHLEN];/* working directory */
     char	mlfi_fname[MAXPATHLEN]; /* mail file name */
     FILE       *mlfi_fp;		/* mail file handler */
     int		mlfi_max_sem_locked;	/* connections semaphore locked */
@@ -107,7 +107,7 @@ extern int	mlfi_socket_backlog;	/* milter socket backlog */
 extern long	mlfi_timeout;		/* connection timeout */
 extern const char *amavisd_socket;	/* amavisd socket */
 extern long	amavisd_timeout;	/* connection timeout */
-extern const char *work_dir;		/* work ditectory name */
+extern const char *working_dir;		/* working ditectory name */
 extern const char *delivery_care_of;	/* delivery mechanism */
 
 /* Amavisd communication */

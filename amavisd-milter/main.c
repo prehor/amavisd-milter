@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.22 2008/11/08 20:11:38 reho Exp $
+ * $Id: main.c,v 1.23 2008/11/09 22:47:47 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -53,7 +53,7 @@ int		mlfi_socket_backlog = 0;
 long		mlfi_timeout = 600;
 const char     *amavisd_socket = LOCAL_STATE_DIR "/amavisd.sock";
 long		amavisd_timeout = 600;
-const char     *work_dir = LOCAL_STATE_DIR;
+const char     *working_dir = WORKING_DIR;
 const char     *delivery_care_of = "client";
 
 
@@ -258,12 +258,12 @@ main(int argc, char *argv[])
 	    versioninfo(progname);
 	    exit(EX_OK);
 	    break;
-	case 'w':		/* work directory */
+	case 'w':		/* working directory */
 	    if (optarg == NULL || *optarg == '\0') {
 		usageerr(progname, "option requires an argument -- %c",
 		    (char)c);
 	    }
-	    work_dir = optarg;
+	    working_dir = optarg;
 	    break;
 	case 'S':		/* amavisd communication socket */
 	    if (optarg == NULL || *optarg == '\0') {
@@ -310,19 +310,19 @@ main(int argc, char *argv[])
 	}
     }
 
-    /* Check permissions on work directory */
-    /* TODO: traverse work directory path */
-    if (stat(work_dir, &st) != 0) {
-	logmsg(LOG_ERR, "could not stat() to work directory %s: %s",
-	    work_dir, strerror(errno));
+    /* Check permissions on working directory */
+    /* TODO: traverse working directory path */
+    if (stat(working_dir, &st) != 0) {
+	logmsg(LOG_ERR, "could not stat() to working directory %s: %s",
+	    working_dir, strerror(errno));
 	exit(EX_SOFTWARE);
     }
     if (!S_ISDIR(st.st_mode)) {
-	logmsg(LOG_ERR, "%s is not directory", work_dir);
+	logmsg(LOG_ERR, "%s is not directory", working_dir);
 	exit(EX_SOFTWARE);
     }
     if ((st.st_mode & S_IRWXO) != 0) {
-	logmsg(LOG_ERR, "work directory %s is world accessible", work_dir);
+	logmsg(LOG_ERR, "working directory %s is world accessible", working_dir);
 	exit(EX_SOFTWARE);
     }
 
