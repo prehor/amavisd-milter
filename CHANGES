@@ -1,10 +1,34 @@
 This is the CHANGELOG for amavisd-milter.
 
+20081205:
+	amavisd-milter-1.4.0:
+
+	New features:
+	- Added new amavisd-milter option -q which sets milter socket backlog
+	  used by listen(2).
+	- Local state directory (default /var/amavis) is tunable via configure
+	  option:
+	  --localstatedir=</DIR>	      - absolute path to local state
+	  					directory.
+	- Working directory (default local state directory) is tunable via
+	  configure option:
+	  --with-working-directory=<SUBDIR>   - subdirectory of local
+						state directory.
+	  --with-working-directory=</DIR>     - absolute path to working
+						directory.
+
+	Bug and compatibility fixies:
+	- amavisd-milter convert CRLF to LF in mail body to support amavisd-new
+	  integrated DKIM signing and verification.
+	- Fixed memory leak in fts_alloc() on Solaris.
+	- Solaris doesn't have dirfd().
+	- Solaris 9 and older doesn't have sem_timedwait.
+
 20081109:
 	Local state directory (default /var/amavis) is tunable via configure
 	option: --localstatedir=<DIR>
 
-        Working directory (default local state directory) is tunable via
+	Working directory (default local state directory) is tunable via
 	configure option:
 	--with-working-directory=<SUBDIR> subdirectory of local state directory
 	--with-working-directory=</DIR>   absolute path to working directory
@@ -119,8 +143,8 @@ This is the CHANGELOG for amavisd-milter.
 
 	Limited support for sendmail 8.12:
 	- smfi_addheader() is used instead of smfi_insheader() for insheader
-          and addheader AM.PDP responses. This works well with amavisd-new
-          2.4.3 or newer.
+	  and addheader AM.PDP responses. This works well with amavisd-new
+	  2.4.3 or newer.
 	- smfi_progress() isn't called when amavisd-milter wait for amavisd-new
 	  communication socket.
 	- AM.PDP response quarantine isn't implemented.
@@ -341,4 +365,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.63 2008/11/09 22:47:45 reho Exp $
+$Id: CHANGES,v 1.64 2008/11/10 00:45:08 reho Exp $
