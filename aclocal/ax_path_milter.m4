@@ -64,7 +64,7 @@ dnl or it will not find libmilter.a even if it exists.  The easiest way is
 dnl to use the ACX_PTHREAD macro by Steven G. Johnson and Alejandro Forero 
 dnl Cuervo which is available from the Autoconf Macro Archive.
 dnl
-dnl @version $Id: ax_path_milter.m4,v 1.1.1.1 2005/05/11 19:21:15 reho Exp $
+dnl @version $Id: ax_path_milter.m4,v 1.2 2006/04/15 23:15:54 reho Exp $
 dnl @author Tim Toolan <toolan@ele.uri.edu>
 dnl
 ###############################################################################
@@ -126,6 +126,24 @@ if test "x$with_sendmail_base$with_sendmail_obj" = "x" ; then
       MILTER_LIBS="-lmilter"
     ])
   ])
+
+  # Debian use for libmilter.a /usr/lib/libmilter instead of /usr/lib
+  if test "$ax_path_milter_ok" = "no" ; then
+    unset ac_cv_lib_milter_smfi_main
+    ac_milter_save_LDFLAGS="$LDLFAGS"
+    MILTER_LDFLAGS="-L/usr/lib/libmilter"
+    LDFLAGS="$MILTER_LDFLAGS $LDFLAGS"
+    AC_CHECK_HEADER([libmilter/mfapi.h],[
+      AC_CHECK_LIB([milter],[smfi_main],[
+        # both tests succeeded so indicate success
+        ax_path_milter_ok=yes
+
+        # add -lmilter to the libraries to link
+        MILTER_LIBS="-lmilter"
+      ])
+    ])
+    LDFLAGS="$ac_milter_save_LDFLAGS"
+  fi
 
   if test "$ax_path_milter_ok" = "no" ; then
     # Unset the cached test results because we will be trying them again later.

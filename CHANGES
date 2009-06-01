@@ -1,5 +1,10 @@
 This is the CHANGELOG for amavisd-milter.
 
+20090601:
+	Compatibility fix - Debian installs libmilter.a to /usr/lib/libmilter.
+
+	Thanks to: Simon Hobson <linux@thehobsons.co.uk>
+
 20081205:
 	amavisd-milter-1.4.0:
 
@@ -365,4 +370,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.64 2008/11/10 00:45:08 reho Exp $
+$Id: CHANGES,v 1.65 2008/12/05 17:22:19 reho Exp $
