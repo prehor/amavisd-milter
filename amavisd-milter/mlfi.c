@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.54 2008/10/29 01:24:26 reho Exp $
+ * $Id: mlfi.c,v 1.55 2008/11/10 00:45:10 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -849,7 +849,7 @@ mlfi_body(SMFICTX *ctx, unsigned char * bodyp, size_t bodylen)
     }
 
     bodylen = b - bodyp;
-    logqidmsg(mlfi, LOG_DEBUG, "after CRLF to LF conversion: %ld)",
+    logqidmsg(mlfi, LOG_DEBUG, "after CRLF to LF conversion: %ld",
 	(long)(bodylen));
 
     /* Write the body chunk to the message file */
