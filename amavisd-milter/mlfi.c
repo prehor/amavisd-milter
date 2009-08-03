@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.55 2008/11/10 00:45:10 reho Exp $
+ * $Id: mlfi.c,v 1.56 2009/07/17 19:44:23 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -55,7 +55,11 @@ struct smfiDesc smfilter =
     mlfi_body,			/* body block filter */
     mlfi_eom,			/* end of message */
     mlfi_abort,			/* message aborted */
-    mlfi_close			/* connection cleanup */
+    mlfi_close,			/* connection cleanup */
+    NULL,			/* any unrecognized or unimplemented */
+				/* command filter */
+    NULL,			/* SMTP DATA command filter */
+    NULL			/* negotiation callback */
 };
 
 
