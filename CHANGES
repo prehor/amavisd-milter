@@ -1,5 +1,11 @@
 This is the CHANGELOG for amavisd-milter.
 
+20091003:
+	Added new amavisd-milter option -P witch pass through mails unchecked
+	when amavisd-new fails.
+
+	Thans to: Uli Schellhaas <uli.schellhaas@memware.de>
+
 20090803:
 	Bug fix - sendmail 8.14 introduces three new callbacks.
 
@@ -373,4 +379,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.66 2009/06/01 18:51:48 reho Exp $
+$Id: CHANGES,v 1.67 2009/08/03 20:47:31 reho Exp $

@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.56 2009/07/17 19:44:23 reho Exp $
+ * $Id: mlfi.c,v 1.57 2009/08/03 20:47:33 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -922,6 +922,9 @@ mlfi_eom(SMFICTX *ctx)
 	    start_counter + wait_counter) == -1)
 	{
 	    if (errno != AMAVISD_CONNECT_TIMEDOUT_ERRNO) {
+		if (ignore_amavisd_error) {
+		    return SMFIS_CONTINUE;
+		}
 		mlfi_setreply_tempfail(ctx);
 		return SMFIS_TEMPFAIL;
 	    }
@@ -929,6 +932,9 @@ mlfi_eom(SMFICTX *ctx)
 		logqidmsg(mlfi, LOG_WARNING,
 		    "amavisd connection is not available for %d sec, giving up",
 		    wait_counter);
+		if (ignore_amavisd_error) {
+		    return SMFIS_CONTINUE;
+		}
 		mlfi_setreply_tempfail(ctx);
 		return SMFIS_TEMPFAIL;
 	    }
@@ -940,6 +946,9 @@ mlfi_eom(SMFICTX *ctx)
 		logqidmsg(mlfi, LOG_ERR,
 		   "could not notify MTA that an operation is still in "
 		   "progress");
+		if (ignore_amavisd_error) {
+		    return SMFIS_CONTINUE;
+		}
 		mlfi_setreply_tempfail(ctx);
 		return SMFIS_TEMPFAIL;
 	    }
@@ -966,6 +975,9 @@ mlfi_eom(SMFICTX *ctx)
 	    logqidmsg(mlfi, LOG_ERR,
 		"could not connect to amavisd socket %s: %s",
 		amavisd_socket, strerror(errno));
+		if (ignore_amavisd_error) {
+		    return SMFIS_CONTINUE;
+		}
 		mlfi_setreply_tempfail(ctx);
 		return SMFIS_TEMPFAIL;
 	}
@@ -979,6 +991,9 @@ mlfi_eom(SMFICTX *ctx)
 	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 	    amavisd_socket, strerror(errno));
 	amavisd_close(mlfi);
+	if (ignore_amavisd_error) {
+	    return SMFIS_CONTINUE;
+	}
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
     }
@@ -1003,6 +1018,9 @@ mlfi_eom(SMFICTX *ctx)
 	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 		amavisd_socket, strerror(errno));
 	    amavisd_close(mlfi);
+	    if (ignore_amavisd_error) {
+		return SMFIS_CONTINUE;
+	    }
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
@@ -1015,6 +1033,9 @@ mlfi_eom(SMFICTX *ctx)
 	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 		amavisd_socket, strerror(errno));
 	    amavisd_close(mlfi);
+	    if (ignore_amavisd_error) {
+		return SMFIS_CONTINUE;
+	    }
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
@@ -1026,6 +1047,9 @@ mlfi_eom(SMFICTX *ctx)
 	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 	    amavisd_socket, strerror(errno));
 	amavisd_close(mlfi);
+	if (ignore_amavisd_error) {
+	    return SMFIS_CONTINUE;
+	}
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
     }
@@ -1038,6 +1062,9 @@ mlfi_eom(SMFICTX *ctx)
 	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 		amavisd_socket, strerror(errno));
 	    amavisd_close(mlfi);
+	    if (ignore_amavisd_error) {
+		return SMFIS_CONTINUE;
+	    }
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
@@ -1050,6 +1077,9 @@ mlfi_eom(SMFICTX *ctx)
 	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 	    amavisd_socket, strerror(errno));
 	amavisd_close(mlfi);
+	if (ignore_amavisd_error) {
+	    return SMFIS_CONTINUE;
+	}
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
     }
@@ -1060,6 +1090,9 @@ mlfi_eom(SMFICTX *ctx)
 	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 	    amavisd_socket, strerror(errno));
 	amavisd_close(mlfi);
+	if (ignore_amavisd_error) {
+	    return SMFIS_CONTINUE;
+	}
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
     }
@@ -1070,6 +1103,9 @@ mlfi_eom(SMFICTX *ctx)
 	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 	    amavisd_socket, strerror(errno));
 	amavisd_close(mlfi);
+	if (ignore_amavisd_error) {
+	    return SMFIS_CONTINUE;
+	}
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
     }
@@ -1080,6 +1116,9 @@ mlfi_eom(SMFICTX *ctx)
 	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 	    amavisd_socket, strerror(errno));
 	amavisd_close(mlfi);
+	if (ignore_amavisd_error) {
+	    return SMFIS_CONTINUE;
+	}
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
     }
@@ -1090,6 +1129,9 @@ mlfi_eom(SMFICTX *ctx)
 	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 	    amavisd_socket, strerror(errno));
 	amavisd_close(mlfi);
+	if (ignore_amavisd_error) {
+	    return SMFIS_CONTINUE;
+	}
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
     }
@@ -1101,6 +1143,9 @@ mlfi_eom(SMFICTX *ctx)
 	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 		amavisd_socket, strerror(errno));
 	    amavisd_close(mlfi);
+	    if (ignore_amavisd_error) {
+		return SMFIS_CONTINUE;
+	    }
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
@@ -1113,6 +1158,9 @@ mlfi_eom(SMFICTX *ctx)
 	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 		amavisd_socket, strerror(errno));
 	    amavisd_close(mlfi);
+	    if (ignore_amavisd_error) {
+		return SMFIS_CONTINUE;
+	    }
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
@@ -1126,6 +1174,9 @@ mlfi_eom(SMFICTX *ctx)
 	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 		amavisd_socket, strerror(errno));
 	    amavisd_close(mlfi);
+	    if (ignore_amavisd_error) {
+		return SMFIS_CONTINUE;
+	    }
 	    mlfi_setreply_tempfail(ctx);
 	    return SMFIS_TEMPFAIL;
 	}
@@ -1136,6 +1187,9 @@ mlfi_eom(SMFICTX *ctx)
 	logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 	    amavisd_socket, strerror(errno));
 	amavisd_close(mlfi);
+	if (ignore_amavisd_error) {
+	    return SMFIS_CONTINUE;
+	}
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
     }
@@ -1428,6 +1482,9 @@ mlfi_eom(SMFICTX *ctx)
 	amavisd_socket, strerror(errno));
     logqidmsg(mlfi, LOG_DEBUG, "amavisd response line %s", mlfi->mlfi_amabuf);
     amavisd_close(mlfi);
+    if (ignore_amavisd_error) {
+	return SMFIS_CONTINUE;
+    }
     mlfi_setreply_tempfail(ctx);
     return SMFIS_TEMPFAIL;
 }

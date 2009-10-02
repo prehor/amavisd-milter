@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.23 2008/11/09 22:47:47 reho Exp $
+ * $Id: main.c,v 1.24 2008/11/10 00:45:10 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -53,6 +53,7 @@ int		mlfi_socket_backlog = 0;
 long		mlfi_timeout = 600;
 const char     *amavisd_socket = LOCAL_STATE_DIR "/amavisd.sock";
 long		amavisd_timeout = 600;
+int		ignore_amavisd_error = 0;
 const char     *working_dir = WORKING_DIR;
 const char     *delivery_care_of = "client";
 
@@ -72,6 +73,7 @@ usage(const char *progname)
     (void) fprintf(stdout, "	-m max-conns		Maximum amavisd connections \n");
     (void) fprintf(stdout, "	-M max-wait		Maximum wait for connection in seconds\n");
     (void) fprintf(stdout, "	-p pidfile		Use this pid file\n");
+    (void) fprintf(stdout, "	-P			When amavisd fails mail will be pased\n				through unchecked\n");
 #ifdef HAVE_SMFI_SETBACKLOG
     (void) fprintf(stdout, "	-q backlog		Milter communication socket backlog\n");
 #endif
@@ -121,7 +123,7 @@ versioninfo(const char *progname)
 int
 main(int argc, char *argv[])
 {
-    static	const char *args = "d:D:fhm:M:p:q:s:S:t:T:vw:";
+    static	const char *args = "d:D:fhm:M:p:Pq:s:S:t:T:vw:";
 
     int		c, rstat;
     char       *p;
@@ -211,6 +213,9 @@ main(int argc, char *argv[])
 		    (char)c);
 	    }
 	    pid_file = optarg;
+	    break;
+	case 'P':		/* when amavisd fails mail will be passed */
+	    ignore_amavisd_error = 1;	/* through unchecked */
 	    break;
 #ifdef HAVE_SMFI_SETBACKLOG
 	case 'q':		/* milter communication socket backlog */
