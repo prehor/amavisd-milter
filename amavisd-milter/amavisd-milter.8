@@ -1,5 +1,5 @@
 .\"
-.\" $Id: amavisd-milter.8,v 1.18 2008/11/08 20:11:38 reho Exp $
+.\" $Id: amavisd-milter.8,v 1.19 2009/10/02 23:19:33 reho Exp $
 .\"
 .Dd Januar 23, 2006
 .Dt amavisd-milter 8
@@ -126,6 +126,21 @@ The protocol spoken over this socket is
 .Sy MILTER
 (Mail FILTER).
 It must agree with the INPUT_MAIL_FILTER entry in sendmail.mc
+.Pp
+The
+.Ar socket
+should be in "proto:address" format:
+.Bl -bullet -compact
+.It
+.Sy {unix|local}:/path/to/file
+- A named pipe.
+.It
+.Sy inet:port@{hostname|ip-address}
+- An IPV4 socket.
+.It
+.Sy inet6:port@{hostname|ip-address}
+- An IPV6 socket.
+.El
 .It Fl S Ar socket
 Communication socket between
 .Nm
@@ -136,6 +151,15 @@ The protocol spoken over this socket is
 .Sy AM.PDP
 (AMavis Policy Delegation Protocol).
 It must agree with the $unix_socketname entry in amavisd.conf.
+.Pp
+The
+.Ar socket
+should be in "proto:address" format:
+.Bl -bullet -compact
+.It
+.Sy {unix|local}:/path/to/file
+- A named pipe.
+.El
 .It Fl t Ar timeout
 .Sy sendmail
 connection timeout in seconds (default 600 = 10 minutes).
@@ -290,6 +314,7 @@ Milter communication debugging (smfi_setdbg 1-6).
 .Bd -literal
 http://amavisd-milter.sourceforge.net
 http://www.ijs.si/software/amavisd/
+http://www.milter.org/developers
 http://www.sendmail.org
 .Ed
 .Sh AUTHORS
@@ -301,7 +326,7 @@ A community mailing lists are available at:
 http://sourceforge.net/mail/?group_id=138169
 .Ed
 .Pp
-Enhancements requests and problem reports are welcome.
+Enhancements, requests and problem reports are welcome.
 .Pp
 If you run into problems first check the users mailing list archive
 before asking questions on the list.
