@@ -1,5 +1,16 @@
 This is the CHANGELOG for amavisd-milter.
 
+20100131:
+	amavisd-milter-1.4.1:
+
+	New features:
+	-  Added new amavisd-milter option -P which causes that mails pass
+	   through when amavisd-new fails.
+
+	Bug and compatibility fixies:
+	- Debian installs libmilter.a to /usr/lib/libmilter.
+	- sendmail 8.14 introduces three new libmilter callbacks.
+
 20091029:
 	amavisd-milter(8) manual page has been improved:
 	- Added link to milter documentation.
@@ -7,7 +18,7 @@ This is the CHANGELOG for amavisd-milter.
 	  socket.
 
 20091003:
-	Added new amavisd-milter option -P witch pass through mails unchecked
+	Added new amavisd-milter option -P which causes that mails pass through
 	when amavisd-new fails.
 
 	Thans to: Uli Schellhaas <uli.schellhaas@memware.de>
@@ -385,4 +396,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.68 2009/10/02 23:19:31 reho Exp $
+$Id: CHANGES,v 1.69 2009/10/29 15:53:32 reho Exp $
