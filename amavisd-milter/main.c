@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.24 2008/11/10 00:45:10 reho Exp $
+ * $Id: main.c,v 1.25 2009/10/02 23:19:33 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -73,7 +73,7 @@ usage(const char *progname)
     (void) fprintf(stdout, "	-m max-conns		Maximum amavisd connections \n");
     (void) fprintf(stdout, "	-M max-wait		Maximum wait for connection in seconds\n");
     (void) fprintf(stdout, "	-p pidfile		Use this pid file\n");
-    (void) fprintf(stdout, "	-P			When amavisd fails mail will be pased\n				through unchecked\n");
+    (void) fprintf(stdout, "	-P			When amavisd fails mail will be passed\n				through unchecked\n");
 #ifdef HAVE_SMFI_SETBACKLOG
     (void) fprintf(stdout, "	-q backlog		Milter communication socket backlog\n");
 #endif
