@@ -1,5 +1,11 @@
 This is the CHANGELOG for amavisd-milter.
 
+20100502:
+	amavisd-milter-1.5.0:
+
+	Bug and compatibility fixies:
+	- Amavisd-new 2.7.0 introduce new AM.PDP response log_id.
+
 20100501:
 	Amavisd-new 2.7.0 introduce new AM.PDP response log_id.
 
@@ -401,4 +407,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.70 2010/01/31 16:48:23 reho Exp $
+$Id: CHANGES,v 1.71 2010/05/02 09:54:47 reho Exp $
