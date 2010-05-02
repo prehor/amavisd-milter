@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.57 2009/08/03 20:47:33 reho Exp $
+ * $Id: mlfi.c,v 1.58 2009/10/02 23:19:33 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -1460,6 +1460,11 @@ mlfi_eom(SMFICTX *ctx)
 		logqidmsg(mlfi, LOG_DEBUG, "%s=%s %s %s", name, rcode, xcode,
 		    value);
 	    }
+
+	/* Amavisd log id */
+	/* log_id=<value> */
+	} else if (strcmp(name, "log_id") == 0) {
+	    logqidmsg(mlfi, LOG_NOTICE, "%s=%s", name, value);
 
 	/* Exit code */
 	/* exit_code=<value> */
