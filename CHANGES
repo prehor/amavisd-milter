@@ -1,5 +1,10 @@
 This is the CHANGELOG for amavisd-milter.
 
+20101105:
+	Fixed typo in aclocal/ax_path_milter.m4 which prevents using LDFLAGS on Debian.
+
+        Thanks to: Harald Jenny <harald@a-little-linux-box.at>
+
 20100502:
 	amavisd-milter-1.5.0:
 
@@ -407,4 +412,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.71 2010/05/02 09:54:47 reho Exp $
+$Id: CHANGES,v 1.72 2010/05/02 11:20:50 reho Exp $

@@ -64,7 +64,7 @@ dnl or it will not find libmilter.a even if it exists.  The easiest way is
 dnl to use the ACX_PTHREAD macro by Steven G. Johnson and Alejandro Forero 
 dnl Cuervo which is available from the Autoconf Macro Archive.
 dnl
-dnl @version $Id: ax_path_milter.m4,v 1.2 2006/04/15 23:15:54 reho Exp $
+dnl @version $Id: ax_path_milter.m4,v 1.3 2009/06/01 18:51:52 reho Exp $
 dnl @author Tim Toolan <toolan@ele.uri.edu>
 dnl
 ###############################################################################
@@ -130,7 +130,7 @@ if test "x$with_sendmail_base$with_sendmail_obj" = "x" ; then
   # Debian use for libmilter.a /usr/lib/libmilter instead of /usr/lib
   if test "$ax_path_milter_ok" = "no" ; then
     unset ac_cv_lib_milter_smfi_main
-    ac_milter_save_LDFLAGS="$LDLFAGS"
+    ac_milter_save_LDFLAGS="$LDFLAGS"
     MILTER_LDFLAGS="-L/usr/lib/libmilter"
     LDFLAGS="$MILTER_LDFLAGS $LDFLAGS"
     AC_CHECK_HEADER([libmilter/mfapi.h],[
@@ -309,7 +309,7 @@ x$ac_milter_found_version" | sort | sed '1q' | sed "s,x${ac_milter_minimum_versi
     CPPFLAGS="$CPPFLAGS $MILTER_CPPFLAGS"
 
     # Save and modify LDFLAGS.
-    ac_milter_save_LDFLAGS="$LDLFAGS"
+    ac_milter_save_LDFLAGS="$LDFLAGS"
     MILTER_LDFLAGS="-L${SENDMAIL_BASE_DIR}/${SENDMAIL_OBJ_DIR}/libmilter"
     LDFLAGS="$MILTER_LDFLAGS $LDFLAGS"
 
