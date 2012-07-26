@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: compat.h,v 1.9 2008/07/01 17:25:49 reho Exp $
+ * $Id: compat.h,v 1.10 2008/10/28 23:27:28 reho Exp $
  */
 
 #ifndef _AMAVISD_COMPAT_H
@@ -33,6 +33,22 @@
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
+#endif
+
+#if HAVE_STDBOOL_H
+# include <stdbool.h>
+#else
+# if ! HAVE__BOOL
+#  ifdef __cplusplus
+typedef bool _Bool;
+#  else
+typedef unsigned char _Bool;
+#  endif
+# endif
+# define bool _Bool
+# define false 0
+# define true 1
+# define __bool_true_false_are_defined 1
 #endif
 
 #include <errno.h>
@@ -50,22 +66,6 @@
 #include <sys/un.h>
 #include <syslog.h>
 #include <unistd.h>
-
-#if HAVE_STDBOOL_H
-# include <stdbool.h>
-#else
-# if ! HAVE__BOOL
-#  ifdef __cplusplus
-typedef bool _Bool;
-#  else
-typedef unsigned char _Bool;
-#  endif
-# endif
-# define bool _Bool
-# define false 0
-# define true 1
-# define __bool_true_false_are_defined 1
-#endif
 
 #if HAVE_DIRENT_H
 # include <dirent.h>
