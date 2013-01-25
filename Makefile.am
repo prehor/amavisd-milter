@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.4 2006/01/24 15:20:02 reho Exp $
+# $Id: Makefile.am,v 1.5 2013/01/25 15:08:25 reho Exp $
 
 # Subdirectories
 SUBDIRS= \
@@ -24,6 +24,7 @@ EXTRA_DIST= \
 	Makefile.am \
 	Makefile.in \
 	aclocal.m4 \
+	amavisd-milter.spec \
 	autoconf.sh \
 	config.h.in \
 	configure \
@@ -51,6 +52,7 @@ dist-hook: README
 
 maintainer-clean-local:
 	-rm -f Makefile.in
+	-rm -f aclocal/ar-lib
 	-rm -f aclocal/compile
 	-rm -f aclocal/config.guess
 	-rm -f aclocal/config.sub

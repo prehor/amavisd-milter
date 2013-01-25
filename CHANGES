@@ -1,5 +1,10 @@
 This is the CHANGELOG for amavisd-milter.
 
+20130125:
+	Included amavisd-milter.spec for compilation with rpmbuild.
+
+	Thanks to: Jo Rhett <jrhett@netconsonance.com>
+
 20120727:
 	Include stdbool.h before libmilter/mfapi.h in compat/compat.h because
 	libmilter/mfapi.h not define true and false.
@@ -417,4 +422,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.73 2010/11/04 23:47:50 reho Exp $
+$Id: CHANGES,v 1.74 2012/07/26 23:28:11 reho Exp $
