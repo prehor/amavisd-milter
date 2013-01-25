@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.3 2006/01/24 12:38:51 reho Exp $
+# $Id: Makefile.am,v 1.4 2006/01/24 15:20:02 reho Exp $
 
 # Subdirectories
 SUBDIRS= \
@@ -24,6 +24,7 @@ EXTRA_DIST= \
 	Makefile.am \
 	Makefile.in \
 	aclocal.m4 \
+	autoconf.sh \
 	config.h.in \
 	configure \
 	configure.ac
