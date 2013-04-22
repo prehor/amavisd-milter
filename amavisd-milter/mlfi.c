@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.58 2009/10/02 23:19:33 reho Exp $
+ * $Id: mlfi.c,v 1.59 2010/05/02 09:54:47 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -268,6 +268,7 @@ mlfi_cleanup(struct mlfiCtx *mlfi)
     logqidmsg(mlfi, LOG_DEBUG, "CLEANUP CONNECTION CONTEXT");
 
     /* Cleanup the connection context */
+    free(mlfi->mlfi_daemon_name);
     free(mlfi->mlfi_hostname);
     free(mlfi->mlfi_client_addr);
     free(mlfi->mlfi_client_host);
@@ -313,6 +314,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     struct	mlfiCtx *mlfi = NULL;
     const void *addr;
     const char *prefix;
+    const char *daemon_name;
     int		len, plen;
 
     logmsg(LOG_DEBUG, "%s: CONNECT", hostname);
@@ -379,6 +381,15 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	} else {
 	    logqidmsg(mlfi, LOG_DEBUG, "host address: %s",
 		mlfi->mlfi_client_addr);
+	}
+    }
+    if ((daemon_name = smfi_getsymval(ctx, "{daemon_name}")) != NULL) {
+	logqidmsg(mlfi, LOG_INFO, "Daemon name: %s", daemon_name);
+	if ((mlfi->mlfi_daemon_name = strdup(daemon_name)) == NULL) {
+	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
+	    mlfi_setreply_tempfail(ctx);
+	    mlfi_cleanup(mlfi);
+	    return SMFIS_TEMPFAIL;
 	}
     }
 
@@ -463,6 +474,7 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     const char *auth_type, *auth_authen, *auth_ssf;
     const char *date, *qid, *wrkdir;
     const char *protocol = NULL;
+    const char *daemon_name;
     size_t	l;
     time_t	t;
     struct	tm gt, lt;
@@ -667,15 +679,37 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 	return SMFIS_TEMPFAIL;
     }
 
+    /* Daemon name */
+    if (mlfi->mlfi_daemon_name == NULL) {
+	if ((daemon_name = smfi_getsymval(ctx, "{daemon_name}")) != NULL) {
+	    logqidmsg(mlfi, LOG_INFO, "Daemon name: %s", daemon_name);
+	    if ((mlfi->mlfi_daemon_name = strdup(daemon_name)) == NULL) {
+		logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
+		mlfi_setreply_tempfail(ctx);
+		return SMFIS_TEMPFAIL;
+	    }
+	}
+    }
+
     /* Policy bank names */
+    l = 0;
+    *mlfi->mlfi_amabuf = '\0';
+    if ((policybank_from_daemon_name == 1) && (mlfi->mlfi_daemon_name != NULL)) {
+	l += snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	    "%s", mlfi->mlfi_daemon_name);
+    }
     if (auth_type != NULL) {
-	*mlfi->mlfi_amabuf = '\0';
-	l = snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	if (l > 0) {
+	    l += snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, ",");
+	}
+	l += snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
 	    "SMTP_AUTH,SMTP_AUTH_%s", auth_type);
 	if (auth_ssf != NULL && *auth_ssf != '\0') {
-	    l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	    l += snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
 		",SMTP_AUTH_%s_%s", auth_type, auth_ssf);
 	}
+    }
+    if (l > 0) {
 	if ((mlfi->mlfi_policy_bank = strdup(mlfi->mlfi_amabuf)) == NULL) {
 	    logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
 	    mlfi_setreply_tempfail(ctx);
@@ -1169,8 +1203,7 @@ mlfi_eom(SMFICTX *ctx)
     /* Policy bank names */
     if (mlfi->mlfi_policy_bank != NULL) {
 	logqidmsg(mlfi, LOG_DEBUG, "policy_bank=%s", mlfi->mlfi_policy_bank);
-	if (amavisd_request(mlfi, "policy_bank", mlfi->mlfi_policy_bank) == -1)
-	{
+	if (amavisd_request(mlfi, "policy_bank", mlfi->mlfi_policy_bank) == -1) {
 	    logqidmsg(mlfi, LOG_ERR, "could not write to socket %s: %s",
 		amavisd_socket, strerror(errno));
 	    amavisd_close(mlfi);

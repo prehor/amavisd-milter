@@ -1,5 +1,5 @@
 .\"
-.\" $Id: amavisd-milter.8,v 1.20 2009/10/29 15:53:34 reho Exp $
+.\" $Id: amavisd-milter.8,v 1.21 2010/03/14 23:13:53 reho Exp $
 .\"
 .Dd Januar 23, 2006
 .Dt amavisd-milter 8
@@ -9,7 +9,7 @@
 .Nd sendmail milter for amavisd-new
 .Sh SYNOPSIS
 .Nm
-.Op Fl fhv
+.Op Fl Bfhv
 .Op Fl d Ar debug-level
 .Op Fl D Ar delivery-care-of
 .Op Fl m Ar max-conns
@@ -52,6 +52,12 @@ http://sourceforge.net/projects/amavisd-milter
 .Ss Options
 The options are as follows:
 .Bl -tag -width indent
+.It Fl B
+Uses
+.Sy {daemon_name}
+macro as a policy bank name (see
+.Sy POLICY BANKS
+below).
 .It Fl d Ar debug-level
 Set the debug level to 
 .Sy debug-level Ns
@@ -66,7 +72,7 @@ Set AM.PDP request attribute delivery_care_of to
 \&.  When
 .Sy client
 method is used then
-.Sy amavisd-milter
+.Nm
 is responsible to forward the message to recipients. This method doesn't
 allow personalized header or body modification.
 .Pp
@@ -224,14 +230,22 @@ communication socket.
 .It Em /var/amavis
 The default working directory.
 .El
-.Sh POLICY BANK
-When remote client is authenticated,
-.Sy amavisd-milter
-forward this information to
+.Sh POLICY BANKS
+If the option
+.Sy -B
+is enabled,
+.Nm
+uses the value of the milter macro
+.Sy {daemon_name}
+as a name of the
 .Sy amavisd-new
-through AM.PDP request attribute
-.Sy policy_bank Ns
-:
+policy bank. Usualy this milter macro is set to name of the MTA.
+.Pp
+When remote client is authenticated,
+.Nm
+uses this information as a name of the
+.Sy amavisd-new
+policy banks:
 .Bl -tag -width indent
 .It Sy SMTP_AUTH
 Indicate that the remote client is authenticated.

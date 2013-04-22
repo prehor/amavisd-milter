@@ -1,5 +1,11 @@
 This is the CHANGELOG for amavisd-milter.
 
+20130422:
+	Added new amavisd-milter option -B which uses value of {daemon_name}
+	milter macro as amavisd-new policy bank name.
+
+	Thanks to: Andreas Schulze <andreas.schulze@datev.de>
+
 20130125:
 	Included amavisd-milter.spec for compilation with rpmbuild.
 
@@ -47,7 +53,7 @@ This is the CHANGELOG for amavisd-milter.
 	Added new amavisd-milter option -P which causes that mails pass through
 	when amavisd-new fails.
 
-	Thans to: Uli Schellhaas <uli.schellhaas@memware.de>
+	Thanks to: Uli Schellhaas <uli.schellhaas@memware.de>
 
 20090803:
 	Bug fix - sendmail 8.14 introduces three new callbacks.
@@ -422,4 +428,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.74 2012/07/26 23:28:11 reho Exp $
+$Id: CHANGES,v 1.75 2013/01/25 15:36:09 reho Exp $

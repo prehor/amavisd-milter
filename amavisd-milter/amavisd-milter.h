@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: amavisd-milter.h,v 1.26 2008/11/10 00:45:10 reho Exp $
+ * $Id: amavisd-milter.h,v 1.27 2009/10/02 23:19:33 reho Exp $
  */
 
 #ifndef _AMAVISD_MILTER_H
@@ -54,6 +54,7 @@ struct mlfiAddress {
 
 /* Milter private data structure */
 struct mlfiCtx {
+    char       *mlfi_daemon_name;	/* sendmail daemon name */
     char       *mlfi_hostname;		/* sendmail hostname */
     char       *mlfi_client_addr;	/* remote host address */
     char       *mlfi_client_host;	/* remote host name */
@@ -93,6 +94,7 @@ extern sfsistat	mlfi_close(SMFICTX *);
 extern sfsistat	mlfi_abort(SMFICTX *);
 
 /* Global variables */
+extern int	policybank_from_daemon_name; /* Select Policybank from Miltermacro daemon_name */
 extern int	daemonize;		/* run as daemon */
 extern int	daemonized;		/* is daemon */
 extern int	debug_level;		/* max debug level */

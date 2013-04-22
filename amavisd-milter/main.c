@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: main.c,v 1.25 2009/10/02 23:19:33 reho Exp $
+ * $Id: main.c,v 1.26 2010/03/14 23:13:56 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -56,6 +56,7 @@ long		amavisd_timeout = 600;
 int		ignore_amavisd_error = 0;
 const char     *working_dir = WORKING_DIR;
 const char     *delivery_care_of = "client";
+int		policybank_from_daemon_name = 0;
 
 
 /*
@@ -66,6 +67,7 @@ usage(const char *progname)
 {
     (void) fprintf(stdout, "\nUsage: %s [OPTIONS]\n", progname);
     (void) fprintf(stdout, "Options are:\n");
+    (void) fprintf(stdout, "	-B			Use daemon_name policy bank\n");
     (void) fprintf(stdout, "	-d debug-level		Set debug level\n");
     (void) fprintf(stdout, "	-D delivery		Delivery care of server or client\n");
     (void) fprintf(stdout, "	-f			Run in the foreground\n");
@@ -123,7 +125,7 @@ versioninfo(const char *progname)
 int
 main(int argc, char *argv[])
 {
-    static	const char *args = "d:D:fhm:M:p:Pq:s:S:t:T:vw:";
+    static	const char *args = "Bd:D:fhm:M:p:Pq:s:S:t:T:vw:";
 
     int		c, rstat;
     char       *p;
@@ -147,6 +149,9 @@ main(int argc, char *argv[])
     /* Process command line options */
     while ((c = getopt(argc, argv, args)) != EOF) {
 	switch (c) {
+	case 'B':		/* use daemon_name policy bank */
+	    policybank_from_daemon_name = 1;
+	    break;
 	case 'd':		/* debug level */
 	    if (optarg == NULL || *optarg == '\0') {
 		usageerr(progname, "option requires an argument -- %c",
