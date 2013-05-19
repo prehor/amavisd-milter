@@ -1,5 +1,17 @@
 This is the CHANGELOG for amavisd-milter.
 
+20130519:
+	amavisd-milter-1.6.0:
+
+	New features:
+	- Added new amavisd-milter option -B which pases value of
+	  {daemon_name} milter macro as amavisd-new policy bank name.
+
+	Bug and compatibility fixies:
+	- Added amavisd-milter.spec for compilation with rpmbuild.
+	- Fixed typo which prevents using LDFLAGS on Debian.
+	- Fixed missing definition of true and false in libmilter/mfapi.h.
+
 20130422:
 	Added new amavisd-milter option -B which uses value of {daemon_name}
 	milter macro as amavisd-new policy bank name.
@@ -428,4 +440,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.75 2013/01/25 15:36:09 reho Exp $
+$Id: CHANGES,v 1.76 2013/04/22 00:36:11 reho Exp $
