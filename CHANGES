@@ -4,7 +4,7 @@ This is the CHANGELOG for amavisd-milter.
 	amavisd-milter-1.6.0:
 
 	New features:
-	- Added new amavisd-milter option -B which pases value of
+	- Added new amavisd-milter option -B which passes value of
 	  {daemon_name} milter macro as amavisd-new policy bank name.
 
 	Bug and compatibility fixies:
@@ -440,4 +440,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.76 2013/04/22 00:36:11 reho Exp $
+$Id: CHANGES,v 1.77 2013/05/19 21:07:26 reho Exp $
