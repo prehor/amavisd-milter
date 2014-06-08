@@ -16,7 +16,7 @@ This is the CHANGELOG for amavisd-milter.
 	Added new amavisd-milter option -B which uses value of {daemon_name}
 	milter macro as amavisd-new policy bank name.
 
-	Thanks to: Andreas Schulze <andreas.schulze@datev.de>
+	Thanks to: Andreas Schulze
 
 20130125:
 	Included amavisd-milter.spec for compilation with rpmbuild.
@@ -42,7 +42,7 @@ This is the CHANGELOG for amavisd-milter.
 20100501:
 	Amavisd-new 2.7.0 introduce new AM.PDP response log_id.
 
-	Thanks to: Andreas Schulze <andreas.schulze@datev.de>
+	Thanks to: Andreas Schulze
 
 20100131:
 	amavisd-milter-1.4.1:
@@ -440,4 +440,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.77 2013/05/19 21:07:26 reho Exp $
+$Id: CHANGES,v 1.78 2013/05/19 22:47:13 reho Exp $
