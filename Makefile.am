@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.5 2013/01/25 15:08:25 reho Exp $
+# $Id: Makefile.am,v 1.6 2013/01/25 15:36:09 reho Exp $
 
 # Subdirectories
 SUBDIRS= \
@@ -31,7 +31,7 @@ EXTRA_DIST= \
 	configure.ac
 
 ../website/amavisd-milter.html: amavisd-milter/amavisd-milter.8
-	nroff -mdoc amavisd-milter/amavisd-milter.8 | \
+	nroff -c -mdoc amavisd-milter/amavisd-milter.8 | \
 	sed -e '1s/.*//' -e '$$s/.*//' | \
 	man2html -topm 0 -botm 0 -title "amavisd-milter(8) manual page"| \
 	sed -e 's;\(http:[^    ]*\);<a href="\1">\1</a>;' \
