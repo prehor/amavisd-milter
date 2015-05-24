@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.8 2015/05/24 20:39:10 reho Exp $
+# $Id: Makefile.am,v 1.9 2015/05/24 20:41:49 reho Exp $
 
 # Subdirectories
 SUBDIRS= \
@@ -31,8 +31,8 @@ EXTRA_DIST= \
 	configure.ac
 
 ../website/amavisd-milter.html: amavisd-milter/amavisd-milter.8
-	nroff -c -mdoc amavisd-milter/amavisd-milter.8 | \
-	perl -pe 's/\xC2\xB7/o/g' | sed -e '1s/.*//' -e '$$s/.*//' | \
+	env LC_ALL=C nroff -c -mdoc amavisd-milter/amavisd-milter.8 | \
+	sed -e '1s/.*//' -e '$$s/.*//' | \
 	man2html -topm 0 -botm 0 -title "amavisd-milter(8) manual page"| \
 	sed -e 's;\(http:[^    ]*\);<a href="\1">\1</a>;' \
 	    -e 's;<a href="<a href=".*</a>";<a href=";' \
@@ -42,8 +42,7 @@ EXTRA_DIST= \
 website: ../website/amavisd-milter.html
 
 README: amavisd-milter/amavisd-milter.8
-	nroff -c -mdoc amavisd-milter/amavisd-milter.8 | col -b | \
-	perl -pe 's/\xC2\xB7/o/g' | \
+	env LC_ALL=C nroff -c -mdoc amavisd-milter/amavisd-milter.8 | col -b | \
 	sed -e '1s/.*/This is the README for the amavisd-milter(8)./' \
 	    -e '$$s/.*//' > README
 
