@@ -1,5 +1,10 @@
 This is the CHANGELOG for amavisd-milter.
 
+20150524:
+	Fixed bug when creating amavisd-new policy bank names.
+
+	Thanks to: Christian Roessner <c@roessner-network-solutions.com>
+
 20130519:
 	amavisd-milter-1.6.0:
 
@@ -440,4 +445,4 @@ This is the CHANGELOG for amavisd-milter.
 	First public release.  Fully tested on FreeBSD 5.3.
 
 
-$Id: CHANGES,v 1.78 2013/05/19 22:47:13 reho Exp $
+$Id: CHANGES,v 1.79 2014/06/08 20:13:20 reho Exp $

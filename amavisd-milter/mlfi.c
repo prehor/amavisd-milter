@@ -25,7 +25,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id: mlfi.c,v 1.59 2010/05/02 09:54:47 reho Exp $
+ * $Id: mlfi.c,v 1.60 2013/04/22 00:36:12 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -695,14 +695,14 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     l = 0;
     *mlfi->mlfi_amabuf = '\0';
     if ((policybank_from_daemon_name == 1) && (mlfi->mlfi_daemon_name != NULL)) {
-	l += snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	l += snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
 	    "%s", mlfi->mlfi_daemon_name);
     }
     if (auth_type != NULL) {
 	if (l > 0) {
-	    l += snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, ",");
+	    l += snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, ",");
 	}
-	l += snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+	l += snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
 	    "SMTP_AUTH,SMTP_AUTH_%s", auth_type);
 	if (auth_ssf != NULL && *auth_ssf != '\0') {
 	    l += snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
