@@ -313,6 +313,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     const void *addr;
     const char *prefix;
     const char *daemon_name;
+    const char *client_host;
     int		len, plen;
 
     logmsg(LOG_DEBUG, "%s: CONNECT", hostname);
@@ -329,8 +330,20 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     (void) memset(mlfi, '\0', sizeof(*mlfi));
     mlfi->mlfi_amasd = -1;
 
+	/* Try to get client_name from macros */
+	if ((client_host = smfi_getsymval(ctx, "{client_name}")) != NULL) {
+	    logqidmsg(mlfi, LOG_INFO, "client_name: %s", client_host);
+	    if ((mlfi->mlfi_client_host = strdup(client_host)) == NULL) {
+		logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
+		mlfi_setreply_tempfail(ctx);
+		return SMFIS_TEMPFAIL;
+	    }
+	} else {
+		logqidmsg(mlfi, LOG_INFO, "{client_name} undefined at connect time! Falling back to libmilter value.");
+	}
+
     /* Save connection informations */
-    if (hostname != NULL && *hostname != '\0') {
+    if (hostname != NULL && *hostname != '\0' && mlfi->mlfi_client_host == NULL) {
 	if ((mlfi->mlfi_client_host = strdup(hostname)) == NULL) {
 	    logmsg(LOG_ERR, "%s: could not allocate memory", hostname);
 	    mlfi_setreply_tempfail(ctx);
