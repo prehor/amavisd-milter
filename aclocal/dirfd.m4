@@ -1,5 +1,3 @@
-# $Id: dirfd.m4,v 1.1 2008/07/02 23:20:16 reho Exp $
-
 # Find out how to get the file descriptor associated with an open DIR*.
 
 AC_DEFUN([AC_CHECK_DIRFD],

@@ -24,8 +24,6 @@
  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * $Id: amavisd.c,v 1.17 2007/09/01 16:27:53 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -280,7 +278,7 @@ amavisd_close(struct mlfiCtx *mlfi)
 		"%s: could not unlock amavisd connections semaphore: %s",
 		strerror(errno));
 	}
-	mlfi->mlfi_max_sem_locked = 0; 
+	mlfi->mlfi_max_sem_locked = 0;
 	logqidmsg(mlfi, LOG_DEBUG, "got back amavisd connection");
     }
 }

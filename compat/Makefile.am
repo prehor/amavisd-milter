@@ -1,5 +1,3 @@
-# $Id: Makefile.am,v 1.2 2005/05/20 20:32:31 reho Exp $
-
 # Distribution files
 EXTRA_DIST= \
 	Makefile.am \

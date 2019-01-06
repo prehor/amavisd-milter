@@ -1,5 +1,3 @@
-dnl $Id: configure.ac,v 1.50 2013/05/19 21:07:26 reho Exp $
-
 AC_INIT(amavisd-milter, 1.6.1)
 AC_PREREQ(2.62)
 

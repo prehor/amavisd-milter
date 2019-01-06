@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /* OPENBSD ORIGINAL: lib/libc/stdio/mktemp.c */
 
 /*

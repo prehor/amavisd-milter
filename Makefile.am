@@ -1,5 +1,3 @@
-# $Id: Makefile.am,v 1.9 2015/05/24 20:41:49 reho Exp $
-
 # Subdirectories
 SUBDIRS= \
 	compat \

@@ -44,7 +44,6 @@ dnl help from M. Frigo), as well as ac_pthread and hb_pthread macros
 dnl posted by Alejandro Forero Cuervo to the autoconf macro repository.
 dnl We are also grateful for the helpful feedback of numerous users.
 dnl
-dnl @version $Id: acx_pthread.m4,v 1.2 2006/01/25 21:33:51 reho Exp $
 dnl @category InstalledPackages
 dnl @author Steven G. Johnson <stevenj@alum.mit.edu>
 dnl @version 2006-05-29
@@ -234,7 +233,7 @@ if test "x$acx_pthread_ok" = xyes; then
    # architectures and systems. The problem is that in certain
    # configurations, when -shared is specified, GCC "forgets" to
    # internally use various flags which are still necessary.
-  
+
    AC_MSG_CHECKING([whether to check for GCC pthread/shared inconsistencies])
    check_inconsistencies=yes
    case "${host_cpu}-${host_os}" in
@@ -274,13 +273,13 @@ if test "x$acx_pthread_ok" = xyes; then
          pthread_attr_init(0); pthread_cleanup_push(0, 0);
          pthread_create(0,0,0,0); pthread_cleanup_pop(0); ],
          [ok=yes])
-     
+
       if test "x$ok" = xyes; then
          AC_MSG_RESULT([yes])
       else
          AC_MSG_RESULT([no])
       fi
-   
+
       #
       # Linux gcc on some architectures such as mips/mipsel forgets
       # about -lpthread
@@ -293,7 +292,7 @@ if test "x$acx_pthread_ok" = xyes; then
             pthread_attr_init(0); pthread_cleanup_push(0, 0);
             pthread_create(0,0,0,0); pthread_cleanup_pop(0); ],
             [ok=yes])
-   
+
          if test "x$ok" = xyes; then
             AC_MSG_RESULT([yes])
             PTHREAD_LIBS="-lpthread $PTHREAD_LIBS"
@@ -312,7 +311,7 @@ if test "x$acx_pthread_ok" = xyes; then
               pthread_attr_init(0); pthread_cleanup_push(0, 0);
               pthread_create(0,0,0,0); pthread_cleanup_pop(0); ],
              [ok=yes])
-   
+
          if test "x$ok" = xyes; then
             AC_MSG_RESULT([yes])
             PTHREAD_LIBS="-lc_r $PTHREAD_LIBS"

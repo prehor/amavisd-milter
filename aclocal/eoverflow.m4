@@ -1,5 +1,3 @@
-# $Id$
-#
 # http://savannah.gnu.org/cgi-bin/viewcvs/gnulib/gnulib/m4/eoverflow.m4
 
 # eoverflow.m4 serial 2

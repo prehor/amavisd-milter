@@ -1,5 +1,3 @@
-# $Id$
-#
 # http://cvs.sourceforge.net/viewcvs.py/libiconv/m4/eilseq.m4
 
 #serial 1

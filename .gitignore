@@ -26,8 +26,8 @@ _$*
 *.ln
 core
 # CVS default ignores end
-# $Id: .cvsignore,v 1.3 2008/07/01 17:10:36 reho Exp $
 
+# Ignore generated files
 Makefile
 Makefile.in
 README

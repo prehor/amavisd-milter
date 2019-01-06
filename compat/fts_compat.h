@@ -1,4 +1,3 @@
-/* $Id: fts_compat.h,v 1.1 2006/01/25 21:53:27 reho Exp $ */
 /* TNFTPD ORIGINAL: libnetbsd/ftpfts.h */
 
 /* $NetBSD: ftpfts.h,v 1.5 2008/03/09 20:54:13 lukem Exp $ */
@@ -141,4 +140,3 @@ FTSENT	*fts_read(FTS *);
 int	 fts_set(FTS *, FTSENT *, int);
 
 #endif /* !_FTS_H_ */
-

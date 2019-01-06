@@ -245,8 +245,8 @@ This is the CHANGELOG for amavisd-milter.
 
 20061206:
 	Limited support for legacy sendmail 8.12:
-	- AM.PDP v2 response attribute quarantine isn't implemented. 
-	Thanks to: Adam Gibson <agibson@ptm.com> 
+	- AM.PDP v2 response attribute quarantine isn't implemented.
+	Thanks to: Adam Gibson <agibson@ptm.com>
 
 20061203:
 	Added info about user authentication to synthesized received header.
@@ -324,7 +324,7 @@ This is the CHANGELOG for amavisd-milter.
 	amavisd-milter-1.1.1
 
 	Portability release. amavisd-milter-1.1 now can be compiled on
-	FreeBSD, NetBSD, OpenBSD, Linux and Solaris.  Please report 
+	FreeBSD, NetBSD, OpenBSD, Linux and Solaris.  Please report
 	success or problems on the users mailing list.
 
 20060125:
@@ -449,6 +449,3 @@ This is the CHANGELOG for amavisd-milter.
 	amavisd-milter-1.0.0
 
 	First public release.  Fully tested on FreeBSD 5.3.
-
-
-$Id: CHANGES,v 1.80 2015/05/24 18:59:18 reho Exp $

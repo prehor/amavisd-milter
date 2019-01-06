@@ -24,8 +24,6 @@
  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * $Id: mlfi.c,v 1.60 2013/04/22 00:36:12 reho Exp $
  */
 
 #include "amavisd-milter.h"
@@ -305,7 +303,7 @@ mlfi_setreply_tempfail(SMFICTX *ctx)
 
 /*
 ** MLFI_CONNECT - Handle incomming connection
-** 
+**
 ** mlfi_connect() is called once, at the start of each SMTP connection
 */
 sfsistat
@@ -462,7 +460,7 @@ mlfi_helo(SMFICTX *ctx, char* helohost)
 
 /*
 ** MLFI_ENVFORM - Handle the envelope FROM command
-** 
+**
 ** mlfi_envfrom() is called once at the beginning of each message, before
 ** mlfi_envrcpt()
 */
@@ -724,7 +722,7 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
 
 /*
 ** MLFI_ENVRCPT - Handle the envelope RCPT command
-** 
+**
 ** mlfi_envrcpt() is called once per recipient, hence one or more times
 ** per message, immediately after mlfi_envfrom()
 */
@@ -770,7 +768,7 @@ mlfi_envrcpt(SMFICTX *ctx, char **envrcpt)
 
 /*
 ** MLFI_HEADER - Handle a message header
-** 
+**
 ** mlfi_header() is called zero or more times between mlfi_envrcpt() and
 ** mlfi_eoh(), once per message header
 */
@@ -804,7 +802,7 @@ mlfi_header(SMFICTX *ctx, char *headerf, char *headerv)
 
 /*
 ** MLFI_EOH - Handle the end of message headers
-** 
+**
 ** mlfi_eoh() is called once after all headers have been sent and processed
 */
 sfsistat
@@ -837,7 +835,7 @@ mlfi_eoh(SMFICTX *ctx)
 
 /*
 ** MLFI_BODY - Handle a piece of a message's body
-** 
+**
 ** mlfi_body() is called zero or more times between mlfi_eoh() and mlfi_eom()
 */
 sfsistat
@@ -905,7 +903,7 @@ mlfi_body(SMFICTX *ctx, unsigned char * bodyp, size_t bodylen)
 
 /*
 ** MLFI_EOM - Handle the end of a message
-** 
+**
 ** mlfi_eom() is called once after all calls to mlfi_body()
 ** for a given message
 */
@@ -1558,7 +1556,7 @@ mlfi_abort(SMFICTX *ctx)
 
 /*
 ** MLFI_CLOSE - The current connection is being closed
-** 
+**
 ** mlfi_close() is always called once at the end of each connection
 */
 sfsistat

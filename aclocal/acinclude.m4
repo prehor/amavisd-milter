@@ -1,5 +1,3 @@
-dnl $Id: acinclude.m4,v 1.8 2008/11/09 22:47:46 reho Exp $
-
 dnl Enables debug output and debug symbols
 AC_DEFUN([ACX_ENABLE_DEBUG],
 [

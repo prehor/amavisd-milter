@@ -1,4 +1,3 @@
-/* $Id: fts_open.c,v 1.3 2008/10/28 23:45:29 reho Exp $ */
 /* TNFTPD ORIGINAL: libnetbsd/fts_open.c */
 
 /* $NetBSD: fts_open.c,v 1.10 2008/09/27 15:14:29 lukem Exp $ */
@@ -345,7 +344,7 @@ fts_read(FTS *sp)
 			}
 			p->fts_info = FTS_DP;
 			return (p);
-		} 
+		}
 
 		/* Rebuild if only read the names and now traversing. */
 		if (sp->fts_child && ISSET(FTS_NAMEONLY)) {
@@ -540,7 +539,7 @@ fts_children(FTS *sp, int instr)
 	if (instr == FTS_NAMEONLY) {
 		SET(FTS_NAMEONLY);
 		instr = BNAMES;
-	} else 
+	} else
 		instr = BCHILD;
 
 	/*
@@ -765,7 +764,7 @@ mem1:				saved_errno = errno;
 			p->fts_accpath = cur->fts_accpath;
 		} else if (nlinks == 0
 #ifdef DT_DIR
-		    || (nostat && 
+		    || (nostat &&
 		    dp->d_type != DT_DIR && dp->d_type != DT_UNKNOWN)
 #endif
 		    ) {
@@ -881,7 +880,7 @@ fts_stat(FTS *sp, FTSENT *p, int follow)
 			if (!lstat(p->fts_accpath, sbp)) {
 				errno = 0;
 				return (FTS_SLNONE);
-			} 
+			}
 			p->fts_errno = saved_errno;
 			goto err;
 		}
@@ -950,7 +949,7 @@ fts_sort(FTS *sp, FTSENT *head, size_t nitems)
 	}
 	for (ap = sp->fts_array, p = head; p; p = p->fts_link)
 		*ap++ = p;
-	qsort((void *)sp->fts_array, nitems, sizeof(FTSENT *), 
+	qsort((void *)sp->fts_array, nitems, sizeof(FTSENT *),
 		(int (*)(const void *, const void *))sp->fts_compar);
 	for (head = *(ap = sp->fts_array); --nitems; ++ap)
 		ap[0]->fts_link = ap[1];
@@ -1056,7 +1055,7 @@ fts_pow2(size_t x)
  * Allow essentially unlimited paths; find, rm, ls should all work on any tree.
  * Most systems will allow creation of paths much longer than MAXPATHLEN, even
  * though the kernel won't resolve them.  Round up the new size to a power of 2,
- * so we don't realloc the path 2 bytes at a time. 
+ * so we don't realloc the path 2 bytes at a time.
  */
 static int
 fts_palloc(FTS *sp, size_t size)

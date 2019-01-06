@@ -1,5 +1,3 @@
-# $Id: Makefile.am,v 1.3 2006/01/13 17:56:00 reho Exp $
-
 # Distribution files
 EXTRA_DIST= \
 	amavisd-milter.8 \
