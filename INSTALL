@@ -1,11 +1,11 @@
 Obtaining the software
 ======================
 
-Fetch the tarball from Sourceforge and unpack it:
+Fetch the tarball from GitHub and unpack it:
 
-  http://sourceforge.net/project/showfiles.php?group_id=138169
+  https://github.com/prehor/amavisd-milter/releases
 
-Start reading with README, then CHANGES and INSTALL.
+Start reading with README.md, then CHANGES and INSTALL.
 
 Basic Installation
 ==================
