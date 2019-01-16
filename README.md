@@ -1,7 +1,5 @@
 # amavisd-milter
 
-**Warning: This project is now being migrated from SourceForge!**
-
 amavisd-milter is a milter interface for [amavis](https://www.amavis.org).
 
 ## Installing
