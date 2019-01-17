@@ -18,6 +18,11 @@ make clean
 
 For more information on installation, see [INSTALL](INSTALL).
 
+## Usage
+
+A complete description of usage, configuration and troubleshooting is at
+[amavisd-milter(8) manual page](AMAVISD-MILTER.8).
+
 ## Reporting Issues
 
 Issues can be reported by using [GitHub Issues](/../../issues). Full details on
