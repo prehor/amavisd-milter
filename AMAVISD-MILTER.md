@@ -23,8 +23,7 @@ fields, modifying Subject, adding address extensions and removing certain
 recipients from delivery while delivering the same message to the rest.
 
 For more information you can visit amavisd-milter website:
-
-    https://github.com/prehor/amavisd-milter
+* https://github.com/prehor/amavisd-milter
 
 ### Options
 
@@ -215,9 +214,9 @@ where debug levels are:
 
 ## SEE ALSO
 
-    https://github.com/prehor/amavisd-milter
-    https://www.ijs.si/software/amavisd/
-    https://www.sendmail.org
+* https://github.com/prehor/amavisd-milter
+* https://www.ijs.si/software/amavisd/
+* https://www.sendmail.org
 
 ## AUTHORS
 
@@ -227,13 +226,11 @@ Jerzy Sakol <<jerzy.sakol@commgraf.pl>> initial work.
 ## BUGS
 
 Issues can be reported by using GitHub at:
-
-    https://github.com/prehor/amavisd-milter/issues
+* https://github.com/prehor/amavisd-milter/issues
 
 Full details on how to report issues can be found in the Contribution
 Guidelines at:
-
-    https://github.com/prehor/amavisd-milter/blob/master/CONTRIBUTING.md
+* https://github.com/prehor/amavisd-milter/blob/master/CONTRIBUTING.md
 
 Enhancements, requests and problem reports are welcome.
 
