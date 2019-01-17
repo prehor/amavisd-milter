@@ -21,7 +21,7 @@ For more information on installation, see [INSTALL](INSTALL).
 ## Usage
 
 A complete description of usage, configuration and troubleshooting is at
-[amavisd-milter(8) manual page](AMAVISD-MILTER.8).
+[amavisd-milter(8) manual page](AMAVISD-MILTER.md).
 
 ## Reporting Issues
 
