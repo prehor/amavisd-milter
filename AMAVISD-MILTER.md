@@ -4,7 +4,7 @@
 
     amavisd-milter — sendmail milter for amavisd-new
 
-## SYNOPSIS
+## SYNOPSIS
 
     amavisd-milter [-Bfhv] [-d debug-level] [-D delivery-care-of]
                    [-m max-conns] [-M max-wait] [-p pidfile] [-P]
@@ -154,7 +154,7 @@ as a name of the amavisd&#8209;new policy banks:
             The number of bits used for the key of the symmetric cipher when
             authentication mechanism use it.
 
-## EXAMPLES
+## EXAMPLES
 
 ### Configuring amavisd-new
 
