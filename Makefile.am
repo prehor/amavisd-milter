@@ -13,7 +13,6 @@ AUTOMAKE_OPTIONS= \
 
 # Distribution files
 EXTRA_DIST= \
-	AUTHORS \
 	CHANGES \
 	INSTALL \
 	LICENSE \
@@ -22,7 +21,6 @@ EXTRA_DIST= \
 	Makefile.am \
 	Makefile.in \
 	aclocal.m4 \
-	amavisd-milter.spec \
 	autoconf.sh \
 	config.h.in \
 	configure \
