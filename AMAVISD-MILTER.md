@@ -1,15 +1,18 @@
 # amavisd-milter(8).
 
 ## NAME
+
     amavisd-milter — sendmail milter for amavisd-new
 
 ## SYNOPSIS
+
     amavisd-milter [-Bfhv] [-d debug-level] [-D delivery-care-of]
                    [-m max-conns] [-M max-wait] [-p pidfile] [-P]
                    [-q backlog] [-s socket] [-t timeout] [-S socket]
                    [-T timeout] [-w directory]
 
 ## DESCRIPTION
+
 The amavisd-milter is a sendmail milter (mail filter) for amavisd&#8209;new
 2.4.3 and above and sendmail 8.13 and above (limited support for 8.12 is
 provided).
@@ -24,6 +27,7 @@ For more information you can visit amavisd-milter website:
     https://github.com/prehor/amavisd-milter
 
 ### Options
+
 The options are as follows:
 
     -B      Uses {daemon_name} macro as a policy bank name (see POLICY BANKS
@@ -110,6 +114,7 @@ The options are as follows:
             Set working directory (default /var/amavis).
 
 ### Limited support for sendmail 8.12
+
 * `smfi_addheader()` is used instead of `smfi_insheader()` for `insheader`
   and `addheader` AM.PDP responses. This works well with amavisd&#8209;new
   2.4.3 or newer.
@@ -131,6 +136,7 @@ The options are as follows:
             The default working directory.
 
 ## POLICY BANKS
+
 If the option `-B` is enabled, amavisd-milter uses the value of the milter
 macro {daemon_name} as a name of the amavisd&#8209;new policy bank. Usualy this
 milter macro is set to name of the MTA.
@@ -149,7 +155,9 @@ as a name of the amavisd&#8209;new policy banks:
             authentication mechanism use it.
 
 ## EXAMPLES
+
 ### Configuring amavisd-new
+
 In amavisd.conf file change protocol and socket settings to:
 
     $protocol = "AM.PDP";                      # Use AM.PDP protocol
@@ -159,6 +167,7 @@ In amavisd.conf file change protocol and socket settings to:
 Then (re)start amavisd daemon.
 
 ### Configuring sendmail
+
 To the sendmail.mc file add the following entries:
 
     define(`confMILTER_MACROS_ENVFROM', confMILTER_MACROS_ENVFROM`, r, b')
@@ -184,12 +193,14 @@ Then start amavisd-milter as non-priviledged user amavis:
     su - amavis -c "amavisd-milter -w /var/amavis/tmp"
 
 ### Limiting maximum concurrent connections to amavisd
+
 To limit concurrent connections to 4 and fail after 10 minutes (10*60 secs) of
 waiting run amavisd-milter with this options:
 
     su - amavis -c "amavisd-milter -w /var/amavis/tmp -m 4 -M 600"
 
 ### Troubleshooting
+
 For troubleshooting run amavisd-milter on the foreground and set debug
 level to appropriate level:
 
@@ -203,15 +214,18 @@ where debug levels are:
     4-9     Milter communication debugging (smfi_setdbg 1-6).
 
 ## SEE ALSO
+
     https://github.com/prehor/amavisd-milter
     https://www.ijs.si/software/amavisd/
     https://www.sendmail.org
 
 ## AUTHORS
+
 This manual page was written by Petr Rehor <<rx@rx.cz>> and is based on
 Jerzy Sakol <<jerzy.sakol@commgraf.pl>> initial work.
 
 ## BUGS
+
 Issues can be reported by using GitHub at:
 
     https://github.com/prehor/amavisd-milter/issues
