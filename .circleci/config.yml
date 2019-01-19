@@ -9,7 +9,10 @@ jobs:
           name: Install libmilter
           command: |
             sudo apt-get update
-            sudo apt-get install libmilter-dev
+            sudo apt-get install \
+              autoconf \
+              automake \
+              libmilter-dev
       - run:
           name: Configure
           command: |
