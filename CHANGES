@@ -1,5 +1,16 @@
 This is the CHANGELOG for amavisd-milter.
 
+20190119:
+	The Spamassassin's RDNS_NONE check tests if the rdns field in
+	the Received header is empty or "unknown".  Postfix sets
+	the {client_name} macro to "unknown" when the FcrDNS check
+	fails, but the hostname passed to xxfi_connect is set to
+	the IP address which means that RDNS_NONE is never triggered.
+	Instead, use {client_name} macro, and only if it is not available
+	use the hostname.
+
+	Signed-off-by: Florian Pritz <bluewind@xinu.at>
+
 20190116:
 	Removed obsoleted file amavisd-milter.spec.
 
