@@ -1,5 +1,15 @@
 This is the CHANGELOG for amavisd-milter.
 
+20190116:
+	Removed obsoleted file amavisd-milter.spec.
+
+20190106:
+	amavisd-milter moved to GitHub.
+
+20150525:
+	Properly eliminate UTF8 characters in nroff output for man2html
+	and README.
+
 20150524:
 	amavisd-milter-1.6.1:
 
