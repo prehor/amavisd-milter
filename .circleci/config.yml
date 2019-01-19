@@ -1,11 +1,8 @@
-version: 2.0
-executors:
-  buildpack:
-    docker:
-      - image: circleci/buildpack:stretch
+version: 2.1
 jobs:
   build:
-    executor: buildpack
+    docker:
+      - image: circleci/buildpack-deps:stretch
     steps:
       - checkout
       - run:
