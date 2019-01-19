@@ -8,8 +8,8 @@ jobs:
       - run:
           name: Install libmilter
           command: |
-            apt-get update
-            apt-get install libmilter-dev
+            sudo apt-get update
+            sudo apt-get install libmilter-dev
       - run:
           name: Configure
           command: |
