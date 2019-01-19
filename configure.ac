@@ -66,7 +66,7 @@ AC_CHECK_AF_INET6
 AC_CHECK_INET6_ADDRSTRLEN
 AC_CHECK_STRUCT_SOCKADDR_IN6
 
-AC_CONFIG_FILES([Makefile amavisd-milter/Makefile compat/Makefile amavisd-milter.spec])
+AC_CONFIG_FILES([Makefile amavisd-milter/Makefile compat/Makefile])
 AC_CONFIG_FILES([autoconf.sh], [chmod +x autoconf.sh])
 
 AC_LOCAL_STATE_DIR
