@@ -1,5 +1,13 @@
 This is the CHANGELOG for amavisd-milter.
 
+20190121:
+	The milter socket is created before amavisd-milter is daemonized.
+	This allows to return an error in case of impossibility to create
+	the milter socket and package maintainers can adjust milter socket
+	permissions immediatelly after the main process exits.
+
+	Thanks to: Matus Uhlar
+
 20190119:
 	The Spamassassin's RDNS_NONE check tests if the rdns field in
 	the Received header is empty or "unknown".  Postfix sets
