@@ -377,17 +377,6 @@ main(int argc, char *argv[])
 	}
     }
 
-    /* Run in the background */
-    if (daemonize) {
-	if (daemon(1, 1) != -1) {
-	    daemonized = 1;
-	} else {
-	    logmsg(LOG_ERR, "could not fork daemon process: %s",
-		strerror(errno));
-	    exit(EX_OSERR);
-	}
-    }
-
     /* Connect to milter socket */
 #ifdef HAVE_SMFI_SETBACKLOG
     if (mlfi_socket_backlog > 0) {
@@ -403,6 +392,17 @@ main(int argc, char *argv[])
         exit(EX_SOFTWARE);
     }
 #endif
+
+    /* Run in the background */
+    if (daemonize) {
+	if (daemon(1, 1) != -1) {
+	    daemonized = 1;
+	} else {
+	    logmsg(LOG_ERR, "could not fork daemon process: %s",
+		strerror(errno));
+	    exit(EX_OSERR);
+	}
+    }
 
     /* Greetings message */
     logmsg(LOG_WARNING, "starting %s %s on socket %s", progname, VERSION,
