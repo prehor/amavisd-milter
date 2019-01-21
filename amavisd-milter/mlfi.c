@@ -270,6 +270,7 @@ mlfi_cleanup(struct mlfiCtx *mlfi)
     free(mlfi->mlfi_hostname);
     free(mlfi->mlfi_client_addr);
     free(mlfi->mlfi_client_host);
+    free(mlfi->mlfi_client_name);
     free(mlfi->mlfi_helo);
     free(mlfi->mlfi_protocol);
     free(mlfi->mlfi_amabuf);
@@ -307,21 +308,27 @@ mlfi_setreply_tempfail(SMFICTX *ctx)
 ** mlfi_connect() is called once, at the start of each SMTP connection
 */
 sfsistat
-mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
+mlfi_connect(SMFICTX *ctx, char *client_host, _SOCK_ADDR * hostaddr)
 {
     struct	mlfiCtx *mlfi = NULL;
     const void *addr;
     const char *prefix;
-    const char *daemon_name;
     const char *client_name;
+    const char *daemon_name;
+    const char *hostname;
     int		len, plen;
 
-    logmsg(LOG_DEBUG, "%s: CONNECT", hostname);
+    /* Be sure we have client_host */
+    if (client_host == NULL || *client_host == '\0') {
+	client_host = "unknown";
+    }
+
+    logmsg(LOG_DEBUG, "%s: CONNECT", client_host);
 
     /* Allocate memory for private data */
     mlfi = malloc(sizeof(*mlfi));
     if (mlfi == NULL) {
-	logmsg(LOG_ERR, "%s: could not allocate private data", hostname);
+	logmsg(LOG_ERR, "%s: could not allocate private data", client_host);
 	mlfi_setreply_tempfail(ctx);
 	return SMFIS_TEMPFAIL;
     }
@@ -331,20 +338,23 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
     mlfi->mlfi_amasd = -1;
 
     /* Save connection informations */
-    if ((client_name = smfi_getsymval(ctx, "{client_name}")) != NULL) {
-	logmsg(LOG_INFO, "%s: Client name: %s", hostname, client_name);
-	if ((mlfi->mlfi_client_host = strdup(client_name)) == NULL) {
-	    logmsg(LOG_ERR, "%s: could not allocate memory", hostname);
-	    mlfi_setreply_tempfail(ctx);
-	    return SMFIS_TEMPFAIL;
-	}
+    if ((mlfi->mlfi_client_host = strdup(client_name)) == NULL) {
+	logmsg(LOG_ERR, "%s: could not allocate memory", client_host);
+	 mlfi_setreply_tempfail(ctx);
+	 return SMFIS_TEMPFAIL;
     }
-    if (hostname != NULL && *hostname != '\0' && mlfi->mlfi_client_host == NULL) {
-	if ((mlfi->mlfi_client_host = strdup(hostname)) == NULL) {
-	    logmsg(LOG_ERR, "%s: could not allocate memory", hostname);
-	    mlfi_setreply_tempfail(ctx);
-	    return SMFIS_TEMPFAIL;
-	}
+    client_name = smfi_getsymval(ctx, "{client_name}");
+    if (client_name == NULL || *client_name == '\0') {
+	client_name = client_host;
+    }
+    if (*client_name == '[') {
+	client_name = "unknown";
+    }
+    logqidmsg(mlfi, LOG_DEBUG, "client name: %s", client_name);
+    if ((mlfi->mlfi_client_name = strdup(client_name)) == NULL) {
+        logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
+        mlfi_setreply_tempfail(ctx);
+        return SMFIS_TEMPFAIL;
     }
     addr = NULL;
     if (hostaddr != NULL) {
@@ -365,7 +375,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
 #endif
 	default:
 	    logqidmsg(mlfi, LOG_WARNING, "unrecognized address family %d for "
-		"host %s", (int)hostaddr->sa_family, hostname);
+		"host %s", (int)hostaddr->sa_family, client_host);
 	    break;
 	}
     }
@@ -384,7 +394,7 @@ mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	    free(mlfi->mlfi_client_addr);
 	    mlfi->mlfi_client_addr = NULL;
 	    logqidmsg(mlfi, LOG_WARNING, "could not convert host address to "
-		"string for host %s", hostname);
+		"string for host %s", client_host);
 	} else {
 	    logqidmsg(mlfi, LOG_DEBUG, "host address: %s",
 		mlfi->mlfi_client_addr);
@@ -626,13 +636,13 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     l = snprintfcat(0, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
 	"Received: from %s", mlfi->mlfi_helo != NULL && *mlfi->mlfi_helo != '\0'
 	    ? mlfi->mlfi_helo : "unknown");
-    if ((mlfi->mlfi_client_host != NULL && *mlfi->mlfi_client_host != '\0')
+    if ((mlfi->mlfi_client_name != NULL && *mlfi->mlfi_client_name != '\0')
 	|| (mlfi->mlfi_client_addr != NULL && *mlfi->mlfi_client_addr != '\0'))
     {
 	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, " (");
-	if (mlfi->mlfi_client_host != NULL && *mlfi->mlfi_client_host != '\0') {
+	if (mlfi->mlfi_client_name != NULL && *mlfi->mlfi_client_name != '\0') {
 	    l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
-		"%s", mlfi->mlfi_client_host);
+		"%s", mlfi->mlfi_client_name);
 	}
 	l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, " ");
 	if (mlfi->mlfi_client_addr != NULL && *mlfi->mlfi_client_addr != '\0') {
