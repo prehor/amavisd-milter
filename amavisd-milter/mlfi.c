@@ -338,7 +338,7 @@ mlfi_connect(SMFICTX *ctx, char *client_host, _SOCK_ADDR * hostaddr)
     mlfi->mlfi_amasd = -1;
 
     /* Save connection informations */
-    if ((mlfi->mlfi_client_host = strdup(client_name)) == NULL) {
+    if ((mlfi->mlfi_client_host = strdup(client_host)) == NULL) {
 	logmsg(LOG_ERR, "%s: could not allocate memory", client_host);
 	 mlfi_setreply_tempfail(ctx);
 	 return SMFIS_TEMPFAIL;
