@@ -314,6 +314,7 @@ mlfi_connect(SMFICTX *ctx, char *client_host, _SOCK_ADDR * hostaddr)
     const void *addr;
     const char *prefix;
     const char *client_name;
+    const char *client_resolve;
     const char *daemon_name;
     const char *hostname;
     int		len, plen;
@@ -349,6 +350,10 @@ mlfi_connect(SMFICTX *ctx, char *client_host, _SOCK_ADDR * hostaddr)
     }
     if (*client_name == '[') {
 	client_name = "unknown";
+    }
+    client_resolve = smfi_getsymval(ctx, "{client_resolve}");
+    if (client_resolve != NULL && strcmp(client_resolve, "OK") != 0) {
+       client_name = "unknown";
     }
     logqidmsg(mlfi, LOG_DEBUG, "client name: %s", client_name);
     if ((mlfi->mlfi_client_name = strdup(client_name)) == NULL) {
