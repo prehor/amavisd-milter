@@ -260,6 +260,8 @@ Then (re)start amavisd daemon.
 .Ss Configuring sendmail
 To the sendmail.mc file add the following entries:
 .Bd -literal -offset indent
+define(`confMILTER_MACROS_CONNECT',
+	confMILTER_MACROS_CONNECT`, {client_resolve}')
 define(`confMILTER_MACROS_ENVFROM',
 	confMILTER_MACROS_ENVFROM`, r, b')
 INPUT_MAIL_FILTER(`amavisd-milter',
