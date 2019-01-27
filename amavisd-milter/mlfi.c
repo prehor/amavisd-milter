@@ -338,22 +338,33 @@ mlfi_connect(SMFICTX *ctx, char *client_host, _SOCK_ADDR * hostaddr)
     (void) memset(mlfi, '\0', sizeof(*mlfi));
     mlfi->mlfi_amasd = -1;
 
-    /* Save connection informations */
+    /* Save client hostname (Reverse DNS or IP addresss in square bracket) */
     if ((mlfi->mlfi_client_host = strdup(client_host)) == NULL) {
 	logmsg(LOG_ERR, "%s: could not allocate memory", client_host);
 	 mlfi_setreply_tempfail(ctx);
 	 return SMFIS_TEMPFAIL;
     }
+
+    /*
+     * Save client Forward-confirmed reverse DNS name (FCrDNS) or "unknown"
+     * for Spamassassin's RDNS_NONE check.  In the {client_name} macro,
+     * Sendmail sends a reverse DNS name or IP address in square brackets
+     * unless the client has a reverse DNS.  Postfix sends a FCrDNS or
+     * "unknown".
+     */
     client_name = smfi_getsymval(ctx, "{client_name}");
     if (client_name == NULL || *client_name == '\0') {
+	/* Use client_host if macro {client_name} is not set */
 	client_name = client_host;
     }
     if (*client_name == '[') {
+	/* Client hostname contains IP address in square brackets */
 	client_name = "unknown";
     }
     client_resolve = smfi_getsymval(ctx, "{client_resolve}");
     if (client_resolve != NULL && strcmp(client_resolve, "OK") != 0) {
-       client_name = "unknown";
+	/* If client_resolve is not "OK", the client_name is not FCrDNS */
+	client_name = "unknown";
     }
     logqidmsg(mlfi, LOG_DEBUG, "client name: %s", client_name);
     if ((mlfi->mlfi_client_name = strdup(client_name)) == NULL) {
@@ -361,6 +372,8 @@ mlfi_connect(SMFICTX *ctx, char *client_host, _SOCK_ADDR * hostaddr)
         mlfi_setreply_tempfail(ctx);
         return SMFIS_TEMPFAIL;
     }
+
+    /* Save client IP address */
     addr = NULL;
     if (hostaddr != NULL) {
 	switch(hostaddr->sa_family) {
@@ -405,6 +418,8 @@ mlfi_connect(SMFICTX *ctx, char *client_host, _SOCK_ADDR * hostaddr)
 		mlfi->mlfi_client_addr);
 	}
     }
+
+    /* Save daemon name */
     if ((daemon_name = smfi_getsymval(ctx, "{daemon_name}")) != NULL) {
 	logqidmsg(mlfi, LOG_INFO, "Daemon name: %s", daemon_name);
 	if ((mlfi->mlfi_daemon_name = strdup(daemon_name)) == NULL) {
@@ -425,7 +440,7 @@ mlfi_connect(SMFICTX *ctx, char *client_host, _SOCK_ADDR * hostaddr)
 	return SMFIS_TEMPFAIL;
     }
 
-    /* Save the private data */
+    /* Save private data */
     if (smfi_setpriv(ctx, mlfi) != MI_SUCCESS) {
 	logqidmsg(mlfi, LOG_ERR, "could not set milter context");
 	mlfi_setreply_tempfail(ctx);
