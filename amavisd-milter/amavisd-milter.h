@@ -101,7 +101,7 @@ extern int      max_conns;              /* max amavisd connections */
 extern int      max_wait;               /* max wait for connection */
 extern sem_t   *max_sem;                /* amavisd connections semaphore */
 extern const char *pid_file;            /* pid file name */
-extern const char *mlfi_socket;         /* sendmail milter socket */
+extern char    *mlfi_socket;            /* sendmail milter socket */
 #ifdef HAVE_SMFI_SETBACKLOG
 extern int      mlfi_socket_backlog;    /* milter socket backlog */
 #endif
