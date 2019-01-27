@@ -1,5 +1,20 @@
 This is the CHANGELOG for amavisd-milter.
 
+20190127:
+	Spamassassin's RDNS_NONE check requires in the synthesized Received:
+	header Forward-confirmed reverse DNS (FCrDNS) client name or "unknown"
+	if the FCrDNS is not available.
+
+	Sendmail sends the reverse DNS or IP address in square brackets both
+	in the client_host argument and the {client_name} macro. If the client
+	name is FCrDNS, the {client_reverse} macro is set to OK, otherwise to
+	FORGED, TEMP or FAIL.
+
+	Postfix sends a FCrDNS or "unknown" using the {client_name} macro.
+
+	Thanks to: Florian Pritz <bluewind@xinu.at>
+	Signed-off-by: Petr Řehoř <rx@rx.cz>
+
 20190121:
 	The milter socket is created before amavisd-milter is daemonized.
 	This allows to return an error in case of impossibility to create
@@ -7,18 +22,6 @@ This is the CHANGELOG for amavisd-milter.
 	permissions immediatelly after the main process exits.
 
 	Thanks to: Matus Uhlar
-
-20190119:
-	The Spamassassin's RDNS_NONE check tests if the rdns field in
-	the Received header is empty or "unknown".  Postfix sets
-	the {client_name} macro to "unknown" when the FcrDNS check
-	fails, but the hostname passed to xxfi_connect is set to
-	the IP address which means that RDNS_NONE is never triggered.
-	Instead, use {client_name} macro, and only if it is not available
-	use the hostname.
-
-	Signed-off-by: Florian Pritz <bluewind@xinu.at>
-	Modified-by: Petr Rehor <rx@rx.cz>
 
 20190116:
 	Removed obsoleted file amavisd-milter.spec.
