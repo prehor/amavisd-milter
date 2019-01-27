@@ -17,7 +17,6 @@ EXTRA_DIST= \
 	INSTALL \
 	LICENSE \
 	README \
-	TODO \
 	Makefile.am \
 	Makefile.in \
 	aclocal.m4 \
