@@ -55,7 +55,8 @@ struct mlfiCtx {
     char       *mlfi_daemon_name;	/* sendmail daemon name */
     char       *mlfi_hostname;		/* sendmail hostname */
     char       *mlfi_client_addr;	/* remote host address */
-    char       *mlfi_client_host;	/* remote host name */
+    char       *mlfi_client_host;	/* remote host name or address */
+    char       *mlfi_client_name;	/* remote host name */
     char       *mlfi_helo;		/* remote host helo */
     char       *mlfi_protocol;		/* communication protocol */
     char       *mlfi_qid;		/* queue id */

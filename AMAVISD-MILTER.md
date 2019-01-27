@@ -169,6 +169,7 @@ Then (re)start amavisd daemon.
 
 To the sendmail.mc file add the following entries:
 
+    define(`confMILTER_MACROS_CONNECT', confMILTER_MACROS_CONNECT`, {client_resolve}')
     define(`confMILTER_MACROS_ENVFROM', confMILTER_MACROS_ENVFROM`, r, b')
     INPUT_MAIL_FILTER(`amavisd-milter',
         `S=local:/var/amavis/amavisd-milter.sock,
