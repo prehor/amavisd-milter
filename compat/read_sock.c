@@ -37,12 +37,12 @@
 ssize_t
 read_sock(int sd, void *buf, size_t nbytes, long timeout)
 {
-    int		ret;
+    int         ret;
     char       *b = (char *) buf;
-    fd_set	rfds, efds;
-    size_t	n = 0;
-    ssize_t	m = 0;
-    struct	timeval tv;
+    fd_set      rfds, efds;
+    size_t      n = 0;
+    ssize_t     m = 0;
+    struct      timeval tv;
 
     /* Set timeout */
     tv.tv_sec = timeout;
@@ -50,57 +50,57 @@ read_sock(int sd, void *buf, size_t nbytes, long timeout)
 
     /* Check socket descriptor */
     if (sd >= (int) FD_SETSIZE) {
-	/* sd is larger than FD_SETSIZE */
-	errno = EBADF;
-	return -1;
+        /* sd is larger than FD_SETSIZE */
+        errno = EBADF;
+        return -1;
     }
 
     /* Read N bytes from socket */
     while (n < nbytes) {
-	FD_ZERO(&rfds);
-	FD_ZERO(&efds);
-	FD_SET((unsigned int)sd, &rfds);
-	FD_SET((unsigned int)sd, &efds);
+        FD_ZERO(&rfds);
+        FD_ZERO(&efds);
+        FD_SET((unsigned int)sd, &rfds);
+        FD_SET((unsigned int)sd, &efds);
 
-	/* Wait for socket */
-	ret = select(sd + 1, &rfds, NULL, &efds, &tv);
-	if (ret == -1) {
-	    if (errno == EINTR) {
-		/* A signal was delivered, continue */
-		continue;
-	    } else {
-		/* An error occured */
-		return -1;
-	    }
-	} else if (ret == 0) {
-	    /* Timeout */
-	    errno = ETIMEDOUT;
-	    return -1;
-	}
-	if (FD_ISSET(sd, &efds)) {
-	    /* Out-of-band data received on socket */
-	    errno = EIO;
-	    return -1;
-	}
+        /* Wait for socket */
+        ret = select(sd + 1, &rfds, NULL, &efds, &tv);
+        if (ret == -1) {
+            if (errno == EINTR) {
+                /* A signal was delivered, continue */
+                continue;
+            } else {
+                /* An error occured */
+                return -1;
+            }
+        } else if (ret == 0) {
+            /* Timeout */
+            errno = ETIMEDOUT;
+            return -1;
+        }
+        if (FD_ISSET(sd, &efds)) {
+            /* Out-of-band data received on socket */
+            errno = EIO;
+            return -1;
+        }
 
-	/* Read data from socket */
-	m = read(sd, b, nbytes - n);
-	if (m == -1) {
-	    if (errno == EINTR) {
-		/* A signal was delivered, continue */
-		continue;
-	    } else {
-		/* An error occured */
-		return -1;
-	    }
-	} else if (m == 0) {
-	    /* End of file */
-	    nbytes = n;
-	} else {
-	    /* Read data */
-	    n += m;
-	    b += m;
-	}
+        /* Read data from socket */
+        m = read(sd, b, nbytes - n);
+        if (m == -1) {
+            if (errno == EINTR) {
+                /* A signal was delivered, continue */
+                continue;
+            } else {
+                /* An error occured */
+                return -1;
+            }
+        } else if (m == 0) {
+            /* End of file */
+            nbytes = n;
+        } else {
+            /* Read data */
+            n += m;
+            b += m;
+        }
     }
 
     /* Return number of bytes */

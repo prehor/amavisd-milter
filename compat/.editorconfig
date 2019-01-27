@@ -1,0 +1,9 @@
+# Tab indentation
+[*.{h,c}]
+indent_size = 8
+indent_style = tab
+
+# 4 spaces indentation
+[{compat.h,read_sock.c,write_sock.c}]
+indent_size = 4
+indent_style = space

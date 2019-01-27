@@ -93,10 +93,10 @@ typedef unsigned char _Bool;
 #endif
 
 #if ! defined(MIN)
-# define MIN(a, b)	((a) < (b) ? (a) : (b))
+# define MIN(a, b)      ((a) < (b) ? (a) : (b))
 #endif
 #if ! defined(MAX)
-# define MAX(a, b)	((a) < (b) ? (b) : (a))
+# define MAX(a, b)      ((a) < (b) ? (b) : (a))
 #endif
 
 #if ! HAVE_DAEMON
@@ -131,11 +131,11 @@ extern char    *mkdtemp(char *);
 
 #if ! HAVE_STRLCPY
 /* String copy */
-extern size_t	strlcpy(char *, const char *, size_t);
+extern size_t   strlcpy(char *, const char *, size_t);
 #endif
 
 /* Secure socket handling */
-extern ssize_t	read_sock(int, void *, size_t, long);
-extern ssize_t	write_sock(int, void *, size_t, long);
+extern ssize_t  read_sock(int, void *, size_t, long);
+extern ssize_t  write_sock(int, void *, size_t, long);
 
 #endif /* _AMAVISD_COMPAT_H */
