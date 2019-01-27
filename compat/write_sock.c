@@ -37,12 +37,12 @@
 ssize_t
 write_sock(int sd, void *buf, size_t nbytes, long timeout)
 {
-    int		ret;
+    int         ret;
     char       *b = (char *) buf;
-    fd_set	wfds;
-    size_t	n = 0;
-    ssize_t	m = 0;
-    struct	timeval tv;
+    fd_set      wfds;
+    size_t      n = 0;
+    ssize_t     m = 0;
+    struct      timeval tv;
 
     /* Set timeout */
     tv.tv_sec = timeout;
@@ -50,47 +50,47 @@ write_sock(int sd, void *buf, size_t nbytes, long timeout)
 
     /* Check socket descriptor */
     if (sd >= (int) FD_SETSIZE) {
-	/* sd is larger than FD_SETSIZE */
-	errno = EBADF;
-	return -1;
+        /* sd is larger than FD_SETSIZE */
+        errno = EBADF;
+        return -1;
     }
 
     /* Write N bytes to socket */
     while (n < nbytes) {
-	FD_ZERO(&wfds);
-	FD_SET((unsigned int)sd, &wfds);
+        FD_ZERO(&wfds);
+        FD_SET((unsigned int)sd, &wfds);
 
-	/* Wait for socket */
-	ret = select(sd + 1, NULL, &wfds, NULL, &tv);
-	if (ret == -1) {
-	    if (errno == EINTR) {
-		/* A signal was delivered, continue */
-		continue;
-	    } else {
-		/* An error occured */
-		return -1;
-	    }
-	} else if (ret == 0) {
-	    /* Timeout */
-	    errno = ETIMEDOUT;
-	    return -1;
-	}
+        /* Wait for socket */
+        ret = select(sd + 1, NULL, &wfds, NULL, &tv);
+        if (ret == -1) {
+            if (errno == EINTR) {
+                /* A signal was delivered, continue */
+                continue;
+            } else {
+                /* An error occured */
+                return -1;
+            }
+        } else if (ret == 0) {
+            /* Timeout */
+            errno = ETIMEDOUT;
+            return -1;
+        }
 
-	/* Write data to socket */
-	m = write(sd, b, nbytes - n);
-	if (m == -1) {
-	    if (errno == EINTR) {
-		/* A signal was delivered, continue */
-		continue;
-	    } else {
-		/* An error occured */
-		return -1;
-	    }
-	} else {
-	    /* Write data */
-	    n += m;
-	    b += m;
-	}
+        /* Write data to socket */
+        m = write(sd, b, nbytes - n);
+        if (m == -1) {
+            if (errno == EINTR) {
+                /* A signal was delivered, continue */
+                continue;
+            } else {
+                /* An error occured */
+                return -1;
+            }
+        } else {
+            /* Write data */
+            n += m;
+            b += m;
+        }
     }
 
     /* Return number of bytes */

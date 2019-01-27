@@ -37,23 +37,23 @@
 void
 logmsg(int priority, const char *fmt, ...)
 {
-    char	buf[MAXLOGBUF];
-    va_list	ap;
+    char        buf[MAXLOGBUF];
+    va_list     ap;
 
     if (priority <= debug_level || priority <= LOG_WARNING) {
 
-	/* Format message */
-	va_start(ap, fmt);
-	(void) vsnprintf(buf, sizeof(buf), fmt, ap);
-	va_end(ap);
+        /* Format message */
+        va_start(ap, fmt);
+        (void) vsnprintf(buf, sizeof(buf), fmt, ap);
+        va_end(ap);
 
-	/* Write message to syslog */
-	syslog(priority, "%s", buf);
+        /* Write message to syslog */
+        syslog(priority, "%s", buf);
 
-	/* Print message to terminal */
-	if (!daemonized) {
-	    (void) fprintf(stdout, "%s\n", buf);
-	}
+        /* Print message to terminal */
+        if (!daemonized) {
+            (void) fprintf(stdout, "%s\n", buf);
+        }
     }
 }
 
@@ -64,9 +64,9 @@ logmsg(int priority, const char *fmt, ...)
 void
 logqidmsg(struct mlfiCtx *mlfi, int priority, const char *fmt, ...)
 {
-    char	buf[MAXLOGBUF];
+    char        buf[MAXLOGBUF];
     const char *p;
-    va_list	ap;
+    va_list     ap;
 
     /* Format message */
     va_start(ap, fmt);
@@ -75,17 +75,17 @@ logqidmsg(struct mlfiCtx *mlfi, int priority, const char *fmt, ...)
 
     /* Print log message */
     if (mlfi != NULL) {
-	if (mlfi->mlfi_qid != NULL) {
-	    p = mlfi->mlfi_qid;
-	} else if (mlfi->mlfi_prev_qid != NULL) {
-	    p = mlfi->mlfi_prev_qid;
-	} else if (mlfi->mlfi_client_host != NULL) {
-	    p = mlfi->mlfi_client_host;
-	} else {
-	    p = "UNKNOWN";
-	}
+        if (mlfi->mlfi_qid != NULL) {
+            p = mlfi->mlfi_qid;
+        } else if (mlfi->mlfi_prev_qid != NULL) {
+            p = mlfi->mlfi_prev_qid;
+        } else if (mlfi->mlfi_client_host != NULL) {
+            p = mlfi->mlfi_client_host;
+        } else {
+            p = "UNKNOWN";
+        }
     } else {
-	p = "NOQUEUE";
+        p = "NOQUEUE";
     }
     logmsg(priority, "%s: %s", p, buf);
 }

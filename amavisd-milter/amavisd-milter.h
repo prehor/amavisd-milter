@@ -32,103 +32,103 @@
 #include "compat.h"
 
 /* AM.PDP protocol version */
-#define AMPDP_VERSION	2
+#define AMPDP_VERSION   2
 
 /* Maximum message buffers length */
-#define MAXLOGBUF	1024	/* syslog message buffer */
-#define MAXAMABUF	65536	/* amavisd communication buffer */
-#define AMABUFCHUNK	2048	/* amavisd buffer reallocation step */
+#define MAXLOGBUF       1024    /* syslog message buffer */
+#define MAXAMABUF       65536   /* amavisd communication buffer */
+#define AMABUFCHUNK     2048    /* amavisd buffer reallocation step */
 
 /* Timeouts */
-#define SMFI_PROGRESS_TRIGGER	60	/* smfi_progress trigger */
+#define SMFI_PROGRESS_TRIGGER   60      /* smfi_progress trigger */
 
 struct mlfiCtx;
 
 /* Address list */
 struct mlfiAddress {
-    struct	mlfiAddress *q_next;	/* next recipient */
-    char	q_paddr[1];		/* recipient */
+    struct      mlfiAddress *q_next;    /* next recipient */
+    char        q_paddr[1];             /* recipient */
 };
 
 /* Milter private data structure */
 struct mlfiCtx {
-    char       *mlfi_daemon_name;	/* sendmail daemon name */
-    char       *mlfi_hostname;		/* sendmail hostname */
-    char       *mlfi_client_addr;	/* remote host address */
-    char       *mlfi_client_host;	/* remote host name or address */
-    char       *mlfi_client_name;	/* remote host name */
-    char       *mlfi_helo;		/* remote host helo */
-    char       *mlfi_protocol;		/* communication protocol */
-    char       *mlfi_qid;		/* queue id */
-    char       *mlfi_prev_qid;		/* previous queue id */
-    char       *mlfi_from;		/* mail sender */
-    struct	mlfiAddress *mlfi_rcpt;	/* mail recipients */
-    char	mlfi_wrkdir[MAXPATHLEN];/* working directory */
-    char	mlfi_fname[MAXPATHLEN]; /* mail file name */
-    FILE       *mlfi_fp;		/* mail file handler */
-    int		mlfi_max_sem_locked;	/* connections semaphore locked */
-    char       *mlfi_amabuf;		/* amavisd communication buffer */
-    size_t	mlfi_amabuf_length;	/* amavisd buffer length */
-    int		mlfi_amasd;		/* amavisd socket descriptor */
-    char       *mlfi_policy_bank;	/* policy bank names */
-    int		mlfi_cr_flag;		/* CR at the end of the body chunk */
+    char       *mlfi_daemon_name;       /* sendmail daemon name */
+    char       *mlfi_hostname;          /* sendmail hostname */
+    char       *mlfi_client_addr;       /* remote host address */
+    char       *mlfi_client_host;       /* remote host name or address */
+    char       *mlfi_client_name;       /* remote host name */
+    char       *mlfi_helo;              /* remote host helo */
+    char       *mlfi_protocol;          /* communication protocol */
+    char       *mlfi_qid;               /* queue id */
+    char       *mlfi_prev_qid;          /* previous queue id */
+    char       *mlfi_from;              /* mail sender */
+    struct      mlfiAddress *mlfi_rcpt; /* mail recipients */
+    char        mlfi_wrkdir[MAXPATHLEN];/* working directory */
+    char        mlfi_fname[MAXPATHLEN]; /* mail file name */
+    FILE       *mlfi_fp;                /* mail file handler */
+    int         mlfi_max_sem_locked;    /* connections semaphore locked */
+    char       *mlfi_amabuf;            /* amavisd communication buffer */
+    size_t      mlfi_amabuf_length;     /* amavisd buffer length */
+    int         mlfi_amasd;             /* amavisd socket descriptor */
+    char       *mlfi_policy_bank;       /* policy bank names */
+    int         mlfi_cr_flag;           /* CR at the end of the body chunk */
 };
 
 /* Get private data from libmilter */
-#define		MLFICTX(ctx) ((struct mlfiCtx *)smfi_getpriv(ctx))
+#define         MLFICTX(ctx) ((struct mlfiCtx *)smfi_getpriv(ctx))
 
 /* Milter description */
-extern struct	smfiDesc smfilter;
+extern struct   smfiDesc smfilter;
 
 /* Milter functions */
-extern sfsistat	mlfi_connect(SMFICTX *, char *, _SOCK_ADDR *);
-extern sfsistat	mlfi_helo(SMFICTX *, char *);
-extern sfsistat	mlfi_envfrom(SMFICTX *, char **);
-extern sfsistat	mlfi_envrcpt(SMFICTX *, char **);
-extern sfsistat	mlfi_header(SMFICTX *, char *, char *);
-extern sfsistat	mlfi_eoh(SMFICTX *);
-extern sfsistat	mlfi_body(SMFICTX *, unsigned char *, size_t);
-extern sfsistat	mlfi_eom(SMFICTX *);
-extern sfsistat	mlfi_close(SMFICTX *);
-extern sfsistat	mlfi_abort(SMFICTX *);
+extern sfsistat mlfi_connect(SMFICTX *, char *, _SOCK_ADDR *);
+extern sfsistat mlfi_helo(SMFICTX *, char *);
+extern sfsistat mlfi_envfrom(SMFICTX *, char **);
+extern sfsistat mlfi_envrcpt(SMFICTX *, char **);
+extern sfsistat mlfi_header(SMFICTX *, char *, char *);
+extern sfsistat mlfi_eoh(SMFICTX *);
+extern sfsistat mlfi_body(SMFICTX *, unsigned char *, size_t);
+extern sfsistat mlfi_eom(SMFICTX *);
+extern sfsistat mlfi_close(SMFICTX *);
+extern sfsistat mlfi_abort(SMFICTX *);
 
 /* Global variables */
-extern int	policybank_from_daemon_name; /* Select Policybank from Miltermacro daemon_name */
-extern int	daemonize;		/* run as daemon */
-extern int	daemonized;		/* is daemon */
-extern int	debug_level;		/* max debug level */
-extern int	max_conns;		/* max amavisd connections */
-extern int	max_wait;		/* max wait for connection */
-extern sem_t   *max_sem;		/* amavisd connections semaphore */
-extern const char *pid_file;		/* pid file name */
-extern const char *mlfi_socket;		/* sendmail milter socket */
+extern int      policybank_from_daemon_name; /* Select Policybank from Miltermacro daemon_name */
+extern int      daemonize;              /* run as daemon */
+extern int      daemonized;             /* is daemon */
+extern int      debug_level;            /* max debug level */
+extern int      max_conns;              /* max amavisd connections */
+extern int      max_wait;               /* max wait for connection */
+extern sem_t   *max_sem;                /* amavisd connections semaphore */
+extern const char *pid_file;            /* pid file name */
+extern const char *mlfi_socket;         /* sendmail milter socket */
 #ifdef HAVE_SMFI_SETBACKLOG
-extern int	mlfi_socket_backlog;	/* milter socket backlog */
+extern int      mlfi_socket_backlog;    /* milter socket backlog */
 #endif
-extern long	mlfi_timeout;		/* connection timeout */
-extern const char *amavisd_socket;	/* amavisd socket */
-extern long	amavisd_timeout;	/* connection timeout */
-extern int	ignore_amavisd_error;	/* pass through when amavisd failed */
-extern const char *working_dir;		/* working ditectory name */
-extern const char *delivery_care_of;	/* delivery mechanism */
+extern long     mlfi_timeout;           /* connection timeout */
+extern const char *amavisd_socket;      /* amavisd socket */
+extern long     amavisd_timeout;        /* connection timeout */
+extern int      ignore_amavisd_error;   /* pass through when amavisd failed */
+extern const char *working_dir;         /* working ditectory name */
+extern const char *delivery_care_of;    /* delivery mechanism */
 
 /* Amavisd communication */
-extern int	amavisd_connect(struct mlfiCtx *, struct sockaddr_un *,
-		    time_t timeout);
-extern int	amavisd_request(struct mlfiCtx *, const char *, const char *);
-extern int	amavisd_response(struct mlfiCtx *);
-extern void	amavisd_close(struct mlfiCtx *);
+extern int      amavisd_connect(struct mlfiCtx *, struct sockaddr_un *,
+                    time_t timeout);
+extern int      amavisd_request(struct mlfiCtx *, const char *, const char *);
+extern int      amavisd_response(struct mlfiCtx *);
+extern void     amavisd_close(struct mlfiCtx *);
 
 /* errno value if amavisd_connect() timed out. */
 #ifdef HAVE_SEM_TIMEDWAIT
-# define AMAVISD_CONNECT_TIMEDOUT_ERRNO	ETIMEDOUT
+# define AMAVISD_CONNECT_TIMEDOUT_ERRNO ETIMEDOUT
 #else
-# define AMAVISD_CONNECT_TIMEDOUT_ERRNO	EAGAIN
+# define AMAVISD_CONNECT_TIMEDOUT_ERRNO EAGAIN
 #endif
 
 /* Log message */
-extern void	logmsg(int, const char *, ...);
-extern void	logqidmsg(struct mlfiCtx *, int, const char *, ...);
+extern void     logmsg(int, const char *, ...);
+extern void     logqidmsg(struct mlfiCtx *, int, const char *, ...);
 
 /* Macros */
 

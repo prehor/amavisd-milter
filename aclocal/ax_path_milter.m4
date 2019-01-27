@@ -240,7 +240,7 @@ x$ac_milter_found_version" | sort | sed '1q' | sed "s,x${ac_milter_minimum_versi
       if test -r "${ac_milter_tmp}/include/libmilter/mfapi.h" && \
          test "$ac_milter_version_ok" = "yes" ; then
         # The file mfapi.h exists so we will use this as SENDMAIL_BASE_DIR.
-	SENDMAIL_BASE_DIR="$ac_milter_tmp"
+        SENDMAIL_BASE_DIR="$ac_milter_tmp"
         AC_MSG_RESULT([$SENDMAIL_BASE_DIR])
       else
         AC_MSG_RESULT([no])
