@@ -287,9 +287,9 @@ mlfi_cleanup(struct mlfiCtx *mlfi)
 static void
 mlfi_setreply_tempfail(SMFICTX *ctx)
 {
-    const char *rcode = "451";
-    const char *xcode = "4.6.0";
-    const char *reason = "Content scanner malfunction";
+    char *rcode = "451";
+    char *xcode = "4.6.0";
+    char *reason = "Content scanner malfunction";
 
     struct      mlfiCtx *mlfi = MLFICTX(ctx);
 

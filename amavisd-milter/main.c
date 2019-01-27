@@ -44,7 +44,7 @@ int             max_wait = 5 * 60;
 sem_t           max_sem_t;
 sem_t          *max_sem = NULL;
 const char     *pid_file = LOCAL_STATE_DIR "/" PACKAGE ".pid";
-const char     *mlfi_socket = LOCAL_STATE_DIR "/" PACKAGE ".sock";
+char           *mlfi_socket = LOCAL_STATE_DIR "/" PACKAGE ".sock";
 #ifdef HAVE_SMFI_SETBACKLOG
 int             mlfi_socket_backlog = 0;
 #endif
