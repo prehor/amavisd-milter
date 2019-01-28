@@ -44,7 +44,7 @@ see the [tags on this repository](/../../tags).
 * [Petr Řehoř](https://github.com/prehor) - Initial work.
 
 See also the list of
-[contributors](https://github.com/sicz/docker-baseimage/contributors)
+[contributors](https://github.com/prehor/amavisd-milter/contributors)
 who participated in this project.
 
 For contributors up to amavisd-milter-1.6.1 see [CHANGELOG](CHANGES).
