@@ -25,17 +25,6 @@ EXTRA_DIST= \
 	configure \
 	configure.ac
 
-../website/amavisd-milter.html: amavisd-milter/amavisd-milter.8
-	env LC_ALL=C nroff -c -mdoc amavisd-milter/amavisd-milter.8 | \
-	sed -e '1s/.*//' -e '$$s/.*//' | \
-	man2html -topm 0 -botm 0 -title "amavisd-milter(8) manual page"| \
-	sed -e 's;\(http:[^    ]*\);<a href="\1">\1</a>;' \
-	    -e 's;<a href="<a href=".*</a>";<a href=";' \
-	    -e 's;</a></a>;</a>;' \
-	> ../website/amavisd-milter.html
-
-website: ../website/amavisd-milter.html
-
 README: amavisd-milter/amavisd-milter.8
 	env LC_ALL=C nroff -c -mdoc amavisd-milter/amavisd-milter.8 | col -b | \
 	sed -e '1s/.*/This is the README for the amavisd-milter(8)./' \
