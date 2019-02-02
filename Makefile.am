@@ -13,6 +13,7 @@ AUTOMAKE_OPTIONS= \
 
 # Distribution files
 EXTRA_DIST= \
+	.editorconfig \
 	CHANGES \
 	INSTALL \
 	LICENSE \
