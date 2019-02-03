@@ -6,13 +6,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install libmilter
+          name: Install build prerequisities
           command: |
             sudo apt-get update
             sudo apt-get install \
               autoconf \
               automake \
-              libmilter-dev
+              libmilter-dev \
+              pandoc
       - run:
           name: Configure
           command: |
