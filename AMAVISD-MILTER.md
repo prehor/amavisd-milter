@@ -164,6 +164,16 @@ In the **amavisd.conf** file set protocol and amavis socket to:
 
 Then (re)start the amavisd daemon.
 
+### Configuring Postfix
+
+Add the following entries to Postfix **main.cf***:
+
+    smtpd_milters = local:<AMAVISD_MILTER.SOCK>
+    milter_connect_macros = j {client_name} {daemon_name} v
+    milter_protocol = 6
+
+Then (re)start the Postfix daemon.
+
 ### Configuring sendmail
 
 Add the following entries to file **sendmail.mc**:
@@ -173,7 +183,7 @@ Add the following entries to file **sendmail.mc**:
     define(`confMILTER_MACROS_ENVFROM',
       confMILTER_MACROS_ENVFROM`, r, b')
     INPUT_MAIL_FILTER(`amavisd-milter',
-      `S=local:/var/amavis/amavisd-milter.sock, F=T, T=S:10m;R:10m;E:10m')
+      `S=local:<AMAVISD_MILTER.SOCK>, F=T, T=S:10m;R:10m;E:10m')
 
 Then rebuild **sendmail.cf** file, install it and (re)start the sendmail daemon.
 
