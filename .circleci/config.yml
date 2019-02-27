@@ -50,7 +50,7 @@ jobs:
               echo "ERROR: Git tag ${CICRLE_TAG} does not correspond with file name $(cd /tmp/workspace; ls amavisd-milter-*)"
               exit 1
             fi
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} -draft amavisd-milter-*.tar.gz
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} /tmp/workspace/amavisd-milter-*.tar.gz
 
 workflows:
   version: 2
