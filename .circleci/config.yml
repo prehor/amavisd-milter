@@ -56,15 +56,20 @@ workflows:
   version: 2
   main:
     jobs:
-      - build
+      - build:
+          filters:
+            # Required since `release` has tag filters AND requires `build`
+            # https://circleci.com/docs/2.0/workflows/#git-tag-job-execution
+            tags:
+              only: /.*/
       - release:
           requires:
             - build
           filters:
             branches:
-              # Only master
+              # Release only from the master branch
               ignore: /.*/
             tags:
-              # Only SemVer tags
+              # Release only if it is a SemVer tag
               # https://github.com/semver/semver/issues/232#issuecomment-431199333
               only: /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:((0|[1-9]\d*|\d*[A-Z-a-z-][\dA-Za-z-]*))(\.(0|[1-9]\d*|\d*[A-Za-z-][\dA-Za-z-]*))*))?(?:\+(?:[\dA-Za-z-]+(\.[\dA-Za-z-]*)*))?$/
