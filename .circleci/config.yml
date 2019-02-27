@@ -1,11 +1,12 @@
 version: 2.1
+
 jobs:
   build:
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
       - checkout
-      - run:
+      - deploy:
           name: Install build prerequisities
           command: |
             sudo apt-get update
@@ -14,12 +15,56 @@ jobs:
               automake \
               libmilter-dev \
               pandoc
-      - run:
+      - deploy:
           name: Configure
           command: |
+            export AMAVISD_MILTER_VERSION="${CIRCLE_TAG}"
             sh autoconf.sh.in
             ./configure
-      - run:
+      - deploy:
           name: Build
           command: |
             make all
+      - deploy:
+          name: Tarball
+          command: |
+            make dist
+      - persist_to_workspace:
+          root: "."
+          paths:
+            - "amavisd-milter-*.tar.gz"
+  release:
+    docker:
+      - image: cibuilds/github:0.12
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Load from workspace
+          command: |
+            cp -rp /tmp/workspace/. .
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            if [ ! -f /tmp/workspace/amavisd-milter-${CIRCLE_TAG}.tar.gz ]; then
+              echo "ERROR: Git tag ${CICRLE_TAG} does not correspond with file name $(cd /tmp/workspace; ls amavisd-milter-*)"
+              exit 1
+            fi
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} -draft amavisd-milter-*.tar.gz
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build
+      - release:
+          requires:
+            - build
+          filters:
+            branches:
+              # Only master
+              ignore: /.*/
+            tags:
+              # Only SemVer tags
+              # https://github.com/semver/semver/issues/232#issuecomment-431199333
+              only: /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:((0|[1-9]\d*|\d*[A-Z-a-z-][\dA-Za-z-]*))(\.(0|[1-9]\d*|\d*[A-Za-z-][\dA-Za-z-]*))*))?(?:\+(?:[\dA-Za-z-]+(\.[\dA-Za-z-]*)*))?$/
