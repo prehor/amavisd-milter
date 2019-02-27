@@ -1,4 +1,5 @@
-AC_INIT(amavisd-milter, 1.6.1)
+AC_INIT([amavisd-milter],
+  m4_esyscmd([[ -n "${AMAVISD_MILTER_VERSION}" ] && echo -n "${AMAVISD_MILTER_VERSION}" || echo -n "dev-$(TZ=UTC date +%Y%m%d-%H%M%S)"]))
 AC_PREREQ(2.62)
 
 AC_CONFIG_SRCDIR(aclocal/acinclude.m4)
