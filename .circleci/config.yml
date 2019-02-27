@@ -40,10 +40,6 @@ jobs:
       - attach_workspace:
           at: /tmp/workspace
       - run:
-          name: Load from workspace
-          command: |
-            cp -rp /tmp/workspace/. .
-      - run:
           name: "Publish Release on GitHub"
           command: |
             if [ ! -f /tmp/workspace/amavisd-milter-${CIRCLE_TAG}.tar.gz ]; then
