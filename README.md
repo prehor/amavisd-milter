@@ -2,7 +2,7 @@
 
 [![CircleCI Status Badge](https://circleci.com/gh/prehor/amavisd-milter.svg?style=shield&circle-token=e3c02b685cb35b8a4428e988d7874790a9409fe9)](https://circleci.com/gh/prehor/amavisd-milter)
 
-amavisd-milter is a milter interface for [amavis](https://www.amavis.org).
+amavisd-milter is a milter interface for the [amavis](https://www.amavis.org) spam filter engine.
 
 ## Installing
 
