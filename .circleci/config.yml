@@ -46,7 +46,17 @@ jobs:
               echo "ERROR: Release file amavisd-milter-${CIRCLE_TAG}.tar.gz does not exists"
               exit 1
             fi
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} /tmp/workspace/amavisd-milter-${CIRCLE_TAG}.tar.gz
+            ghr \
+              -t ${GITHUB_TOKEN} \
+              -u ${CIRCLE_PROJECT_USERNAME} \
+              -r ${CIRCLE_PROJECT_REPONAME} \
+              -c ${CIRCLE_SHA1} \
+              -n amavisd-milter-${CIRCLE_TAG}
+              -delete \
+              -draft \
+              -prerelease \
+              ${CIRCLE_TAG} \
+              /tmp/workspace/amavisd-milter-${CIRCLE_TAG}.tar.gz
 
 workflows:
   version: 2
