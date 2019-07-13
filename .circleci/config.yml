@@ -51,7 +51,7 @@ jobs:
               -u ${CIRCLE_PROJECT_USERNAME} \
               -r ${CIRCLE_PROJECT_REPONAME} \
               -c ${CIRCLE_SHA1} \
-              -n amavisd-milter-${CIRCLE_TAG}
+              -n amavisd-milter-${CIRCLE_TAG} \
               -delete \
               -draft \
               -prerelease \
