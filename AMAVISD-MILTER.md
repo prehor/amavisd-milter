@@ -51,11 +51,11 @@ The options are as follows:
 : Set AM.PDP request attribute *delivery_care_of* to *client* (default) or
   *server*.
 
-: When the *client* method is used, then amavisd-milter is responsible for
+  When the *client* method is used, then amavisd-milter is responsible for
   forwarding the message to the recipients. This method does not allow
   personalized header or body modification.
 
-: When the *server* method is used, then amavis is responsible for forwarding
+  When the *server* method is used, then amavis is responsible for forwarding
   the message to the recipients and may personalize the headers and the body
   of the messages. *$forward_method* variable in **amavisd.conf** must point to
   a place willing to accept the message without further checking in amavis.
@@ -78,7 +78,7 @@ The options are as follows:
   message on sending MTA. **Sendmail** uses default value 1 hour, **postfix**
   10 minutes and **qmail** 20 minutes. Recommended value is less than 10 minutes.
 
-: If you use other milters (especially time-consuming), the timeout
+  If you use other milters (especially time-consuming), the timeout
   must be sufficient to process message in all milters.
 
 **-p** *pidfile*
@@ -107,7 +107,7 @@ The options are as follows:
   over this socket is *AM.PDP* (AMavis Policy Delegation Protocol). It must have
   the same value as the *$unix_socketname* variable in **amavisd.conf**.
 
-: The *socket* must be in format *proto:address*:
+  The *socket* must be in format *proto:address*:
 
 >  * *{unix|local}:/path/to/file* - A named pipe.
 >  * *inet:port@{hostname|ip-address}* - An IPV4 socket.
@@ -119,7 +119,7 @@ The options are as follows:
   **sendmail.mc** and must be greater than or equal to the amavis connection
   timeout.
 
-: If you use other milters (especially time-consuming), the timeout
+  If you use other milters (especially time-consuming), the timeout
   must be sufficient to process message in all milters.
 
 **-T** *timeout*
