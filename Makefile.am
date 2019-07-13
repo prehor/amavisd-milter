@@ -14,6 +14,7 @@ AUTOMAKE_OPTIONS= \
 # Distribution files
 EXTRA_DIST= \
 	.editorconfig \
+	AMAVISD-MILTER.md \
 	CHANGES \
 	INSTALL \
 	LICENSE \
