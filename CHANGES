@@ -1,5 +1,20 @@
 This is the CHANGELOG for amavisd-milter.
 
+20190227:
+        amavisd-milter-1.7.0:
+
+        amavisd-milter has been moved from SourceForge to to GitHub.
+
+        New features:
+        - Fork after initializing milter socket.
+        - Use client_name if available instead of hostname passed to xxfi_connect.
+        - Generate amamvisd-milter.8 from AMAVISD-MILTER.md.
+
+        Bug and compatibility fixies:
+        - Fixed compiler warnings.
+        - Converted indentation to spaces only.
+        - Removed obsoleted file amavisd-milter.spec.
+
 20190203:
         Generate amamvisd-milter.8 from AMAVISD-MILTER.md.
 
