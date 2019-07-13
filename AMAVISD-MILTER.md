@@ -96,7 +96,7 @@ The options are as follows:
   over this socket is *MILTER* (Mail FILTER). It must have the same vale as the
   *INPUT_MAIL_FILTER* macro in **sendmail.mc**.
 
-: The *socket* must be in format *proto:address*:
+  The *socket* must be in format *proto:address*:
 
 >  * *{unix|local}:/path/to/file* - A named pipe.
 >  * *inet:port@{hostname|ip-address}* - An IPV4 socket.
