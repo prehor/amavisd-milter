@@ -710,9 +710,7 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
             "\t%s\n", date);
     }
     l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
-        "\t(envelope-from %s)\n",
-        mlfi->mlfi_from != NULL && *mlfi->mlfi_from != '\0'
-            ? mlfi->mlfi_from : "<>");
+        "\t(envelope-from %s)\n", mlfi->mlfi_from);
     logqidmsg(mlfi, LOG_DEBUG, "ADDHDR: %s", mlfi->mlfi_amabuf);
     (void) fputs(mlfi->mlfi_amabuf, mlfi->mlfi_fp);
     if (ferror(mlfi->mlfi_fp)) {
