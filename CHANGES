@@ -1,5 +1,11 @@
 This is the CHANGELOG for amavisd-milter.
 
+20200906:
+        amavisd-milter-1.7.1:
+
+        Bug and compatibility fixies:
+        - An empty sender must always be enclosed in angle brackets.
+
 20190227:
         amavisd-milter-1.7.0:
 
