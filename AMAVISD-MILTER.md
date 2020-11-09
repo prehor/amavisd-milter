@@ -62,7 +62,7 @@ The options are as follows:
 
 **-f**
 : Run amavisd-milter in the foreground (i.e. do not daemonize).
-  Print debuging messages to the terminal.
+  Print debugging messages to the terminal.
 
 **-h**
 : Print the help page and exit.
@@ -136,7 +136,7 @@ The options are as follows:
 ## POLICY BANKS
 
 If the option **-B** is enabled, amavisd-milter uses the value of the milter
-macro *{daemon_name}* as the name of the amavis policy bank. Usualy, this milter
+macro *{daemon_name}* as the name of the amavis policy bank. Usually, this milter
 macro is set to name of the MTA.
 
 When remote client is authenticated, amavisd-milter uses authentication
