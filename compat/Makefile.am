@@ -1,5 +1,6 @@
 # Distribution files
 EXTRA_DIST= \
+	.editorconfig \
 	Makefile.am \
 	Makefile.in
 

@@ -510,6 +510,7 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     char        buf[64];
     const char *auth_type, *auth_authen, *auth_ssf;
     const char *date, *qid, *wrkdir;
+    const char *from;
     const char *protocol = NULL;
     const char *daemon_name;
     size_t      l;
@@ -549,15 +550,20 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
         }
     }
 
-    logqidmsg(mlfi, LOG_DEBUG, "MAIL FROM: %s", *envfrom);
+    /* An empty sender must always be enclosed in angle brackets */
+    if (*envfrom != NULL && **envfrom != '\0') {
+        from = *envfrom;
+    } else {
+        from = "<>";
+    }
+
+    logqidmsg(mlfi, LOG_DEBUG, "MAIL FROM: %s", from);
 
     /* Save from mail address */
-    if (*envfrom != NULL && **envfrom != '\0') {
-        if ((mlfi->mlfi_from = strdup(*envfrom)) == NULL) {
-            logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
-            mlfi_setreply_tempfail(ctx);
-            return SMFIS_TEMPFAIL;
-        }
+    if ((mlfi->mlfi_from = strdup(from)) == NULL) {
+        logqidmsg(mlfi, LOG_ERR, "could not allocate memory");
+        mlfi_setreply_tempfail(ctx);
+        return SMFIS_TEMPFAIL;
     }
 
     /* Create working directory */
@@ -704,9 +710,7 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
             "\t%s\n", date);
     }
     l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
-        "\t(envelope-from %s)\n",
-        mlfi->mlfi_from != NULL && *mlfi->mlfi_from != '\0'
-            ? mlfi->mlfi_from : "<>");
+        "\t(envelope-from %s)\n", mlfi->mlfi_from);
     logqidmsg(mlfi, LOG_DEBUG, "ADDHDR: %s", mlfi->mlfi_amabuf);
     (void) fputs(mlfi->mlfi_amabuf, mlfi->mlfi_fp);
     if (ferror(mlfi->mlfi_fp)) {

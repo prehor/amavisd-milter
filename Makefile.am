@@ -13,10 +13,11 @@ AUTOMAKE_OPTIONS= \
 
 # Distribution files
 EXTRA_DIST= \
+	.editorconfig \
+	AMAVISD-MILTER.md \
 	CHANGES \
 	INSTALL \
 	LICENSE \
-	README \
 	Makefile.am \
 	Makefile.in \
 	aclocal.m4 \
@@ -25,14 +26,9 @@ EXTRA_DIST= \
 	configure \
 	configure.ac
 
-README: amavisd-milter/amavisd-milter.8
-	env LC_ALL=C nroff -c -mdoc amavisd-milter/amavisd-milter.8 | col -b | \
-	sed -e '1s/.*/This is the README for the amavisd-milter(8)./' \
-	    -e '$$s/.*//' > README
-
-dist-hook: README
-	@find $(distdir) -type d -name CVS -print | xargs rm -rf
-	@find $(distdir) -type f -name .cvsignore -print | xargs rm -f
+dist-hook:
+	cd amavisd-milter; \
+	$(MAKE) amavisd-milter.8
 
 maintainer-clean-local:
 	-rm -f Makefile.in

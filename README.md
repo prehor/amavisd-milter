@@ -2,16 +2,14 @@
 
 [![CircleCI Status Badge](https://circleci.com/gh/prehor/amavisd-milter.svg?style=shield&circle-token=e3c02b685cb35b8a4428e988d7874790a9409fe9)](https://circleci.com/gh/prehor/amavisd-milter)
 
-amavisd-milter is a milter interface for [amavis](https://www.amavis.org).
+amavisd-milter is a milter interface for the [amavis](https://www.amavis.org) spam filter engine.
 
 ## Installing
 
 The simplest way to compile amavisd-milter:
 ```
-curl -L -o amavisd-milter-1.6.1.tar.gz https://github.com/prehor/amavisd-milter/archive/1.6.1.tar.gz
-tar xfz amavisd-milter-1.6.1.tar.gz
-cd amavisd-milter-1.6.1
-sh autoconf.sh.in
+curl -L https://github.com/prehor/amavisd-milter/releases/download/1.7.1/amavisd-milter-1.7.1.tar.gz | tar xfz -
+cd amavisd-milter-1.7.1
 ./configure
 make all
 make install
