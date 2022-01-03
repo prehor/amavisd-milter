@@ -736,17 +736,17 @@ mlfi_envfrom(SMFICTX *ctx, char **envfrom)
     l = 0;
     *mlfi->mlfi_amabuf = '\0';
     if ((policybank_from_daemon_name == 1) && (mlfi->mlfi_daemon_name != NULL)) {
-        l += snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+        l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
             "%s", mlfi->mlfi_daemon_name);
     }
     if (auth_type != NULL) {
         if (l > 0) {
-            l += snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, ",");
+            l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length, ",");
         }
-        l += snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+        l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
             "SMTP_AUTH,SMTP_AUTH_%s", auth_type);
         if (auth_ssf != NULL && *auth_ssf != '\0') {
-            l += snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
+            l = snprintfcat(l, mlfi->mlfi_amabuf, mlfi->mlfi_amabuf_length,
                 ",SMTP_AUTH_%s_%s", auth_type, auth_ssf);
         }
     }
