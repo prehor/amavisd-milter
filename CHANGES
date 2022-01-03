@@ -1,5 +1,13 @@
 This is the CHANGELOG for amavisd-milter.
 
+20210103:
+        amavisd-milter-1.7.2:
+
+        Bug and compatibility fixies:
+        - The SMTP_AUTH* attributes are missing in policy_bank.
+
+        Thanks to: @damluk
+
 20200906:
         amavisd-milter-1.7.1:
 
