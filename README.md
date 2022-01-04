@@ -8,8 +8,8 @@ amavisd-milter is a milter interface for the [amavis](https://www.amavis.org) sp
 
 The simplest way to compile amavisd-milter:
 ```
-curl -L https://github.com/prehor/amavisd-milter/releases/download/1.7.1/amavisd-milter-1.7.1.tar.gz | tar xfz -
-cd amavisd-milter-1.7.1
+curl -L https://github.com/prehor/amavisd-milter/releases/download/1.7.2/amavisd-milter-1.7.2.tar.gz | tar xfz -
+cd amavisd-milter-1.7.2
 ./configure
 make all
 make install
