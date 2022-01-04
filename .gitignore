@@ -105,6 +105,7 @@ dkms.conf
 # End of https://www.gitignore.io/api/c,autotools
 
 # Ignore amavid-milter generated files
+*~
 amavisd-milter-*.tar.gz
 autoconf.sh
 config.h
