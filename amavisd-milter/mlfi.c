@@ -219,7 +219,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
             }
             if (fts_close(fts) != 0) {
                 logqidmsg(mlfi, LOG_WARNING,
-                    "could not close file hirerachy %s: %s",
+                    "could not close file hierarchy %s: %s",
                     mlfi->mlfi_wrkdir, strerror(errno));
             }
         }
