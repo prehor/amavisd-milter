@@ -248,7 +248,7 @@ mlfi_cleanup_message(struct mlfiCtx *mlfi)
 /*
 ** MLFI_CLEANUP - Cleanup connection context
 **
-** mlfi_cleanup() cleanup message context and relese connection context
+** mlfi_cleanup() cleanup message context and release connection context
 */
 static void
 mlfi_cleanup(struct mlfiCtx *mlfi)
@@ -303,7 +303,7 @@ mlfi_setreply_tempfail(SMFICTX *ctx)
 
 
 /*
-** MLFI_CONNECT - Handle incomming connection
+** MLFI_CONNECT - Handle incoming connection
 **
 ** mlfi_connect() is called once, at the start of each SMTP connection
 */
